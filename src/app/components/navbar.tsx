@@ -19,8 +19,7 @@ export default function NavbarComponent() {
     const fetchWallet = async () => {
       try {
         if (isSignedIn) {
-          const token = await getToken();
-          const balance = await getWalletBalance({ userId, token });
+          const balance = await getWalletBalance({ userId });
           setWalletBalance(balance);
         } else {
           setWalletBalance(null);
