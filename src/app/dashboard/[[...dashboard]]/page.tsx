@@ -4,7 +4,26 @@ import NavbarComponent from "@/app/components/navbar";
 import { useUser } from "@clerk/nextjs";
 import { fetchReservations, updateUserRecord, cancelReservation, fetchAllActivities } from "../../../../utils/requests";
 
-// Other imports...
+type Reservation = {
+    id: number;
+    date: string;
+    start_time: string;
+    end_time: string;
+    coach: {
+        name: string;
+    };
+    activity: {
+        name: string;
+        credits: number;
+    };
+};
+
+type Activity = {
+    id: number;
+    name: string;
+    // Add other necessary fields
+};
+
 
 export default function Dashboard() {
     const { isLoaded, isSignedIn, user } = useUser();
@@ -25,8 +44,23 @@ export default function Dashboard() {
 
                 const fetchedReservations = await fetchReservations(user.id);
                 if (fetchedReservations) {
-                    setReservations(fetchedReservations);
+                    const transformedReservations = fetchedReservations.map((reservation: any) => ({
+                        id: reservation.id,
+                        date: reservation.date,
+                        start_time: reservation.start_time,
+                        end_time: reservation.end_time,
+                        // Assuming there's always at least one coach and activity in the arrays,
+                        // and you're interested in the first one.
+                        coach: { name: reservation.coach.name },
+                        activity: {
+                            name: reservation.activity.name,
+                            credits: reservation.activity.credits
+                        }
+                    }));
+
+                    setReservations(transformedReservations);
                 }
+
 
                 const fetchedActivities = await fetchAllActivities();
                 if (fetchedActivities) {
@@ -42,7 +76,7 @@ export default function Dashboard() {
             // Confirm cancellation with a pop-up window
             const confirmed = window.confirm("Are you sure you want to cancel this reservation?");
             if (!confirmed) return; // Do nothing if user cancels
-    
+
             const cancelled = await cancelReservation(reservationId, user.id, setReservations);
             if (cancelled) {
                 // Refresh the page after successful cancellation
@@ -53,7 +87,7 @@ export default function Dashboard() {
             }
         }
     };
-    
+
     if (!isLoaded || !isSignedIn) {
         return null;
     }
