@@ -67,11 +67,11 @@ export default function Example() {
         </Dialog>
       </header>
 
-      <div className="relative isolate overflow-hidden pt-14">
+      <div className="relative h-[100dvh] isolate overflow-hidden pt-14">
         <img
           src="/images/Home-gym.jpeg"
           alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full  w-full object-cover"
           style={{ zIndex: -10, filter: 'grayscale(50%) blur(5px)' }}
         />
 
