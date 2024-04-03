@@ -4,11 +4,12 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { UserButton } from "@clerk/nextjs";
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { getWalletBalance } from '../../../utils/requests';
+import { getWalletBalance } from '../../../../utils/user-requests';
+import { checkRole } from '../../../../utils/roles';
 
-export default function NavbarComponent() {
+export default function AdminNavbarComponent() {
   const [currentPage, setCurrentPage] = useState('');
-  const [walletBalance, setWalletBalance] = useState<number | null>(null); 
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const { userId, getToken, isSignedIn } = useAuth();
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export default function NavbarComponent() {
     };
 
     fetchWallet();
-  }, [isSignedIn, getToken, userId]); 
+  }, [isSignedIn, getToken, userId]);
 
   return (
     <Disclosure as="nav" className="bg-black shadow">
@@ -53,22 +54,22 @@ export default function NavbarComponent() {
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                   <a
-                    href="/dashboard"
-                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/dashboard' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
+                    href='/admin/manage-users'
+                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/admin/manage-users' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
                   >
-                    Dashboard
+                    Manage users
                   </a>
                   <a
-                    href="/bookasession"
-                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/bookasession' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
+                    href='/admin/add-activities-and-coaches'
+                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/admin/add-activities-and-coaches' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
                   >
-                    Book a session
+                    Manage coaches and activities
                   </a>
                   <a
-                    href="/classes"
-                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/classes' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
+                    href="/admin/add-timeslots"
+                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '//admin/add-timeslots' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
                   >
-                    Classes
+                    Add time slots
                   </a>
                 </div>
               </div>
@@ -83,22 +84,22 @@ export default function NavbarComponent() {
           <Disclosure.Panel className="sm:hidden">
             <div className="space-y-1 pb-4 pt-2">
               <a
-                href="/dashboard"
-                className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/dashboard' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
+                href="/admin/manage-users"
+                className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/admin/manage-users' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
               >
-                Dashboard
+                Manage users
               </a>
               <a
-                href="/bookasession"
-                className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/bookasession' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
+                href="/admin/add-activities-and-coaches"
+                className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/admin/add-activities-and-coaches' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
               >
-                Book a session
+                Manage coaches and activities
               </a>
               <a
-                href="/classes"
-                className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/classes' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
+                href="/admin/add-timeslots"
+                className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/admin/add-timeslots' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
               >
-                Classes
+                Add time slots
               </a>
             </div>
           </Disclosure.Panel>

@@ -1,8 +1,8 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import NavbarComponent from "@/app/components/navbar";
+import NavbarComponent from "@/app/components/users/navbar";
 import { useUser } from "@clerk/nextjs";
-import { fetchReservations, updateUserRecord, cancelReservation, fetchAllActivities } from "../../../../utils/requests";
+import { fetchReservations, updateUserRecord, cancelReservation, fetchAllActivities } from "../../../../../utils/user-requests";
 
 type Reservation = {
     id: number;
@@ -80,7 +80,6 @@ export default function Dashboard() {
             const cancelled = await cancelReservation(reservationId, user.id, setReservations);
             if (cancelled) {
                 // Refresh the page after successful cancellation
-                window.location.reload();
             } else {
                 console.error('Failed to cancel reservation.');
                 // You might want to show an error message to the user here

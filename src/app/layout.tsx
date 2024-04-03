@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider, authMiddleware } from '@clerk/nextjs'
 import "./globals.css";
-import dashboardpage from "./dashboard/[[...dashboard]]/page";
-import UserProfilecomponent from "./components/userprofile";
+import dashboardpage from "./users/dashboard/[[...dashboard]]/page";
+import UserProfilecomponent from "./components/users/userprofile";
 
 const inter = Inter({ subsets: ["latin"] });
 

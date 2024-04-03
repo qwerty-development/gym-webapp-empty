@@ -1,9 +1,9 @@
 'use client'
 // bookasession.tsx
 import { Fragment, useEffect, useState } from 'react';
-import NavbarComponent from '../components/navbar';
+import NavbarComponent from '../../components/users/navbar';
 import { currentUser, useUser } from '@clerk/nextjs';
-import { fetchFilteredUnbookedTimeSlots, fetchAllActivities, fetchCoaches, bookTimeSlot } from '../../../utils/requests';
+import { fetchFilteredUnbookedTimeSlots, fetchAllActivities, fetchCoaches, bookTimeSlot, getWalletBalance } from '../../../../utils/user-requests';
 
 export default function Example() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -96,7 +96,9 @@ export default function Example() {
       startTime: startTime, // Use the formatted start time
       endTime: endTime,     // Use the formatted end time
       userId: user.id,
+    
     });
+    
   
     if (error) {
       console.error("Booking failed:", error);
@@ -109,7 +111,6 @@ export default function Example() {
     } else {
       console.log("Booking successful:", data);
       // Reload the page to reflect the new booking
-      location.reload();
       alert("Booking successful!");
     }
   };
