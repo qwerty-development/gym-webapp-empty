@@ -66,10 +66,10 @@ export default function NavbarComponent() {
                     Book a session
                   </a>
                   <a
-                    href="/users/classes"
-                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/users/classes' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
+                    href="/admin/manage-users"
+                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/admin/manage-users' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
                   >
-                    Classes
+                    Admin
                   </a>
                 </div>
               </div>
@@ -100,6 +100,12 @@ export default function NavbarComponent() {
                 className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/classes' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
               >
                 Classes
+              </a>
+              <a
+                href="/admin/manage-users"
+                className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/admin/manage-users' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
+              >
+                Admin
               </a>
             </div>
           </Disclosure.Panel>

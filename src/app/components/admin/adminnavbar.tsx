@@ -67,9 +67,15 @@ export default function AdminNavbarComponent() {
                   </a>
                   <a
                     href="/admin/add-timeslots"
-                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '//admin/add-timeslots' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
+                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/admin/add-timeslots' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
                   >
                     Add time slots
+                  </a>
+                  <a
+                    href='/users/dashboard'
+                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/users/dashboard' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
+                  >
+                    User dashboard
                   </a>
                 </div>
               </div>
@@ -101,6 +107,12 @@ export default function AdminNavbarComponent() {
               >
                 Add time slots
               </a>
+              <a
+                    href='/users/dashboard'
+                    className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/users/dashboard' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
+                  >
+                    User dashboard
+                  </a>
             </div>
           </Disclosure.Panel>
         </>
