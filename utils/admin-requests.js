@@ -128,4 +128,70 @@ export const fetchCoaches = async () => {
   
     return data;
   };
+
+  // In admin-requests.js
+
+// In admin-requests.js
+export const fetchTimeSlots = async () => {
+  const supabase = await supabaseClient();
+  const { data, error } = await supabase
+    .from('time_slots')
+    .select(`
+      activities ( name, credits ),
+      coaches ( name ),
+      date,
+      start_time,
+      end_time,
+      users ( user_id, first_name, last_name ),
+      booked
+    `)
+    // Join logic here based on your database relations
+
+  if (error) {
+    console.error('Error fetching time slots:', error.message);
+    return [];
+  }
+
+  // Transform the data here to match the Reservation[] type, handling nulls
+  const transformedData = data.map(slot => {
+    return {
+      activity: slot.activities ? { name: slot.activities.name, credits: slot.activities.credits } : null,
+      coach: slot.coaches ? { name: slot.coaches.name } : null,
+      date: slot.date,
+      start_time: slot.start_time,
+      end_time: slot.end_time,
+      user: slot.users ? {
+        user_id: slot.users.user_id,
+        first_name: slot.users.first_name,
+        last_name: slot.users.last_name
+      } : null,
+      booked: slot.booked
+    };
+  });
+
+  return transformedData;
+};
+
+// In admin-requests.js
+
+export const addTimeSlot = async (timeSlot) => {
+  const supabase = await supabaseClient();
+  const { data, error } = await supabase
+      .from('time_slots')
+      .insert([timeSlot]);
+
+  if (error) {
+      console.error('Error adding new time slot:', error.message);
+      return null;
+  }
+
+  return data ? data[0] : null;
+};
+
+
+
+
+  
+
+
   

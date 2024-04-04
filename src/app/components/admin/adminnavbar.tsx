@@ -66,6 +66,12 @@ export default function AdminNavbarComponent() {
                     Manage coaches and activities
                   </a>
                   <a
+                    href="/admin/view-reservations"
+                    className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/admin/view-reservations' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
+                  >
+                    View reservations
+                  </a>
+                  <a
                     href="/admin/add-timeslots"
                     className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${currentPage === '/admin/add-timeslots' ? 'text-white border-indigo-500' : 'text-gray-500 border-transparent'} `}
                   >
@@ -100,6 +106,12 @@ export default function AdminNavbarComponent() {
                 className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/admin/add-activities-and-coaches' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
               >
                 Manage coaches and activities
+              </a>
+              <a
+                href="/admin/view-reservations"
+                className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${currentPage === '/admin/view-reservations' ? 'text-white bg-indigo-500 border-indigo-500' : 'text-gray-500 border-transparent'} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}
+              >
+                View reservations
               </a>
               <a
                 href="/admin/add-timeslots"
