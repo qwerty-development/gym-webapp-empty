@@ -173,7 +173,6 @@ export const fetchTimeSlots = async () => {
 };
 
 // In admin-requests.js
-
 export const addTimeSlot = async (timeSlot) => {
   const supabase = await supabaseClient();
   const { data, error } = await supabase
@@ -182,11 +181,50 @@ export const addTimeSlot = async (timeSlot) => {
 
   if (error) {
       console.error('Error adding new time slot:', error.message);
-      return null;
+      return { success: false, error: error.message };
+  }
+
+  return { success: true, data };
+};
+
+export const deleteTimeSlot = async (timeSlotId) => {
+  const supabase = await supabaseClient();
+  const { error } = await supabase
+      .from('time_slots')
+      .delete()
+      .match({ id: timeSlotId }); // Use `.eq('id', timeSlotId)` if your DB requires
+
+  if (error) {
+      console.error('Error deleting time slot:', error.message);
+      return false;
+  }
+
+  return true;
+};
+
+export const updateTimeSlot = async (timeSlot) => {
+  if (!timeSlot.id) throw new Error('Time Slot ID is required for update.');
+
+  const supabase = await supabaseClient();
+  const { data, error } = await supabase
+    .from('time_slots')
+    .update(timeSlot)
+    .eq('id', timeSlot.id);
+
+  if (error) {
+    console.error('Error updating time slot:', error.message);
+    return null;
   }
 
   return data ? data[0] : null;
 };
+
+
+
+
+
+
+
 
 
 

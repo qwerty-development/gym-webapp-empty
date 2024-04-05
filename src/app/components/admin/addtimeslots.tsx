@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { fetchCoaches, fetchActivities, addTimeSlot } from '../../../../utils/admin-requests'
+import { fetchCoaches, fetchActivities, addTimeSlot } from '../../../../utils/admin-requests';
 
 type OptionType = {
     label: string;
@@ -17,7 +17,9 @@ export default function AddTimeSlotComponent() {
     const [activities, setActivities] = useState<OptionType[]>([]);
     const [selectedCoach, setSelectedCoach] = useState<OptionType | null>(null);
     const [selectedActivity, setSelectedActivity] = useState<OptionType | null>(null);
-    const [date, setDate] = useState<Date>(new Date());
+    // Update for date selection to handle multiple dates
+    const [startDate, setStartDate] = useState<Date | null>(new Date());
+    const [endDate, setEndDate] = useState<Date | null>(null);
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
 
@@ -35,35 +37,49 @@ export default function AddTimeSlotComponent() {
         loadCoaches();
         loadActivities();
     }, []);
-
     const handleAddTimeSlot = async () => {
-        if (selectedCoach && selectedActivity && startTime && endTime) {
+        // Check for all required fields including startDate
+        if (!selectedCoach || !selectedActivity || !startTime || !endTime || !startDate) {
+            alert('Please fill in all fields');
+            return;
+        }
+    
+        // Ensure endDate is not null; if it is, use startDate as endDate
+        const finalEndDate = endDate ? new Date(endDate) : new Date(startDate);
+    
+        // Create an array to hold all the dates between startDate and finalEndDate
+        let currentDate = new Date(startDate);
+        const datesToAdd = [];
+        while (currentDate <= finalEndDate) {
+            datesToAdd.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    
+        // Loop through each date and create a time slot
+        for (const date of datesToAdd) {
             const newTimeSlot = {
                 coach_id: selectedCoach.value,
                 activity_id: selectedActivity.value,
-                date: date.toISOString().substring(0, 10), // Formats date as YYYY-MM-DD
+                date: date.toISOString().substring(0, 10), // Format date as YYYY-MM-DD
                 start_time: startTime,
                 end_time: endTime,
-                booked: false, // Default to false when creating a new time slot
+                booked: false,
             };
     
             const result = await addTimeSlot(newTimeSlot);
-            if (result) {
-                alert('Time slot added successfully');
-                // Optionally, clear the form or navigate away after successful add
-            } else {
-                alert('Failed to add time slot', );
-                console.log(newTimeSlot)
+            if (result.success === false) {
+                alert(`Error adding new time slot: ${result.error}`);
+                return; // Stop adding more if one fails
             }
-        } else {
-            alert('Please fill in all fields');
         }
+    
+        alert('New time slots added successfully');
     };
     
 
     return (
         <div>
-            <h1 className="text-2xl font-bold mb-4">Add Time Slot</h1>
+            <h1 className="text-2xl font-bold mb-4">Add Time Slots</h1>
             <div className="mb-4">
                 <Select
                     placeholder="Select Coach"
@@ -81,9 +97,16 @@ export default function AddTimeSlotComponent() {
                 />
             </div>
             <div className="mb-4">
-                <DatePicker selected={date}
-                    onChange={(selectedDate: Date) => setDate(selectedDate)}
-                    dateFormat="yyyy-MM-dd" />
+            <DatePicker
+                    selectsRange={true}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onChange={(update) => {
+                      setStartDate(update[0]);
+                      setEndDate(update[1]);
+                    }}
+                    dateFormat="yyyy-MM-dd"
+                />
             </div>
             <div className="mb-4">
                 <input
@@ -103,7 +126,7 @@ export default function AddTimeSlotComponent() {
             </div>
             <div>
                 <button onClick={handleAddTimeSlot} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Add Time Slot
+                    Add Time Slots
                 </button>
             </div>
         </div>

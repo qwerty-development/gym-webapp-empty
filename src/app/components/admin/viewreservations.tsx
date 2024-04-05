@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from "react";
-import { fetchTimeSlots } from "../../../../utils/admin-requests";
+import { fetchTimeSlots, deleteTimeSlot, updateTimeSlot } from "../../../../utils/admin-requests";
 
 type Activity = {
     name: string;
@@ -114,10 +114,7 @@ export default function ViewReservationsComponent() {
         const adjustedMinutes = adjustedTotalMinutes % 60;
         return `${adjustedHours.toString().padStart(2, '0')}:${adjustedMinutes.toString().padStart(2, '0')}`;
     };
-
-
-
-
+    
 
     return (
         <section>
@@ -203,6 +200,7 @@ export default function ViewReservationsComponent() {
                                     <td className="px-4 py-2">{reservation.user?.last_name ?? 'N/A'}</td>
                                     <td className="px-4 py-2">{reservation.booked ? 'Yes' : 'No'}</td>
                                     <td className="px-4 py-2">{reservation.activity?.credits ?? 'N/A'}</td>
+                                    
                                 </tr>
                             ))}
                         </tbody>
