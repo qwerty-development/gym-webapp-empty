@@ -219,6 +219,43 @@ export const updateTimeSlot = async (timeSlot) => {
   return data ? data[0] : null;
 };
 
+// In admin-requests.js
+
+export const fetchUsers = async (searchQuery) => {
+  const supabase = await supabaseClient();
+  let query = supabase.from('users').select('*');
+
+  if (searchQuery) {
+    query = query
+      .or(
+        `username.ilike.%${searchQuery}%,` +
+        `first_name.ilike.%${searchQuery}%,` +
+        `last_name.ilike.%${searchQuery}%`
+      );
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching users:', error.message);
+    return [];
+  }
+
+  return data;
+};
+
+export const updateUserCredits = async (userId, wallet) => {
+  const supabase = await supabaseClient();
+  const { data, error } = await supabase
+    .from('users')
+    .update({ wallet })
+    .eq('id', userId);
+
+  return { data, error }; // Return an object containing both data and error
+};
+
+
+
 
 
 
