@@ -200,7 +200,6 @@ export default function ViewReservationsComponent() {
                                     <td className="px-4 py-2">{reservation.user?.last_name ?? 'N/A'}</td>
                                     <td className="px-4 py-2">{reservation.booked ? 'Yes' : 'No'}</td>
                                     <td className="px-4 py-2">{reservation.activity?.credits ?? 'N/A'}</td>
-                                    
                                 </tr>
                             ))}
                         </tbody>

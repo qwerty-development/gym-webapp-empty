@@ -5,7 +5,10 @@ import { UserButton } from "@clerk/nextjs";
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { getWalletBalance } from '../../../../utils/user-requests';
-import { checkRole } from '../../../../utils/roles';
+import { createContext, useContext } from 'react';
+
+
+
 
 export default function NavbarComponent() {
   const [currentPage, setCurrentPage] = useState('');

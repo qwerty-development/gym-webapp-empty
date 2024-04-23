@@ -75,11 +75,14 @@ export default function Dashboard() {
         if (user) {
             // Confirm cancellation with a pop-up window
             const confirmed = window.confirm("Are you sure you want to cancel this reservation?");
-            if (!confirmed) return; // Do nothing if user cancels
+            if (!confirmed)
+                
+                return; // Do nothing if user cancels
 
             const cancelled = await cancelReservation(reservationId, user.id, setReservations);
             if (cancelled) {
                 // Refresh the page after successful cancellation
+                window.location.reload();
             } else {
                 console.error('Failed to cancel reservation.');
                 // You might want to show an error message to the user here
@@ -119,6 +122,7 @@ export default function Dashboard() {
                                         <button onClick={() => handleCancel(reservation.id)} className="bg-red-500 text-white font-bold py-2 px-4 rounded mt-2">Cancel</button>
                                     </div>
                                 ))}
+                                
                             </div>
                         </div>
                     </main>

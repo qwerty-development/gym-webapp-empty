@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs";
 
-export const checkRole = (role: "admin" | "moderator") => {
+export const checkRoleAdmin = (role: "admin") => {
   const { sessionClaims } = auth();
   return sessionClaims?.metadata.role === role;
 };

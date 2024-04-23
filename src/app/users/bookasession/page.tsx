@@ -15,6 +15,7 @@ export default function Example() {
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const [selectedActivityCredits, setSelectedActivityCredits] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false); // State variable for loading
   const { user } = useUser();
 
   useEffect(() => {
@@ -85,10 +86,12 @@ export default function Example() {
       console.error("User is not signed in");
       return;
     }
-  
+
+    setLoading(true);
+
     // Format the start time and end time
     const [startTime, endTime] = selectedTime.split(' - ');
-  
+
     const { error, data } = await bookTimeSlot({
       activityId: selectedActivity,
       coachId: selectedCoach,
@@ -96,10 +99,10 @@ export default function Example() {
       startTime: startTime, // Use the formatted start time
       endTime: endTime,     // Use the formatted end time
       userId: user.id,
-    
     });
-    
-  
+
+    setLoading(false);
+
     if (error) {
       console.error("Booking failed:", error);
       // Check if the error message is about insufficient credits
@@ -112,9 +115,11 @@ export default function Example() {
       console.log("Booking successful:", data);
       // Reload the page to reflect the new booking
       alert("Booking successful!");
+      window.location.reload(); // Reload the page
     }
   };
-  
+
+
 
 
   const formatDate = (date: Date | null): string => {
@@ -210,9 +215,10 @@ export default function Example() {
                           <button
                             type="button"
                             onClick={handleBookSession}
+                            disabled={loading} // Disable the button when loading is true
                             className="rounded-md mt-12 mb-12 bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                           >
-                            Book Session!
+                            {loading ? <span>Loading...</span> : <span>Book Session!</span>} {/* Conditional rendering of button text */}
                           </button>
                         </center>
                       </div>

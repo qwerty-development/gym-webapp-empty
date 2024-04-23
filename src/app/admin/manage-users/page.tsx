@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { checkRole } from "../../../../utils/roles";
+import { checkRoleAdmin } from "../../../../utils/roles";
 import { SearchUsers } from "./_search-users";
 import { clerkClient } from "@clerk/nextjs";
 import { setRole } from "./_action";
@@ -10,7 +10,7 @@ import ModifyCreditsComponent from "@/app/components/admin/modifycredits";
 export default async function AdminDashboard(params: {
   searchParams: { search?: string };
 }) {
-  if (!checkRole("admin")) {
+  if (!checkRoleAdmin("admin")) {
     redirect("/");
   }
 

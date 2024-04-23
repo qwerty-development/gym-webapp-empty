@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import CoachesandActivitiesAdminPage from "../../components/admin/editcoachesandactivities"
 import NavbarComponent from '@/app/components/users/navbar';
 import AdminNavbarComponent from '@/app/components/admin/adminnavbar';
-import { checkRole } from '../../../../utils/roles';
+import { checkRoleAdmin } from '../../../../utils/roles';
 import { redirect } from 'next/navigation';
 import ViewReservationsComponent from '@/app/components/admin/viewreservations';
 
 export default function viewreservations() {
-  if (!checkRole("admin")) {
+  if (!checkRoleAdmin("admin")) {
     redirect("/");
   }
   return(

@@ -1,11 +1,16 @@
-// addtimeslots.tsx
-'use client';
-
+'use client'
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { fetchCoaches, fetchActivities, addTimeSlot } from '../../../../utils/admin-requests';
+import MultiDatePicker, { Calendar } from 'react-multi-date-picker';
+import { DateObject } from 'react-multi-date-picker';
+import DatePanel from 'react-multi-date-picker/plugins/date_panel';
+import Icon from 'react-multi-date-picker/components/icon';
+import InputIcon from 'react-multi-date-picker/components/input_icon';
+import Toolbar from 'react-multi-date-picker/plugins/toolbar';
+import Button from 'react-multi-date-picker/components/button';
+import Buttons from 'react-multi-date-picker/components/button';
 
 type OptionType = {
     label: string;
@@ -17,114 +22,110 @@ export default function AddTimeSlotComponent() {
     const [activities, setActivities] = useState<OptionType[]>([]);
     const [selectedCoach, setSelectedCoach] = useState<OptionType | null>(null);
     const [selectedActivity, setSelectedActivity] = useState<OptionType | null>(null);
-    // Update for date selection to handle multiple dates
-    const [startDate, setStartDate] = useState<Date | null>(new Date());
-    const [endDate, setEndDate] = useState<Date | null>(null);
+    const [selectedDates, setSelectedDates] = useState<Date[]>([new Date()]);
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
 
     useEffect(() => {
-        const loadCoaches = async () => {
+        async function loadCoachesAndActivities() {
             const fetchedCoaches = await fetchCoaches();
             setCoaches(fetchedCoaches.map(coach => ({ label: coach.name, value: coach.id })));
-        };
-
-        const loadActivities = async () => {
             const fetchedActivities = await fetchActivities();
             setActivities(fetchedActivities.map(activity => ({ label: activity.name, value: activity.id })));
-        };
+        }
 
-        loadCoaches();
-        loadActivities();
+        loadCoachesAndActivities();
     }, []);
+
+    const handleDateChange = (dates: DateObject | DateObject[] | null) => {
+        if (Array.isArray(dates)) {
+            setSelectedDates(dates.map(date => date.toDate()));
+        }
+    };
+
     const handleAddTimeSlot = async () => {
-        // Check for all required fields including startDate
-        if (!selectedCoach || !selectedActivity || !startTime || !endTime || !startDate) {
+        if (!selectedCoach || !selectedActivity || selectedDates.length === 0 || !startTime || !endTime) {
             alert('Please fill in all fields');
             return;
         }
-    
-        // Ensure endDate is not null; if it is, use startDate as endDate
-        const finalEndDate = endDate ? new Date(endDate) : new Date(startDate);
-    
-        // Create an array to hold all the dates between startDate and finalEndDate
-        let currentDate = new Date(startDate);
-        const datesToAdd = [];
-        while (currentDate <= finalEndDate) {
-            datesToAdd.push(new Date(currentDate));
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-    
-        // Loop through each date and create a time slot
-        for (const date of datesToAdd) {
+
+        for (const date of selectedDates) {
             const newTimeSlot = {
                 coach_id: selectedCoach.value,
                 activity_id: selectedActivity.value,
-                date: date.toISOString().substring(0, 10), // Format date as YYYY-MM-DD
+                date: date.toISOString().substring(0, 10),
                 start_time: startTime,
                 end_time: endTime,
                 booked: false,
             };
-    
+
             const result = await addTimeSlot(newTimeSlot);
-            if (result.success === false) {
+            if (!result.success) {
                 alert(`Error adding new time slot: ${result.error}`);
-                return; // Stop adding more if one fails
+                return;
             }
         }
-    
+
         alert('New time slots added successfully');
     };
-    
 
     return (
-        <div>
+        <div className="container mx-auto px-4">
             <h1 className="text-2xl font-bold mb-4">Add Time Slots</h1>
-            <div className="mb-4">
-                <Select
-                    placeholder="Select Coach"
-                    options={coaches}
-                    onChange={setSelectedCoach}
-                    value={selectedCoach}
+            <div className="flex flex-wrap mb-4">
+                <div className="w-full md:w-1/2 px-2 mb-4 md:mb-0">
+                    <Select
+                        placeholder="Select Coach"
+                        options={coaches}
+                        onChange={setSelectedCoach}
+                        value={selectedCoach}
+                    />
+                </div>
+                <div className="w-full md:w-1/2 px-2">
+                    <Select
+                        placeholder="Select Activity"
+                        options={activities}
+                        onChange={setSelectedActivity}
+                        value={selectedActivity}
+                    />
+                </div>
+            </div>
+            <div className="mb-4 text-center">
+                <MultiDatePicker
+                    value={selectedDates}
+                    render={<Icon/>}
+                    onChange={handleDateChange}
+                    format="YYYY-MM-DD"
+                    plugins={[
+                        <DatePanel sort="date" />,
+                        <Toolbar 
+                        position="bottom" 
+                        sort={["deselect", "close", "today"]} 
+                      />,
+                        
+                      ]}
+                        
                 />
             </div>
-            <div className="mb-4">
-                <Select
-                    placeholder="Select Activity"
-                    options={activities}
-                    onChange={setSelectedActivity}
-                    value={selectedActivity}
-                />
+            <div className="flex flex-wrap mb-4">
+                <div className="w-full md:w-1/2 px-2 mb-4 md:mb-0">
+                    <input
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="border px-2 py-1 rounded w-full"
+                    />
+                </div>
+                <div className="w-full md:w-1/2 px-2">
+                    <input
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        className="border px-2 py-1 rounded w-full"
+                    />
+                </div>
             </div>
-            <div className="mb-4">
-            <DatePicker
-                    selectsRange={true}
-                    startDate={startDate}
-                    endDate={endDate}
-                    onChange={(update) => {
-                      setStartDate(update[0]);
-                      setEndDate(update[1]);
-                    }}
-                    dateFormat="yyyy-MM-dd"
-                />
-            </div>
-            <div className="mb-4">
-                <input
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="border px-2 py-1 rounded"
-                />
-            </div>
-            <div className="mb-4">
-                <input
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="border px-2 py-1 rounded"
-                />
-            </div>
-            <div>
+            <div className="text-center">
                 <button onClick={handleAddTimeSlot} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                     Add Time Slots
                 </button>
