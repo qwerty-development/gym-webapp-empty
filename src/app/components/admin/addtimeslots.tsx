@@ -90,19 +90,21 @@ export default function AddTimeSlotComponent() {
             <div className="mb-4 text-center">
                 <MultiDatePicker
                     value={selectedDates}
-                    render={<Icon/>}
+                    render={<Icon />}
                     onChange={handleDateChange}
                     format="YYYY-MM-DD"
                     plugins={[
-                        <DatePanel sort="date" />,
-                        <Toolbar 
-                        position="bottom" 
-                        sort={["deselect", "close", "today"]} 
-                      />,
-                        
-                      ]}
-                        
+                        // Add key prop to DatePanel component
+                        <DatePanel key="date-panel" sort="date" />,
+                        // Add key prop to Toolbar component
+                        <Toolbar
+                            key="toolbar"
+                            position="bottom"
+                            sort={["deselect", "close", "today"]}
+                        />,
+                    ]}
                 />
+
             </div>
             <div className="flex flex-wrap mb-4">
                 <div className="w-full md:w-1/2 px-2 mb-4 md:mb-0">
