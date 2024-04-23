@@ -7,10 +7,7 @@ import MultiDatePicker, { Calendar } from 'react-multi-date-picker';
 import { DateObject } from 'react-multi-date-picker';
 import DatePanel from 'react-multi-date-picker/plugins/date_panel';
 import Icon from 'react-multi-date-picker/components/icon';
-import InputIcon from 'react-multi-date-picker/components/input_icon';
 import Toolbar from 'react-multi-date-picker/plugins/toolbar';
-import Button from 'react-multi-date-picker/components/button';
-import Buttons from 'react-multi-date-picker/components/button';
 
 type OptionType = {
     label: string;
