@@ -2,73 +2,111 @@ import { supabaseClient } from './supabaseClient';
 
 // Functions to manage coaches
 export const addActivity = async (activity) => {
-    const supabase = await supabaseClient();
-    const { data, error } = await supabase
-      .from('activities')
-      .insert([{ ...activity, coach_id: activity.coach_id }]);
-  
-    if (error) {
-      console.error('Error adding new activity:', error.message);
-      return null;
-    }
-  
-    // Only return data[0] if data is not null
-    return data ? data[0] : null;
+  const supabase = await supabaseClient();
+  const { data, error } = await supabase
+    .from('activities')
+    .insert([{ ...activity, coach_id: activity.coach_id }]);
+
+  if (error) {
+    console.error('Error adding new activity:', error.message);
+    return null;
+  }
+
+  // Only return data[0] if data is not null
+  return data ? data[0] : null;
 };
 
 
-  
-  export const addCoach = async (coach) => {
-    const supabase = await supabaseClient();
-    const { data, error } = await supabase
-      .from('coaches')
-      .insert([coach]);
-  
-    if (error) {
-      console.error('Error adding new coach:', error.message);
-      return null;
-    }
-  
-    // Only return data[0] if data is not null
-    return data ? data[0] : null;
-  };
-  
 
-  export const updateCoach = async (coach) => {
-    if (!coach.id) throw new Error('Coach ID is required for update.');
-  
-    const supabase = await supabaseClient();
-    const { data, error } = await supabase
-      .from('coaches')
-      .update(coach)
-      .eq('id', coach.id);
-  
-    if (error) {
-      console.error('Error updating coach:', error.message);
+export const addCoach = async (coach, file) => {
+  const supabase = await supabaseClient();
+
+  // Upload the image to a Supabase bucket first
+  if (file) {
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExtension}`;
+    const { error: uploadError } = await supabase.storage
+      .from('coach_profile_picture')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Error uploading file:', uploadError.message);
       return null;
     }
-  
-    return data ? data[0] : null;
-  };
-  
-  export const updateActivity = async (activity) => {
-    if (!activity.id) throw new Error('Activity ID is required for update.');
-  
-    const supabase = await supabaseClient();
-    const { data, error } = await supabase
-      .from('activities')
-      .update(activity)
-      .eq('id', activity.id);
-      console.log('updates successfully')
-  
-    if (error) {
-      console.error('Error updating activity:', error.message);
+
+    // Update the coach object with the image URL
+    const imageUrl = `${supabase.storage.from('coach_profile_picture').getPublicUrl(fileName).publicURL}`;
+    coach.profile_picture = imageUrl;
+  }
+
+  // Insert the coach into the database with the image URL
+  const { data, error } = await supabase
+    .from('coaches')
+    .insert([coach]);
+
+  if (error) {
+    console.error('Error adding new coach:', error.message);
+    return null;
+  }
+
+  return data ? data[0] : null;
+};
+
+
+
+export const updateCoach = async (coachId, updates, file) => {
+  const supabase = await supabaseClient();
+
+  // If a new file is uploaded, handle the file upload
+  if (file) {
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExtension}`;
+    const { error: uploadError } = await supabase.storage
+      .from('coach_profile_picture')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Error uploading file:', uploadError.message);
       return null;
     }
-  
-    return data ? data[0] : null;
-  };
-  
+
+    // Update the image URL in the coach updates
+    updates.profile_picture = `${supabase.storage.from('coach_profile_picture').getPublicUrl(fileName).publicURL}`;
+  }
+
+  // Update the coach in the database
+  const { data, error } = await supabase
+    .from('coaches')
+    .update(updates)
+    .eq('id', coachId);
+
+  if (error) {
+    console.error('Error updating coach:', error.message);
+    return null;
+  }
+
+  return data ? data[0] : null;
+};
+
+
+export const updateActivity = async (activity) => {
+  if (!activity.id) throw new Error('Activity ID is required for update.');
+
+  const supabase = await supabaseClient();
+  const { data, error } = await supabase
+    .from('activities')
+    .update(activity)
+    .eq('id', activity.id);
+  console.log('updates successfully')
+
+  if (error) {
+    console.error('Error updating activity:', error.message);
+    return null;
+  }
+
+  return data ? data[0] : null;
+};
+
 
 export const deleteCoach = async (coachId) => {
   const supabase = await supabaseClient();
@@ -102,34 +140,34 @@ export const deleteActivity = async (activityId) => {
   return true;
 };
 export const fetchCoaches = async () => {
-    const supabase = await supabaseClient();
-    const { data, error } = await supabase
-      .from('coaches')
-      .select('*');
-  
-    if (error) {
-      console.error('Error fetching coaches:', error.message);
-      return [];
-    }
-  
-    return data;
-  };
-  
-  export const fetchActivities = async () => {
-    const supabase = await supabaseClient();
-    const { data, error } = await supabase
-      .from('activities')
-      .select('*');
-  
-    if (error) {
-      console.error('Error fetching activities:', error.message);
-      return [];
-    }
-  
-    return data;
-  };
+  const supabase = await supabaseClient();
+  const { data, error } = await supabase
+    .from('coaches')
+    .select('*');
 
-  // In admin-requests.js
+  if (error) {
+    console.error('Error fetching coaches:', error.message);
+    return [];
+  }
+
+  return data;
+};
+
+export const fetchActivities = async () => {
+  const supabase = await supabaseClient();
+  const { data, error } = await supabase
+    .from('activities')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching activities:', error.message);
+    return [];
+  }
+
+  return data;
+};
+
+// In admin-requests.js
 
 // In admin-requests.js
 export const fetchTimeSlots = async () => {
@@ -145,7 +183,7 @@ export const fetchTimeSlots = async () => {
       users ( user_id, first_name, last_name ),
       booked
     `)
-    // Join logic here based on your database relations
+  // Join logic here based on your database relations
 
   if (error) {
     console.error('Error fetching time slots:', error.message);
@@ -176,12 +214,12 @@ export const fetchTimeSlots = async () => {
 export const addTimeSlot = async (timeSlot) => {
   const supabase = await supabaseClient();
   const { data, error } = await supabase
-      .from('time_slots')
-      .insert([timeSlot]);
+    .from('time_slots')
+    .insert([timeSlot]);
 
   if (error) {
-      console.error('Error adding new time slot:', error.message);
-      return { success: false, error: error.message };
+    console.error('Error adding new time slot:', error.message);
+    return { success: false, error: error.message };
   }
 
   return { success: true, data };
@@ -190,13 +228,13 @@ export const addTimeSlot = async (timeSlot) => {
 export const deleteTimeSlot = async (timeSlotId) => {
   const supabase = await supabaseClient();
   const { error } = await supabase
-      .from('time_slots')
-      .delete()
-      .match({ id: timeSlotId }); // Use `.eq('id', timeSlotId)` if your DB requires
+    .from('time_slots')
+    .delete()
+    .match({ id: timeSlotId }); // Use `.eq('id', timeSlotId)` if your DB requires
 
   if (error) {
-      console.error('Error deleting time slot:', error.message);
-      return false;
+    console.error('Error deleting time slot:', error.message);
+    return false;
   }
 
   return true;
@@ -266,7 +304,6 @@ export const updateUserCredits = async (userId, wallet) => {
 
 
 
-  
 
 
-  
+

@@ -15,7 +15,9 @@ import AdminNavbarComponent from '@/app/components/admin/adminnavbar';
 type Coach = {
   id: number;
   name: string;
+  profile_picture: string; // Make sure this is being fetched
 };
+
 
 type Activity = {
   id: number;
@@ -47,17 +49,31 @@ const CoachesandActivitiesAdminPage = () => {
   const refreshData = () => setUpdateTrigger(!updateTrigger);
 
   // Coach handlers
-  const handleAddCoach = async () => {
-    const coach = await addCoach({ name: newCoachName });
-    if (coach) setCoaches([...coaches, coach]);
-    setNewCoachName('');
+// Adjusted handleAddCoach to pass the file parameter
+const handleAddCoach = async () => {
+  await addCoach({ name: newCoachName }, file); // Pass the file parameter
+  setNewCoachName('');
+  setFile(null);
+  refreshData();
+};
+
+// Adjusted handleUpdateCoach to pass the file parameter
+const handleUpdateCoach = async (coachId: number) => {
+  const newName = prompt('Enter new name for coach:');
+  if (newName) {
+    const updatedCoach = await updateCoach({ id: coachId, name: newName }, file); // Pass the file parameter
     fetchCoaches().then(setCoaches);
-  };
+    if (updatedCoach) {
+      setCoaches(coaches.map(coach => coach.id === coachId ? updatedCoach : coach));
+      fetchCoaches().then(setCoaches);
+    }
+  }
+};
 
   const handleDeleteCoach = async (coachId: number) => {
     const success = await deleteCoach(coachId);
     if (success) setCoaches(coaches.filter(coach => coach.id !== coachId));
-    fetchCoaches().then(setCoaches); 
+    fetchCoaches().then(setCoaches);
   };
 
   // Activity handlers
@@ -85,17 +101,6 @@ const CoachesandActivitiesAdminPage = () => {
     fetchCoaches().then(setCoaches);
   };
 
-  const handleUpdateCoach = async (coachId: number) => {
-    const newName = prompt('Enter new name for coach:');
-    if (newName) {
-      const updatedCoach = await updateCoach({ id: coachId, name: newName });
-      fetchCoaches().then(setCoaches);
-      if (updatedCoach) {
-        setCoaches(coaches.map(coach => coach.id === coachId ? updatedCoach : coach));
-        fetchCoaches().then(setCoaches);
-      }
-    }
-  };
 
   const handleUpdateActivity = async (activityId: number) => {
     const newName = prompt('Enter new name for activity:');
@@ -119,7 +124,7 @@ const CoachesandActivitiesAdminPage = () => {
             fetchActivities().then(setActivities);
           } else {
             console.error();
-            
+
           }
         } catch (error) {
           console.error('Error updating activity:,', error);
@@ -131,6 +136,26 @@ const CoachesandActivitiesAdminPage = () => {
       console.error('User cancelled the operation.');
     }
   };
+
+  const [file, setFile] = useState<File | null>(null);
+
+
+  const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setFile(event.target.files[0]);  // Set the first file
+    }
+  };
+
+
+  const handleAddCoachClick = async () => {
+    await addCoach({ name: newCoachName }, file);
+    setNewCoachName('');
+    setFile(null);
+    refreshData();
+  };
+
+  // Similarly, adjust handleUpdateCoach to pass the file if it's updated
+
 
 
 
@@ -147,12 +172,16 @@ const CoachesandActivitiesAdminPage = () => {
             placeholder="New Coach Name"
             className="border border-gray-300 px-3 py-2 rounded-md w-64"
           />
+          <input type="file" onChange={handleFileChange} />
           <button onClick={handleAddCoach} className="bg-blue-500 text-white px-4 py-2 rounded-md">Add Coach</button>
         </div>
         <ul>
           {coaches.map((coach: Coach) => (
             <li key={coach.id} className="flex items-center justify-between bg-gray-100 px-4 py-2 mb-2 rounded-md">
-              <span>{coach.name}</span>
+              <div className="flex items-center space-x-3">
+                <img src={coach.profile_picture} alt={`Profile of ${coach.name}`} className="w-10 h-10 rounded-full" /> {/* Image display */}
+                <span>{coach.name}</span>
+              </div>
               <div className="flex">
                 <button onClick={() => handleUpdateCoach(coach.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
                 <button onClick={() => handleDeleteCoach(coach.id)} className="bg-red-500 text-white px-3 py-1 rounded-md">Delete</button>
@@ -160,6 +189,7 @@ const CoachesandActivitiesAdminPage = () => {
             </li>
           ))}
         </ul>
+
 
       </section>
 

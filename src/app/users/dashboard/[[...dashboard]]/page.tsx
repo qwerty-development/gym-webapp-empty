@@ -47,10 +47,8 @@ export default function Dashboard() {
                     const transformedReservations = fetchedReservations.map((reservation: any) => ({
                         id: reservation.id,
                         date: reservation.date,
-                        start_time: reservation.start_time,
-                        end_time: reservation.end_time,
-                        // Assuming there's always at least one coach and activity in the arrays,
-                        // and you're interested in the first one.
+                        start_time: reservation.start_time.split(':').slice(0, 2).join(':'),
+                        end_time: reservation.end_time.split(':').slice(0, 2).join(':'),
                         coach: { name: reservation.coach.name },
                         activity: {
                             name: reservation.activity.name,
@@ -61,7 +59,6 @@ export default function Dashboard() {
                     setReservations(transformedReservations);
                 }
 
-
                 const fetchedActivities = await fetchAllActivities();
                 if (fetchedActivities) {
                     setActivities(fetchedActivities);
@@ -71,12 +68,13 @@ export default function Dashboard() {
         fetchData();
     }, [isLoaded, isSignedIn, user]);
 
+
     const handleCancel = async (reservationId: number) => {
         if (user) {
             // Confirm cancellation with a pop-up window
             const confirmed = window.confirm("Are you sure you want to cancel this reservation?");
             if (!confirmed)
-                
+
                 return; // Do nothing if user cancels
 
             const cancelled = await cancelReservation(reservationId, user.id, setReservations);
@@ -122,7 +120,7 @@ export default function Dashboard() {
                                         <button onClick={() => handleCancel(reservation.id)} className="bg-red-500 text-white font-bold py-2 px-4 rounded mt-2">Cancel</button>
                                     </div>
                                 ))}
-                                
+
                             </div>
                         </div>
                     </main>

@@ -46,3 +46,31 @@ body {
   border: 1px solid #0c8af8;
   box-shadow: 0 0 10px 2px #0074d9;
 }
+
+.react-datepicker {
+  width: 100% !important; /* Make the datepicker itself take up full width */
+}
+
+.react-datepicker__month-container {
+  width: 100% !important; /* Ensure the month container takes up full width */
+}
+
+.react-datepicker__month {
+  width: 100% !important; /* Make the month take up full width */
+}
+
+.react-datepicker__week {
+  display: flex !important;
+}
+
+.react-datepicker__day-name {
+  width: 100% !important;
+}
+
+.react-datepicker__day-names {
+  display: flex !important;
+}
+
+.react-datepicker__day {
+  width: 100% !important;
+}
