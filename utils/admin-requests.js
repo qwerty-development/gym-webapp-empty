@@ -21,25 +21,39 @@ export const addActivity = async (activity) => {
 export const addCoach = async (coach, file) => {
   const supabase = await supabaseClient();
 
-  // Upload the image to a Supabase bucket first
+  if (!supabase) {
+    console.error('Supabase client is not initialized.');
+    return null;
+  }
+
+  const storage = supabase.storage.from('coach_profile_picture');
+  if (!storage) {
+    console.error('Supabase storage is not initialized.');
+    return null;
+  }
+
   if (file) {
     const fileExtension = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExtension}`;
-    const { error: uploadError } = await supabase.storage
-      .from('coach_profile_picture')
-      .upload(fileName, file);
+    const { error: uploadError } = await storage.upload(fileName, file);
 
     if (uploadError) {
       console.error('Error uploading file:', uploadError.message);
       return null;
     }
 
-    // Update the coach object with the image URL
-    const imageUrl = `${supabase.storage.from('coach_profile_picture').getPublicUrl(fileName).publicURL}`;
-    coach.profile_picture = imageUrl;
+    // Construct the public URL manually
+    const publicURL = `https://ofsmbbjjveacrikuuueh.supabase.co/storage/v1/object/public/coach_profile_picture/${fileName}`;
+    console.log("Constructed public URL: " + publicURL);
+
+    if (publicURL) {
+      coach.profile_picture = publicURL;
+    } else {
+      console.error('Public URL is undefined.');
+      return null;
+    }
   }
 
-  // Insert the coach into the database with the image URL
   const { data, error } = await supabase
     .from('coaches')
     .insert([coach]);
@@ -51,6 +65,10 @@ export const addCoach = async (coach, file) => {
 
   return data ? data[0] : null;
 };
+
+
+
+
 
 
 
@@ -70,8 +88,12 @@ export const updateCoach = async (coachId, updates, file) => {
       return null;
     }
 
+    // Manually construct the public URL for the uploaded file
+    const publicURL = `https://ofsmbbjjveacrikuuueh.supabase.co/storage/v1/object/public/coach_profile_picture/${fileName}`;
+    console.log("New Public URL: " + publicURL);
+
     // Update the image URL in the coach updates
-    updates.profile_picture = `${supabase.storage.from('coach_profile_picture').getPublicUrl(fileName).publicURL}`;
+    updates.profile_picture = publicURL;
   }
 
   // Update the coach in the database
@@ -87,6 +109,7 @@ export const updateCoach = async (coachId, updates, file) => {
 
   return data ? data[0] : null;
 };
+
 
 
 export const updateActivity = async (activity) => {

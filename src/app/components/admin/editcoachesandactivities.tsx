@@ -34,6 +34,10 @@ const CoachesandActivitiesAdminPage = () => {
   const [newActivityCredits, setNewActivityCredits] = useState('');
   const [selectedCoachId, setSelectedCoachId] = useState<number | null>(null);
   const [updateTrigger, setUpdateTrigger] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false); // State for showing the update form
+  const [updateCoachId, setUpdateCoachId] = useState<number | null>(null); // State for the coach being updated
+  const [updatedCoachName, setUpdatedCoachName] = useState(''); // State for updated coach name
+  const [updatedCoachPicture, setUpdatedCoachPicture] = useState<File | null>(null); // State for updated coach picture
 
   // Load initial data
   useEffect(() => {
@@ -49,26 +53,26 @@ const CoachesandActivitiesAdminPage = () => {
   const refreshData = () => setUpdateTrigger(!updateTrigger);
 
   // Coach handlers
-// Adjusted handleAddCoach to pass the file parameter
-const handleAddCoach = async () => {
-  await addCoach({ name: newCoachName }, file); // Pass the file parameter
-  setNewCoachName('');
-  setFile(null);
-  refreshData();
-};
+  // Adjusted handleAddCoach to pass the file parameter
+  const handleAddCoach = async () => {
+    await addCoach({ name: newCoachName }, file); // Pass the file parameter
+    setNewCoachName('');
+    setFile(null);
+    refreshData();
+  };
 
-// Adjusted handleUpdateCoach to pass the file parameter
-const handleUpdateCoach = async (coachId: number) => {
-  const newName = prompt('Enter new name for coach:');
-  if (newName) {
-    const updatedCoach = await updateCoach({ id: coachId, name: newName }, file); // Pass the file parameter
-    fetchCoaches().then(setCoaches);
-    if (updatedCoach) {
-      setCoaches(coaches.map(coach => coach.id === coachId ? updatedCoach : coach));
-      fetchCoaches().then(setCoaches);
+  const handleSubmitUpdate = async () => {
+    if (updatedCoachName.trim() !== '') {
+      await updateCoach(updateCoachId!, { name: updatedCoachName }, updatedCoachPicture);
+      setShowUpdateForm(false);
+      refreshData();
+    } else {
+      alert('Please provide a valid name for the coach.');
     }
-  }
-};
+  };
+
+
+
 
   const handleDeleteCoach = async (coachId: number) => {
     const success = await deleteCoach(coachId);
@@ -142,16 +146,20 @@ const handleUpdateCoach = async (coachId: number) => {
 
   const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     if (event.target.files && event.target.files.length > 0) {
-      setFile(event.target.files[0]);  // Set the first file
+      setUpdatedCoachPicture(event.target.files[0]);
+      
     }
   };
+  
 
-
-  const handleAddCoachClick = async () => {
-    await addCoach({ name: newCoachName }, file);
-    setNewCoachName('');
-    setFile(null);
-    refreshData();
+  const handleToggleForm = (id: React.SetStateAction<number | null>) => {
+    if (updateCoachId === id) { // If the form is already open for the same coach, close it
+      setShowUpdateForm(false);
+      setUpdateCoachId(null);
+    } else {
+      setShowUpdateForm(true);
+      setUpdateCoachId(id);
+    }
   };
 
   // Similarly, adjust handleUpdateCoach to pass the file if it's updated
@@ -162,36 +170,53 @@ const handleUpdateCoach = async (coachId: number) => {
   return (
     <div>
 
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-xl mt-5 font-semibold mb-4">Coaches</h2>
-        <div className="flex items-center space-x-2 mb-4">
-          <input
-            type="text"
-            value={newCoachName}
-            onChange={(e) => setNewCoachName(e.target.value)}
-            placeholder="New Coach Name"
-            className="border border-gray-300 px-3 py-2 rounded-md w-64"
-          />
-          <input type="file" onChange={handleFileChange} />
-          <button onClick={handleAddCoach} className="bg-blue-500 text-white px-4 py-2 rounded-md">Add Coach</button>
+<section className="container mx-auto px-4 sm:px-6 lg:px-8">
+  <h2 className="text-xl mt-5 font-semibold mb-4">Coaches</h2>
+  <div className="flex items-center space-x-2 mb-4">
+    <input
+      type="text"
+      value={newCoachName}
+      onChange={(e) => setNewCoachName(e.target.value)}
+      placeholder="New Coach Name"
+      className="border border-gray-300 px-3 py-2 rounded-md w-64"
+    />
+    <input type="file" onChange={handleFileChange} />
+    <button onClick={handleAddCoach} className="bg-blue-500 text-white px-4 py-2 rounded-md">Add Coach</button>
+  </div>
+  <ul>
+    {coaches.map((coach: Coach) => (
+      <li key={coach.id} className="bg-gray-100 px-4 py-2 mb-2 rounded-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <img src={coach.profile_picture} alt={`Profile of ${coach.name}`} className="w-10 h-10 rounded-full" />
+            <span>{coach.name}</span>
+          </div>
+          <div className="flex">
+            <button onClick={() => handleToggleForm(coach.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
+            <button onClick={() => handleDeleteCoach(coach.id)} className="bg-red-500 text-white px-3 py-1 rounded-md">Delete</button>
+          </div>
         </div>
-        <ul>
-          {coaches.map((coach: Coach) => (
-            <li key={coach.id} className="flex items-center justify-between bg-gray-100 px-4 py-2 mb-2 rounded-md">
-              <div className="flex items-center space-x-3">
-                <img src={coach.profile_picture} alt={`Profile of ${coach.name}`} className="w-10 h-10 rounded-full" /> {/* Image display */}
-                <span>{coach.name}</span>
-              </div>
-              <div className="flex">
-                <button onClick={() => handleUpdateCoach(coach.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
-                <button onClick={() => handleDeleteCoach(coach.id)} className="bg-red-500 text-white px-3 py-1 rounded-md">Delete</button>
-              </div>
-            </li>
-          ))}
-        </ul>
+
+        {showUpdateForm && updateCoachId === coach.id && ( // Only show the update form for the selected coach
+          <div className='mx-auto p-4'>
+            <input
+              type="text"
+              value={updatedCoachName}
+              onChange={(e) => setUpdatedCoachName(e.target.value)}
+              placeholder="New Coach Name"
+              className="border border-gray-300 px-3 py-2 rounded-md w-64"
+            />
+            <input type="file" onChange={handleFileChange} />
+            <button onClick={handleSubmitUpdate} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2">Update</button>
+          </div>
+        )}
+      </li>
+    ))}
+  </ul>
+</section>
 
 
-      </section>
+
 
       <section className="container mt-5 mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-xl font-semibold mb-4">Activities</h2>
