@@ -5,7 +5,6 @@ import { useUser } from '@clerk/nextjs';
 import { fetchFilteredUnbookedTimeSlots, fetchAllActivities, fetchCoaches, bookTimeSlot } from '../../../../utils/user-requests';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import 'react-week-calendar/dist/style.css'; // Assuming you use the CSS file
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 import FavoriteIcon from '@mui/icons-material/Favorite';
