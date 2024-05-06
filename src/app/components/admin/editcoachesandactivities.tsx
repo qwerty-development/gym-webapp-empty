@@ -38,6 +38,8 @@ const CoachesandActivitiesAdminPage = () => {
   const [updateCoachId, setUpdateCoachId] = useState<number | null>(null); // State for the coach being updated
   const [updatedCoachName, setUpdatedCoachName] = useState(''); // State for updated coach name
   const [updatedCoachPicture, setUpdatedCoachPicture] = useState<File | null>(null); // State for updated coach picture
+  const [newCoachPicture, setNewCoachPicture] = useState<File | null>(null);
+
 
   // Load initial data
   useEffect(() => {
@@ -55,11 +57,16 @@ const CoachesandActivitiesAdminPage = () => {
   // Coach handlers
   // Adjusted handleAddCoach to pass the file parameter
   const handleAddCoach = async () => {
-    await addCoach({ name: newCoachName }, file); // Pass the file parameter
-    setNewCoachName('');
-    setFile(null);
-    refreshData();
+    if (newCoachName.trim()) {
+      await addCoach({ name: newCoachName }, newCoachPicture);
+      setNewCoachName('');
+      setNewCoachPicture(null);
+      refreshData();
+    } else {
+      alert('Please enter a coach name.');
+    }
   };
+  
 
   const handleSubmitUpdate = async () => {
     if (updatedCoachName.trim() !== '') {
@@ -146,10 +153,14 @@ const CoachesandActivitiesAdminPage = () => {
 
   const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     if (event.target.files && event.target.files.length > 0) {
-      setUpdatedCoachPicture(event.target.files[0]);
-      
+      if (showUpdateForm) {
+        setUpdatedCoachPicture(event.target.files[0]);
+      } else {
+        setNewCoachPicture(event.target.files[0]);
+      }
     }
   };
+  
   
 
   const handleToggleForm = (id: React.SetStateAction<number | null>) => {
@@ -161,6 +172,7 @@ const CoachesandActivitiesAdminPage = () => {
       setUpdateCoachId(id);
     }
   };
+
 
   // Similarly, adjust handleUpdateCoach to pass the file if it's updated
 
