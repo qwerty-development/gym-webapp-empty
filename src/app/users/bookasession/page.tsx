@@ -94,14 +94,16 @@ export default function Example() {
             const timesForSelectedDate = data
               .filter(slot => new Date(slot.date).toDateString() === selectedDate.toDateString())
               .map(slot => {
-                const [start, end] = slot.start_time.split(':');
-                return `${start}:${slot.start_time.split(':')[1]} - ${end}:${slot.end_time.split(':')[1]}`;
+                const startTime = slot.start_time.substr(0, 5); // Take the substring to include only hours and minutes
+                const endTime = slot.end_time.substr(0, 5); // Similarly for end time
+                return `${startTime} - ${endTime}`;
               });
             setAvailableTimes(timesForSelectedDate);
           }
         }
       }
     };
+    
     fetchDatesAndTimes();
   }, [selectedActivity, selectedCoach, selectedDate]);
 
