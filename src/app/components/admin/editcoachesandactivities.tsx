@@ -42,7 +42,7 @@ const CoachesandActivitiesAdminPage = () => {
   const [newCoachPicture, setNewCoachPicture] = useState<File | null>(null);
 
 
-  // Load initial data
+  
   useEffect(() => {
     const loadInitialData = async () => {
       const loadedCoaches = await fetchCoaches();
