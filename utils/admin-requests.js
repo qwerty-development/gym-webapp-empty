@@ -162,6 +162,7 @@ export const deleteActivity = async (activityId) => {
 
   return true;
 };
+
 export const fetchCoaches = async () => {
   const supabase = await supabaseClient();
   const { data, error } = await supabase
@@ -175,6 +176,39 @@ export const fetchCoaches = async () => {
 
   return data;
 };
+
+export const fetchCoachesActivities = async (activityId) => {
+  const supabase = await supabaseClient();
+
+  // First, fetch all time slots for the given activityId to get associated coach_ids
+  const { data: timeSlots, error: timeSlotsError } = await supabase
+    .from('time_slots')
+    .select('coach_id')
+    .eq('activity_id', activityId)
+
+  if (timeSlotsError || !timeSlots.length) {
+    console.error('Error fetching time slots:', timeSlotsError?.message);
+    return [];
+  }
+
+  // Extract unique coach IDs from time slots
+  const coachIds = timeSlots.map(slot => slot.coach_id);
+
+  // Then, fetch coach details for the collected coach_ids
+  const { data: coaches, error: coachesError } = await supabase
+    .from('coaches')
+    .select('*')
+    .in('id', coachIds);  // This fetches all coaches whose ID is in the coachIds array
+
+  if (coachesError) {
+    console.error('Error fetching coaches:', coachesError.message);
+    return [];
+  }
+
+  return coaches;
+};
+
+
 
 export const fetchActivities = async () => {
   const supabase = await supabaseClient();
@@ -315,6 +349,69 @@ export const updateUserCredits = async (userId, wallet) => {
   return { data, error }; // Return an object containing both data and error
 };
 
+// admin-requests.js
+
+export const bookTimeSlotForClient = async ({ activityId, coachId, date, startTime, endTime, userId }) => {
+    const supabase = await supabaseClient();
+
+    try {
+        // Check if the user exists in the 'users' table
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('user_id', userId)  // Ensure the column name is 'user_id' if that is how it's defined
+            .single();
+
+        if (userError || !user) {
+            console.error('Error fetching user data:', userError.message);
+            return { error: 'An error occurred while checking user data: ' + userError.message };
+        }
+
+        // Check if the time slot is already booked
+        const { data: existingSlot, error: existingSlotError } = await supabase
+            .from('time_slots')
+            .select('booked')
+            .match({
+                activity_id: activityId,
+                coach_id: coachId,
+                date: date,
+                start_time: startTime,
+                end_time: endTime
+            })
+            .single();
+
+        if (existingSlotError) {
+            console.error('Error checking time slot availability:', existingSlotError.message);
+            return { error: existingSlotError.message };
+        }
+
+        if (existingSlot && existingSlot.booked) {
+            return { error: 'Time slot is already booked.' };
+        }
+
+        // Proceed with booking the time slot
+        const { error: updateError, data: updatedSlot } = await supabase
+            .from('time_slots')
+            .update({ user_id: userId, booked: true })
+            .match({
+                activity_id: activityId,
+                coach_id: coachId,
+                date: date,
+                start_time: startTime,
+                end_time: endTime
+            });
+
+        if (updateError) {
+            console.error('Error booking time slot:', updateError.message);
+            return { error: updateError.message };
+        }
+
+        return { success: true, message: 'Session booked successfully.', timeSlot: updatedSlot };
+    } catch (error) {
+        console.error('Unhandled error booking time slot:', error.message);
+        return { error: 'An unhandled error occurred while booking the time slot: ' + error.message };
+    }
+};
 
 
 

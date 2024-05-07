@@ -30,10 +30,12 @@ export default function Dashboard() {
     const { isLoaded, isSignedIn, user } = useUser();
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [activities, setActivities] = useState<Activity[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true); // State to track loading status
 
     useEffect(() => {
         const fetchData = async () => {
             if (isLoaded && isSignedIn) {
+                setIsLoading(true); 
                 await updateUserRecord({
                     userId: user.id,
                     email: user.emailAddresses[0]?.emailAddress,
@@ -62,6 +64,7 @@ export default function Dashboard() {
 
                 const fetchedActivities = await fetchAllActivities();
                 if (fetchedActivities) {
+                    setIsLoading(false);
                     setActivities(fetchedActivities);
                 }
             }
@@ -108,37 +111,48 @@ export default function Dashboard() {
                         </div>
                     </header>
                     <main className="bg-gray-100 mt-5 rounded-3xl py-8">
-                        <div className="container mx-auto px-4 lg:px-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {/* Map through reservations to display each one */}
-                                {reservations.map((reservation: any) => (
-                                    <div key={reservation.id} className="bg-white p-6 rounded-lg shadow-md">
-                                        <h3 className="text-lg dark:text-black font-semibold mb-2">{reservation.activity.name}</h3>
-                                        <p className="text-gray-600">Date: {reservation.date}</p>
-                                        <p className="text-gray-600">Time: {reservation.start_time} - {reservation.end_time}</p>
-                                        <p className="text-gray-600">Coach: {reservation.coach.name}</p>
-                                        <p className="text-gray-600 mb-2">Cost: {reservation.activity.credits}</p>
-                                        <AddToCalendarButton
-                                            name={reservation.activity.name + ' with ' + reservation.coach.name}
-                                            startDate={reservation.date}
-                                            startTime={reservation.start_time}
-                                            endTime={reservation.end_time}
-                                            options={['Apple', 'Google']}
-                                            timeZone="Asia/Beirut"
-                                            buttonStyle='default'
-                                            styleLight="--btn-background: #5c6dc2; --btn-text: #fff;"
-                                            styleDark="--btn-background:#fff #; --btn-text: #000;"
-                                            size='5'
-                                            inline="true"
-                                        ></AddToCalendarButton>
-                                        <button onClick={() => handleCancel(reservation.id)} className="bg-red-500  text-white font-bold py-2 px-4 rounded mt-4">Cancel</button>
-
-                                    </div>
-                                ))}
-
+                        {isLoading ? ( // Display loading icon if data is being fetched
+                            <div className="flex justify-center items-center">
+                                <svg className="animate-spin h-10 w-10 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.004 8.004 0 014.01 7.08L2.59 8.495A9.956 9.956 0 002 12c0 5.523 4.477 10 10 10v-4c-2.096 0-4.04-.81-5.497-2.247z"></path>
+                                </svg>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="container mx-auto px-4 lg:px-8">
+                                {reservations.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {reservations.map((reservation) => (
+                                            <div key={reservation.id} className="bg-white p-6 rounded-lg shadow-md">
+                                                <h3 className="text-lg dark:text-black font-semibold mb-2">{reservation.activity.name}</h3>
+                                                <p className="text-gray-600">Date: {reservation.date}</p>
+                                                <p className="text-gray-600">Time: {reservation.start_time} - {reservation.end_time}</p>
+                                                <p className="text-gray-600">Coach: {reservation.coach.name}</p>
+                                                <p className="text-gray-600 mb-2">Cost: {reservation.activity.credits} credits</p>
+                                                <AddToCalendarButton
+                                                    name={reservation.activity.name + ' with ' + reservation.coach.name}
+                                                    startDate={reservation.date}
+                                                    startTime={reservation.start_time}
+                                                    endTime={reservation.end_time}
+                                                    options={['Apple', 'Google']}
+                                                    timeZone="Asia/Beirut"
+                                                    buttonStyle='default'
+                                                    styleLight="--btn-background: #5c6dc2; --btn-text: #fff;"
+                                                    styleDark="--btn-background:#fff #; --btn-text: #000;"
+                                                    size='5'
+                                                    inline="true"
+                                                />
+                                                <button onClick={() => handleCancel(reservation.id)} className="bg-red-500 text-white font-bold py-2 px-4 rounded mt-4">Cancel</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-xl text-gray-600">NO UPCOMING RESERVATIONS</p>
+                                )}
+                            </div>
+                        )}
                     </main>
+
                 </div>
             </div>
         </div>

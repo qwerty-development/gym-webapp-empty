@@ -88,6 +88,8 @@ export const updateUserRecord = async ({ userId, email, firstName, lastName, use
 
 export const fetchReservations = async (userId) => {
     const supabase = supabaseClient(); // Ensure you're correctly initializing this with any necessary tokens
+    const today = new Date().toISOString().slice(0, 10); // Get today's date in YYYY-MM-DD format
+
     const { data, error } = await supabase
         .from('time_slots')
         .select(`
@@ -107,7 +109,8 @@ export const fetchReservations = async (userId) => {
                 name
             )
         `)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .gte('date', today); // Use greater than or equal to filter for date
 
     if (error) {
         console.error('Error fetching reservations:', error.message);
@@ -118,6 +121,7 @@ export const fetchReservations = async (userId) => {
         return reservation;
     });
 };
+
 
 // utils/requests.js
 
@@ -303,10 +307,32 @@ export const fetchCoaches = async (activityId) => {
 export const bookTimeSlot = async ({ activityId, coachId, date, startTime, endTime, userId }) => {
     const supabase = await supabaseClient();
 
+    // Check if the time slot is already booked
+    const { data: existingSlot, error: existingSlotError } = await supabase
+        .from('time_slots')
+        .select('booked')
+        .match({
+            activity_id: activityId,
+            coach_id: coachId,
+            date: date,
+            start_time: startTime,
+            end_time: endTime
+        })
+        .single();
+
+    if (existingSlotError) {
+        console.error('Error checking time slot availability:', existingSlotError.message);
+        return { error: existingSlotError.message };
+    }
+
+    if (existingSlot && existingSlot.booked) {
+        return { error: 'Time slot is already booked.' };
+    }
+
     // Fetch user's current credits
     const { data: userData, error: userError } = await supabase
         .from("users")
-        .select("wallet") // Selecting only the wallet column
+        .select("wallet")
         .eq("user_id", userId)
         .single();
 
