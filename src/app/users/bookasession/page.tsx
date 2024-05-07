@@ -2,6 +2,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import NavbarComponent from '../../components/users/navbar';
 import { useUser } from '@clerk/nextjs';
+import { getWalletBalance } from '../../../../utils/user-requests';
 import { fetchFilteredUnbookedTimeSlots, fetchAllActivities, fetchCoaches, bookTimeSlot } from '../../../../utils/user-requests';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -10,6 +11,7 @@ import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import DirectionsBikeIcon from '@mui/icons-material/DirectionsBike';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import HealingIcon from '@mui/icons-material/Healing';
 
 
 
@@ -37,8 +39,11 @@ export default function Example() {
     2: <FavoriteIcon />,
     3: <DirectionsBikeIcon />,
     4: <DirectionsRunIcon />,
-    10: <FitnessCenterIcon />
+    10: <FitnessCenterIcon />,
+    11: <HealingIcon />
   };
+
+  
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -144,7 +149,7 @@ export default function Example() {
           {activities.map(activity => (
             <button
               key={activity.id}
-              className={`flex border p-4 rounded-lg ${selectedActivity === activity.id ? 'bg-green-200' : 'hover:bg-gray-100'
+              className={`flex border p-4 rounded-lg ${selectedActivity === activity.id ? 'bg-green-200 dark:bg-green-700' : 'hover:bg-gray-100'
                 }`}
               onClick={() => setSelectedActivity(activity.id)}
             >
@@ -157,7 +162,7 @@ export default function Example() {
           <h2 className="text-3xl font-bold mb-4">Select a Coach</h2>
           <div className="grid lg:grid-cols-3 gap-4">
             {coaches.map(coach => (
-              <button key={coach.id} className={`border p-4 rounded-lg ${selectedCoach === coach.id ? 'bg-green-200' : 'hover:bg-gray-100'}`} onClick={() => setSelectedCoach(coach.id)}>
+              <button key={coach.id} className={`border p-4 rounded-lg ${selectedCoach === coach.id ? 'bg-green-200  dark:bg-green-700' : 'hover:bg-gray-100'}`} onClick={() => setSelectedCoach(coach.id)}>
                 <img src={coach.profile_picture} alt={`${coach.name}`} className="w-16 h-16 rounded-full mx-auto mb-2" />
                 {coach.name}
               </button>
@@ -182,7 +187,7 @@ export default function Example() {
               <h2 className="text-3xl font-bold mb-4">Available Times</h2>
               <div className="flex flex-col">
                 {availableTimes.map(time => (
-                  <button key={time} className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${selectedTime === time ? 'bg-green-200' : 'hover:bg-gray-100'}`} onClick={() => setSelectedTime(time)}>
+                  <button key={time} className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${selectedTime === time ? 'bg-green-200  dark:bg-green-700' : 'hover:bg-gray-100'}`} onClick={() => setSelectedTime(time)}>
                     {time}
                   </button>
                 ))}

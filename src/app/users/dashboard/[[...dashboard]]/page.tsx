@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import NavbarComponent from "@/app/components/users/navbar";
 import { useUser } from "@clerk/nextjs";
 import { fetchReservations, updateUserRecord, cancelReservation, fetchAllActivities } from "../../../../../utils/user-requests";
+import { AddToCalendarButton } from 'add-to-calendar-button-react';
 
 type Reservation = {
     id: number;
@@ -103,7 +104,7 @@ export default function Dashboard() {
                 <div className="py-10">
                     <header>
                         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                            <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">Your reservations</h1>
+                            <h1 className="text-3xl font-bold leading-tight tracking-tight dark:text-indigo-300 text-gray-900">Your reservations</h1>
                         </div>
                     </header>
                     <main className="bg-gray-100 mt-5 rounded-3xl py-8">
@@ -112,12 +113,26 @@ export default function Dashboard() {
                                 {/* Map through reservations to display each one */}
                                 {reservations.map((reservation: any) => (
                                     <div key={reservation.id} className="bg-white p-6 rounded-lg shadow-md">
-                                        <h3 className="text-lg font-semibold mb-2">{reservation.activity.name}</h3>
+                                        <h3 className="text-lg  dark:text-black-900 font-semibold mb-2">{reservation.activity.name}</h3>
                                         <p className="text-gray-600">Date: {reservation.date}</p>
                                         <p className="text-gray-600">Time: {reservation.start_time} - {reservation.end_time}</p>
                                         <p className="text-gray-600">Coach: {reservation.coach.name}</p>
-                                        <p className="text-gray-600">Cost: {reservation.activity.credits}</p>
-                                        <button onClick={() => handleCancel(reservation.id)} className="bg-red-500 text-white font-bold py-2 px-4 rounded mt-2">Cancel</button>
+                                        <p className="text-gray-600 mb-2">Cost: {reservation.activity.credits}</p>
+                                        <AddToCalendarButton
+                                            name={reservation.activity.name + ' with ' + reservation.coach.name}
+                                            startDate={reservation.date}
+                                            startTime={reservation.start_time}
+                                            endTime={reservation.end_time}
+                                            options={['Apple', 'Google']}
+                                            timeZone="Asia/Beirut"
+                                            buttonStyle='default'
+                                            styleLight="--btn-background: #5c6dc2; --btn-text: #fff;"
+                                            styleDark="--btn-background:#fff #; --btn-text: #000;"
+                                            size='5'
+                                            inline="true"
+                                        ></AddToCalendarButton>
+                                        <button onClick={() => handleCancel(reservation.id)} className="bg-red-500  text-white font-bold py-2 px-4 rounded mt-4">Cancel</button>
+
                                     </div>
                                 ))}
 

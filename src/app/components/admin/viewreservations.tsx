@@ -174,7 +174,7 @@ export default function ViewReservationsComponent() {
                 <div className="overflow-x-auto mt-5">
                     <table className="table-auto w-full">
                         <thead>
-                            <tr className="bg-gray-200">
+                            <tr className="bg-gray-200 dark:bg-blue-950">
                                 <th className="px-4 py-2">Activity</th>
                                 <th className="px-4 py-2">Coach Name</th>
                                 <th className="px-4 py-2">Date</th>

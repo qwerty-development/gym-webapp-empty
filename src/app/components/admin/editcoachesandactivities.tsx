@@ -63,6 +63,7 @@ const CoachesandActivitiesAdminPage = () => {
       setNewCoachName('');
       setNewCoachPicture(null);
       refreshData();
+      alert("Success!");
     } else {
       alert('Please enter a coach name.');
     }
@@ -74,6 +75,7 @@ const CoachesandActivitiesAdminPage = () => {
       await updateCoach(updateCoachId!, { name: updatedCoachName }, updatedCoachPicture);
       setShowUpdateForm(false);
       refreshData();
+      alert("Success!");
     } else {
       alert('Please provide a valid name for the coach.');
     }
@@ -202,7 +204,7 @@ const CoachesandActivitiesAdminPage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <img src={coach.profile_picture} alt={`Profile of ${coach.name}`} className="w-10 h-10 rounded-full" />
-            <span>{coach.name}</span>
+            <span className='dark:text-black-900'>{coach.name}</span>
           </div>
           <div className="flex">
             <button onClick={() => handleToggleForm(coach.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
@@ -260,7 +262,7 @@ const CoachesandActivitiesAdminPage = () => {
           <div className="grid mt-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {activities.map((activity: Activity) => (
               <div key={activity.id} className="bg-gray-100 rounded-md shadow-md p-4 relative"> {/* Added 'relative' class */}
-                <h3 className="text-lg font-semibold mb-2">{activity.name}</h3>
+                <h3 className="text-lg dark:text-black-900 font-semibold mb-2">{activity.name}</h3>
                 <p className="text-gray-500 mb-2">Credits: {activity.credits}</p>
                 <p className="text-gray-500">Assigned to: {coaches.find(coach => coach.id === activity.coach_id)?.name || 'None'}</p>
                 <div className="bottom-0 mt-5"> {/* Adjusted positioning */}

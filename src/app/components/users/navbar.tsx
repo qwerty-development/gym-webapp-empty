@@ -37,6 +37,8 @@ export default function NavbarComponent() {
     fetchWallet();
   }, [isSignedIn, getToken, userId]);
 
+  
+
   return (
     <Disclosure as="nav" className="bg-black shadow">
       {({ open }) => (
