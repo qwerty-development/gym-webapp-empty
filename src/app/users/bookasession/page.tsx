@@ -149,7 +149,7 @@ export default function Example() {
           {activities.map(activity => (
             <button
               key={activity.id}
-              className={`flex border p-4 rounded-lg ${selectedActivity === activity.id ? 'bg-green-200 dark:bg-green-700' : 'hover:bg-gray-100'
+              className={`flex border p-4 rounded-lg ${selectedActivity === activity.id ? 'bg-green-200 dark:bg-green-700' : 'hover:bg-gray-100 dark:hover:bg-gray-900'
                 }`}
               onClick={() => setSelectedActivity(activity.id)}
             >

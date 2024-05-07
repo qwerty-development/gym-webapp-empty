@@ -113,7 +113,7 @@ export default function Dashboard() {
                                 {/* Map through reservations to display each one */}
                                 {reservations.map((reservation: any) => (
                                     <div key={reservation.id} className="bg-white p-6 rounded-lg shadow-md">
-                                        <h3 className="text-lg  dark:text-black-900 font-semibold mb-2">{reservation.activity.name}</h3>
+                                        <h3 className="text-lg dark:text-black font-semibold mb-2">{reservation.activity.name}</h3>
                                         <p className="text-gray-600">Date: {reservation.date}</p>
                                         <p className="text-gray-600">Time: {reservation.start_time} - {reservation.end_time}</p>
                                         <p className="text-gray-600">Coach: {reservation.coach.name}</p>
