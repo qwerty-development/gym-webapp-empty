@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
+  --foreground-rgb: 35, 38, 35;
   --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
 }
@@ -11,8 +11,8 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 69, 69, 69;
-    --background-end-rgb: 69, 69, 69;
+    --background-start-rgb: 35, 38, 35;
+    --background-end-rgb: 0, 0, 0;
   }
 }
 
@@ -84,3 +84,38 @@ body {
   padding: 10px 20px;
   cursor: pointer;
 }
+
+.rbc-event-label{
+  display:none !important;
+}
+
+.calendar-container {
+  position: relative;
+  overflow: auto;
+  max-height: 300px;  /* Maximum height */
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .calendar-container {
+      max-height: 400px;
+  }
+  .rbc-calendar {
+      min-width: 600px; /* Ensures horizontal scrolling on smaller screens */
+  }
+}
+
+.calendar-container .rbc-header {
+  top: 0;
+  background: white;
+}
+
+.cl-userButton{
+  background-color: #add8e6 !important;
+}
+
+
+
+
+
+

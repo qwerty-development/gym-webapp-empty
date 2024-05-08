@@ -28,6 +28,7 @@ export default function Example() {
   const [highlightDates, setHighlightDates] = useState<Date[]>([]);  // State to hold highlighted dates
   const [loading, setLoading] = useState<boolean>(false);
   const { user } = useUser();
+  
 
   interface activityIcons {
     [key: number]: JSX.Element;

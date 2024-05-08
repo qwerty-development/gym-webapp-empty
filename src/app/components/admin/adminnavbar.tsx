@@ -91,10 +91,9 @@ export default function AdminNavbarComponent() {
                   </a>
                 </div>
               </div>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                {walletBalance !== null && (
-                  <div className="text-white mr-4">{walletBalance} credits</div>
-                )}
+              <div className=" flex items-center">
+                    <img src="/images/logoinverted.png" alt="Logo" className="h-10 mr-5 w-auto" />
+
                 <UserButton afterSignOutUrl='/' />
               </div>
             </div>
