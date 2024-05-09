@@ -35,34 +35,40 @@ const ModifyCreditsComponent = () => {
 
     const handleUpdateCredits = async () => {
         if (selectedUserId !== null && newCredits) {
-          setIsUpdating(true);
-          try {
-            const updatedCredits = parseInt(newCredits, 10); // Ensure newCredits is an integer
-            // Attempt to update user credits
-            const { data, error } = await updateUserCredits(selectedUserId, updatedCredits);
-            if (!error) {
-              // Update the credits in the users state
-              setUsers(prevUsers => {
-                return prevUsers.map(user => {
-                  if (user.id === selectedUserId) {
-                    return { ...user, wallet: updatedCredits };
-                  }
-                  return user;
-                });
-              });
-              alert("User credits updated successfully");
+            setIsUpdating(true);
+            try {
+                const creditChange = parseInt(newCredits, 10); // Parse the input to get the change in credits
+                const currentUser = users.find(user => user.id === selectedUserId); // Find the current user details
+                if (currentUser) {
+                    const updatedCredits = (currentUser.wallet || 0) + creditChange; // Calculate new credits total
+                    // Attempt to update user credits
+                    const { error } = await updateUserCredits(selectedUserId, updatedCredits);
+                    if (!error) {
+                        // Update the credits in the users state
+                        setUsers(prevUsers => prevUsers.map(user => {
+                            if (user.id === selectedUserId) {
+                                return { ...user, wallet: updatedCredits };
+                            }
+                            return user;
+                        }));
+                        alert("User credits updated successfully");
+                    } else {
+                        alert('Failed to update user credits.');
+                    }
+                } else {
+                    alert('User not found.');
+                }
+            } catch (error) {
+                console.error('Update failed:', error);
+                alert('Failed to update user credits.');
+            } finally {
+                setIsUpdating(false);
+                setSelectedUserId(null);
+                setNewCredits('');
             }
-          } catch (error) {
-            console.error('Update failed:', error);
-            alert('Failed to update user credits.');
-          } finally {
-            setIsUpdating(false);
-            setSelectedUserId(null);
-            setNewCredits('');
-          }
         }
-      };
-
+    };
+    
     
 
 
@@ -127,7 +133,7 @@ const ModifyCreditsComponent = () => {
                                             onClick={() => setSelectedUserId(user.id)}
                                             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                         >
-                                            Edit
+                                            + or -
                                         </button>
                                     )}
                                 </td>

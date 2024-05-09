@@ -12,6 +12,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import DirectionsBikeIcon from '@mui/icons-material/DirectionsBike';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import HealingIcon from '@mui/icons-material/Healing';
+import { RotateLoader } from "react-spinners";
 
 
 
@@ -22,13 +23,15 @@ export default function Example() {
   const [selectedCoach, setSelectedCoach] = useState<number | null>(null);
   const [activities, setActivities] = useState<{ id: number; name: string; credits?: number }[]>([]);
   const [coaches, setCoaches] = useState<{
-    profile_picture: string | undefined; id: number; name: string 
-}[]>([]);
+    profile_picture: string | undefined; id: number; name: string
+  }[]>([]);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
-  const [highlightDates, setHighlightDates] = useState<Date[]>([]);  // State to hold highlighted dates
+  const [highlightDates, setHighlightDates] = useState<Date[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [activitiesLoading, setActivitiesLoading] = useState<boolean>(true);
+  const [coachesLoading, setCoachesLoading] = useState<boolean>(false);
   const { user } = useUser();
-  
+
 
   interface activityIcons {
     [key: number]: JSX.Element;
@@ -44,12 +47,14 @@ export default function Example() {
     11: <HealingIcon />
   };
 
-  
+
 
   useEffect(() => {
     const fetchInitialData = async () => {
+      setActivitiesLoading(true); // Set loading to true while fetching
       const activitiesData = await fetchAllActivities();
       setActivities(activitiesData);
+      setActivitiesLoading(false); // Set loading to false after fetching
     };
     fetchInitialData();
   }, []);
@@ -57,6 +62,7 @@ export default function Example() {
   useEffect(() => {
     const fetchCoachesData = async () => {
       if (selectedActivity) {
+        setCoachesLoading(true); // Set loading to true while fetching
         const coachesData = await fetchCoaches(selectedActivity);
         setCoaches(coachesData);
         setSelectedCoach(null); // Reset selectedCoach
@@ -64,6 +70,7 @@ export default function Example() {
         setSelectedTime('');
         setAvailableTimes([]);
         setHighlightDates([]);  // Reset highlight dates when coach changes
+        setCoachesLoading(false); // Set loading to false after fetching
       }
     };
     fetchCoachesData();
@@ -109,7 +116,7 @@ export default function Example() {
         }
       }
     };
-    
+
     fetchDatesAndTimes();
   }, [selectedActivity, selectedCoach, selectedDate]);
 
@@ -145,32 +152,58 @@ export default function Example() {
     <div>
       <NavbarComponent />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold my-4">Book a Session</h1>
-        <div className="grid lg:grid-cols-3 -1 gap-4">
-          {activities.map(activity => (
-            <button
-              key={activity.id}
-              className={`flex border p-4 rounded-lg ${selectedActivity === activity.id ? 'bg-green-200 dark:bg-green-700' : 'hover:bg-gray-100 dark:hover:bg-gray-900'
-                }`}
-              onClick={() => setSelectedActivity(activity.id)}
-            >
-              <span className="items-left justify-start">{activityIcons[activity.id]}</span> {/* Display the corresponding icon */}
-              <span className="mx-auto">{activity.name}</span> {/* Display the activity name */}
-            </button>
-          ))}
-        </div>
+        <h1 className="text-3xl font-bold my-4">Select an activity</h1>
+        {activitiesLoading ? ( // Display loading indicator while fetching activities
+              <div className="flex items-center justify-center">
+              <RotateLoader color={"#367831"} loading={activitiesLoading} size={15} />
+            </div>
+        ) : (
+          <div className="grid lg:grid-cols-3 -1 gap-4">
+            {activities.length === 0 ? ( // Display sad emoji when no activities available
+              <p>No activities available 😞</p>
+            ) : (
+              activities.map(activity => (
+                <button
+                  key={activity.id}
+                  className={`flex border p-4 rounded-lg ${selectedActivity === activity.id ? 'bg-green-200 dark:bg-green-700' : 'hover:bg-gray-100 dark:hover:bg-gray-900'
+                    }`}
+                  onClick={() => setSelectedActivity(activity.id)}
+                >
+                  <span className="items-left justify-start">{activityIcons[activity.id]}</span> {/* Display the corresponding icon */}
+                  <span className="mx-auto">{activity.name}</span> {/* Display the activity name */}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Coaches section with loading indicator and sad emoji */}
         <div className="mt-12">
           <h2 className="text-3xl font-bold mb-4">Select a Coach</h2>
-          <div className="grid lg:grid-cols-3 gap-4">
-            {coaches.map(coach => (
-              <button key={coach.id} className={`border p-4 rounded-lg ${selectedCoach === coach.id ? 'bg-green-200  dark:bg-green-700' : 'hover:bg-gray-100'}`} onClick={() => setSelectedCoach(coach.id)}>
-                <img src={coach.profile_picture} alt={`${coach.name}`} className="w-16 h-16 rounded-full mx-auto mb-2" />
-                {coach.name}
-              </button>
-            ))}
+          {selectedActivity === null ? (
+            <p>Please choose an activity to be able to see the coaches</p>
+          ) : coachesLoading ? (
+            <div className="flex items-center justify-center">
+            <RotateLoader color={"#367831"} loading={coachesLoading} size={15} />
           </div>
-
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-4">
+              {coaches.length === 0 ? (
+                <p>No coaches available for the chosen activity 😞</p>
+              ) : (
+                coaches.map(coach => (
+                  <button key={coach.id} className={`border p-4 rounded-lg ${selectedCoach === coach.id ? 'bg-green-200  dark:bg-green-700' : 'hover:bg-gray-100'}`} onClick={() => setSelectedCoach(coach.id)}>
+                    <img src={coach.profile_picture} alt={`${coach.name}`} className="w-16 h-16 rounded-full mx-auto mb-2" />
+                    {coach.name}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </div>
+
+      </div>
+      <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
         <div className="mt-12 sm:flex">
           <div className="flex-grow">
             <h2 className="text-3xl mb-10 font-bold">Select a Date</h2>

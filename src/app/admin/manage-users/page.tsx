@@ -22,7 +22,7 @@ export default async function AdminDashboard(params: {
     <div>
       <AdminNavbarComponent />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-2xl mt-4 text-center font-bold mb-4">Add Time Slots</h1>
+        <h1 className="text-2xl mt-4 text-center font-bold mb-4">Roles</h1>
         <SearchUsers />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">

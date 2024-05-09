@@ -4,6 +4,7 @@ import NavbarComponent from "@/app/components/users/navbar";
 import { useUser } from "@clerk/nextjs";
 import { fetchReservations, updateUserRecord, cancelReservation, fetchAllActivities } from "../../../../../utils/user-requests";
 import { AddToCalendarButton } from 'add-to-calendar-button-react';
+import { RingLoader } from "react-spinners";
 
 type Reservation = {
     id: number;
@@ -35,7 +36,7 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchData = async () => {
             if (isLoaded && isSignedIn) {
-                setIsLoading(true); 
+                setIsLoading(true);
                 await updateUserRecord({
                     userId: user.id,
                     email: user.emailAddresses[0]?.emailAddress,
@@ -113,10 +114,7 @@ export default function Dashboard() {
                     <main className="bg-gray-100 mt-5 rounded-3xl py-8">
                         {isLoading ? ( // Display loading icon if data is being fetched
                             <div className="flex justify-center items-center">
-                                <svg className="animate-spin h-10 w-10 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A8.004 8.004 0 014.01 7.08L2.59 8.495A9.956 9.956 0 002 12c0 5.523 4.477 10 10 10v-4c-2.096 0-4.04-.81-5.497-2.247z"></path>
-                                </svg>
+                                <RingLoader color={"#367831"} size={100} />
                             </div>
                         ) : (
                             <div className="container mx-auto px-4 lg:px-8">

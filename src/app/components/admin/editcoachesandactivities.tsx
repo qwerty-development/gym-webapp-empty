@@ -12,6 +12,7 @@ import {
   updateCoach
 } from '../../../../utils/admin-requests';
 import AdminNavbarComponent from '@/app/components/admin/adminnavbar';
+import { SyncLoader } from 'react-spinners';
 
 type Coach = {
   id: number;
@@ -30,6 +31,7 @@ type Activity = {
 const CoachesandActivitiesAdminPage = () => {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newCoachName, setNewCoachName] = useState('');
   const [newActivityName, setNewActivityName] = useState('');
   const [newActivityCredits, setNewActivityCredits] = useState('');
@@ -42,13 +44,16 @@ const CoachesandActivitiesAdminPage = () => {
   const [newCoachPicture, setNewCoachPicture] = useState<File | null>(null);
 
 
-  
+
+
   useEffect(() => {
     const loadInitialData = async () => {
+      setLoading(true);
       const loadedCoaches = await fetchCoaches();
       const loadedActivities = await fetchActivities();
       setCoaches(loadedCoaches || []);
       setActivities(loadedActivities || []);
+      setLoading(false);
     };
     loadInitialData();
   }, [updateTrigger]);
@@ -68,7 +73,7 @@ const CoachesandActivitiesAdminPage = () => {
       alert('Please enter a coach name.');
     }
   };
-  
+
 
   const handleSubmitUpdate = async () => {
     if (updatedCoachName.trim() !== '') {
@@ -163,8 +168,8 @@ const CoachesandActivitiesAdminPage = () => {
       }
     }
   };
-  
-  
+
+
 
   const handleToggleForm = (id: React.SetStateAction<number | null>) => {
     if (updateCoachId === id) { // If the form is already open for the same coach, close it
@@ -184,58 +189,63 @@ const CoachesandActivitiesAdminPage = () => {
 
   return (
     <div>
-
-<section className="container mx-auto px-4 sm:px-6 lg:px-8">
-  <h2 className="text-xl mt-5 font-semibold mb-4">Coaches</h2>
-  <div className="flex items-center space-x-2 mb-4">
-    <input
-      type="text"
-      value={newCoachName}
-      onChange={(e) => setNewCoachName(e.target.value)}
-      placeholder="New Coach Name"
-      className="border border-gray-300 px-3 py-2 rounded-md w-64"
-    />
-    <input type="file" onChange={handleFileChange} />
-    <button onClick={handleAddCoach} className="bg-blue-500 text-white px-4 py-2 rounded-md">Add Coach</button>
-  </div>
-  <ul>
-    {coaches.map((coach: Coach) => (
-      <li key={coach.id} className="bg-gray-100 px-4 py-2 mb-2 rounded-md">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img src={coach.profile_picture} alt={`Profile of ${coach.name}`} className="w-10 h-10  rounded-full" />
-            <span className='dark:text-black'>{coach.name}</span>
-          </div>
-          <div className="flex">
-            <button onClick={() => handleToggleForm(coach.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
-            <button onClick={() => handleDeleteCoach(coach.id)} className="bg-red-500 text-white px-3 py-1 rounded-md">Delete</button>
-          </div>
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-xl mt-5 font-semibold mb-4">Coaches</h2>
+        <div className="flex items-center space-x-2 mb-4">
+          <input
+            type="text"
+            value={newCoachName}
+            onChange={(e) => setNewCoachName(e.target.value)}
+            placeholder="New Coach Name"
+            className="border border-gray-300 px-3 py-2 rounded-md w-64"
+          />
+          <input type="file" onChange={handleFileChange} />
+          <button onClick={handleAddCoach} className="bg-blue-500 text-white px-4 py-2 rounded-md">Add Coach</button>
         </div>
-
-        {showUpdateForm && updateCoachId === coach.id && ( // Only show the update form for the selected coach
-          <div className='mx-auto p-4'>
-            <input
-              type="text"
-              value={updatedCoachName}
-              onChange={(e) => setUpdatedCoachName(e.target.value)}
-              placeholder="New Coach Name"
-              className="border border-gray-300 px-3 py-2 rounded-md w-64"
-            />
-            <input type="file" onChange={handleFileChange} />
-            <button onClick={handleSubmitUpdate} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2">Update</button>
+        {loading ? ( // Render loading spinner while coaches data is being fetched
+          <div className="flex justify-center items-center">
+            <SyncLoader color="#367831" size={25} />
           </div>
+        ) : (
+          <ul>
+            {coaches.map((coach: Coach) => (
+              <li key={coach.id} className="bg-gray-100 px-4 py-2 mb-2 rounded-md">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <img src={coach.profile_picture} alt={`Profile of ${coach.name}`} className="w-10 h-10 rounded-full" />
+                    <span className='dark:text-black'>{coach.name}</span>
+                  </div>
+                  <div className="flex">
+                    <button onClick={() => handleToggleForm(coach.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
+                    <button onClick={() => handleDeleteCoach(coach.id)} className="bg-red-500 text-white px-3 py-1 rounded-md">Delete</button>
+                  </div>
+                </div>
+                {showUpdateForm && updateCoachId === coach.id && (
+                  <div className='mx-auto p-4'>
+                    <input
+                      type="text"
+                      value={updatedCoachName}
+                      onChange={(e) => setUpdatedCoachName(e.target.value)}
+                      placeholder="New Coach Name"
+                      className="border border-gray-300 px-3 py-2 rounded-md w-64"
+                    />
+                    <input type="file" onChange={handleFileChange} />
+                    <button onClick={handleSubmitUpdate} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2">Update</button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
-      </li>
-    ))}
-  </ul>
-</section>
+      </section>
+
 
 
 
 
       <section className="container mt-5 mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-xl font-semibold mb-4">Activities</h2>
-        <div className=" items-center space-x-2 mb-4">
+        <div className="items-center space-x-2 mb-4">
           <input
             type="text"
             value={newActivityName}
@@ -258,23 +268,29 @@ const CoachesandActivitiesAdminPage = () => {
           </select>
         </div>
         <button onClick={handleAddActivity} className="bg-blue-500 text-white px-4 py-2 rounded-md">Add Activity</button>
-        <ul>
-          <div className="grid mt-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {activities.map((activity: Activity) => (
-              <div key={activity.id} className="bg-gray-100 rounded-md shadow-md p-4 relative"> {/* Added 'relative' class */}
-                <h3 className="text-lg dark:text-black font-semibold mb-2">{activity.name}</h3>
-                <p className="text-gray-500 mb-2">Credits: {activity.credits}</p>
-                <p className="text-gray-500">Assigned to: {coaches.find(coach => coach.id === activity.coach_id)?.name || 'None'}</p>
-                <div className="bottom-0 mt-5"> {/* Adjusted positioning */}
-                  <button onClick={() => handleUpdateActivity(activity.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
-                  <button onClick={() => handleDeleteActivity(activity.id)} className="bg-red-500 text-white px-3 py-1 rounded-md ml-8">Delete</button>
-                </div>
-              </div>
-            ))}
+        {loading ? ( // Render loading spinner while activities data is being fetched
+          <div className="flex justify-center items-center mt-5">
+            <SyncLoader color="#367831" size={25} />
           </div>
-
-        </ul>
+        ) : (
+          <ul>
+            <div className="grid mt-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {activities.map((activity: Activity) => (
+                <div key={activity.id} className="bg-gray-100 rounded-md shadow-md p-4 relative">
+                  <h3 className="text-lg dark:text-black font-semibold mb-2">{activity.name}</h3>
+                  <p className="text-gray-500 mb-2">Credits: {activity.credits}</p>
+                  <p className="text-gray-500">Assigned to: {coaches.find(coach => coach.id === activity.coach_id)?.name || 'None'}</p>
+                  <div className="bottom-0 mt-5">
+                    <button onClick={() => handleUpdateActivity(activity.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
+                    <button onClick={() => handleDeleteActivity(activity.id)} className="bg-red-500 text-white px-3 py-1 rounded-md ml-8">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ul>
+        )}
       </section>
+
     </div>
   );
 };
