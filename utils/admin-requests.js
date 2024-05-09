@@ -296,21 +296,28 @@ export const deleteTimeSlot = async (timeSlotId) => {
 };
 
 export const updateTimeSlot = async (timeSlot) => {
-  if (!timeSlot.id) throw new Error('Time Slot ID is required for update.');
+  if (!timeSlot.id) {
+      console.error('Time Slot ID is required for update.');
+      return { success: false, error: 'Time Slot ID is required for update.' };
+  }
 
   const supabase = await supabaseClient();
   const { data, error } = await supabase
-    .from('time_slots')
-    .update(timeSlot)
-    .eq('id', timeSlot.id);
+      .from('time_slots')
+      .update({
+          booked: timeSlot.booked,
+          user_id: timeSlot.user_id  // Ensure you update only necessary fields
+      })
+      .eq('id', timeSlot.id);
 
   if (error) {
-    console.error('Error updating time slot:', error.message);
-    return null;
+      console.error('Error updating time slot:', error.message);
+      return { success: false, error: error.message };
   }
 
-  return data ? data[0] : null;
+  return { success: true, data };
 };
+
 
 // In admin-requests.js
 
@@ -352,64 +359,88 @@ export const updateUserCredits = async (userId, wallet) => {
 export const bookTimeSlotForClient = async ({ activityId, coachId, date, startTime, endTime, userId }) => {
   const supabase = await supabaseClient();
 
-  try {
-    // Check if the user exists in the 'users' table
-    const { data: user, error: userError } = await supabase
+  // Fetch activity details to get the credits cost
+  const { data: activityData, error: activityError } = await supabase
+      .from('activities')
+      .select('credits')
+      .eq('id', activityId)
+      .single();
+
+  if (activityError || !activityData) {
+      console.error('Error fetching activity data:', activityError?.message);
+      return { error: 'Failed to fetch activity data: ' + (activityError?.message || 'Activity not found') };
+  }
+
+  // Check if the user has enough credits
+  const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('*')
-      .eq('user_id', userId)  // Ensure the column name is 'user_id' if that is how it's defined
+      .select('wallet')
+      .eq('user_id', userId)
       .single();
 
-    if (userError || !user) {
-      console.error('Error fetching user data:', userError.message);
-      return { error: 'An error occurred while checking user data: ' + userError.message };
-    }
+  if (userError || !userData || userData.wallet < activityData.credits) {
+      return { error: 'Not enough credits or user not found' };
+  }
 
-    // Check if the time slot is already booked
-    const { data: existingSlot, error: existingSlotError } = await supabase
-      .from('time_slots')
-      .select('booked')
-      .match({
-        activity_id: activityId,
-        coach_id: coachId,
-        date: date,
-        start_time: startTime,
-        end_time: endTime
-      })
-      .single();
+  // Deduct credits from user's wallet
+  const newWalletBalance = userData.wallet - activityData.credits;
+  const { error: updateWalletError } = await supabase
+      .from('users')
+      .update({ wallet: newWalletBalance })
+      .eq('user_id', userId);
 
-    if (existingSlotError) {
-      console.error('Error checking time slot availability:', existingSlotError.message);
-      return { error: existingSlotError.message };
-    }
+  if (updateWalletError) {
+      console.error('Error updating user wallet:', updateWalletError.message);
+      return { error: 'Failed to update user wallet: ' + updateWalletError.message };
+  }
 
-    if (existingSlot && existingSlot.booked) {
-      return { error: 'Time slot is already booked.' };
-    }
-
-    // Proceed with booking the time slot
-    const { error: updateError, data: updatedSlot } = await supabase
+  // Proceed with booking the time slot
+  const { error: bookingError, data: bookingData } = await supabase
       .from('time_slots')
       .update({ user_id: userId, booked: true })
       .match({
-        activity_id: activityId,
-        coach_id: coachId,
-        date: date,
-        start_time: startTime,
-        end_time: endTime
+          activity_id: activityId,
+          coach_id: coachId,
+          date: date,
+          start_time: startTime,
+          end_time: endTime
       });
 
-    if (updateError) {
-      console.error('Error booking time slot:', updateError.message);
-      return { error: updateError.message };
-    }
+  if (bookingError) {
+      console.error('Error booking time slot:', bookingError.message);
+      return { error: bookingError.message };
+  }
 
-    return { success: true, message: 'Session booked successfully.', timeSlot: updatedSlot };
-  } catch (error) {
-    console.error('Unhandled error booking time slot:', error.message);
-    return { error: 'An unhandled error occurred while booking the time slot: ' + error.message };
+  return { success: true, message: 'Session booked successfully, credits deducted.', timeSlot: bookingData };
+};
+
+
+export const updateUserCreditsCancellation = async (userId, creditsToAdd) => {
+  const supabase = await supabaseClient();
+  const userResponse = await supabase
+      .from('users')
+      .select('wallet')
+      .eq('user_id', userId)
+      .single();
+
+  if (userResponse.data) {
+      const newWalletBalance = userResponse.data.wallet + creditsToAdd;
+      const { data, error } = await supabase
+          .from('users')
+          .update({ wallet: newWalletBalance })
+          .eq('user_id', userId);
+
+      if (error) {
+          console.error('Error updating user credits:', error.message);
+          return { success: false, error: error.message };
+      }
+      return { success: true, data };
+  } else {
+      console.error('User not found or failed to fetch user data');
+      return { success: false, error: 'User not found' };
   }
 };
+
 
 
 

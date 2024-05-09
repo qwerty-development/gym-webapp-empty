@@ -124,35 +124,31 @@ export default function BookForClient() {
 
     // Handle booking a session
     const handleBookSession = async () => {
-        if (!user) {
-            console.error("User is not signed in");
+        if (!selectedUser || !selectedActivity || !selectedCoach || !selectedDate || !selectedTime) {
+            alert("Please select all booking details");
             return;
         }
-        if (!selectedUser) {
-            console.error("No user selected for booking");
-            return;
-        }
-        console.log(`Booking for user ID: ${selectedUser}`);  // Debug to check which user ID is being passed
-
+    
         setLoading(true);
         const [startTime, endTime] = selectedTime.split(' - ');
-        const { error, message } = await bookTimeSlotForClient({
+        const result = await bookTimeSlotForClient({
             activityId: selectedActivity,
             coachId: selectedCoach,
             date: formatDate(selectedDate),
             startTime,
             endTime,
-            userId: selectedUser,  // Ensure this uses selectedUser from state
+            userId: selectedUser,
         });
         setLoading(false);
-        if (error) {
-            console.error("Booking failed:", error, message);
-            alert("Booking failed: " + error);
+    
+        if (result.error) {
+            alert("Booking failed: " + result.error);
         } else {
-            alert(message);
-            window.location.reload();
+            alert(result.message);
+            window.location.reload(); // Optionally reload/refresh data
         }
     };
+    
 
     // Fetch users based on the search query
     useEffect(() => {

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from "react";
-import { fetchTimeSlots, deleteTimeSlot, updateTimeSlot } from "../../../../utils/admin-requests";
+import { fetchTimeSlots, deleteTimeSlot, updateTimeSlot, updateUserCredits, updateUserCreditsCancellation } from "../../../../utils/admin-requests";
 
 type Activity = {
     name: string;
@@ -49,13 +49,13 @@ export default function ViewReservationsComponent() {
     const [selectedReservations, setSelectedReservations] = useState<number[]>([]);
 
 
-        const fetchData = async () => {
-            const data = await fetchTimeSlots();
-            if (Array.isArray(data)) {
-                setReservations(data);
-                setFilteredReservations(data); // Initialize filtered data
-            }
-        };
+    const fetchData = async () => {
+        const data = await fetchTimeSlots();
+        if (Array.isArray(data)) {
+            setReservations(data);
+            setFilteredReservations(data); // Initialize filtered data
+        }
+    };
     useEffect(() => {
 
 
@@ -151,6 +151,26 @@ export default function ViewReservationsComponent() {
         }
     };
 
+    const cancelBooking = async (reservation: { id?: number; activity: any; coach?: Coach; date?: string; start_time?: string; end_time?: string; user: any; booked?: boolean; }) => {
+        if (window.confirm(`Are you sure you want to cancel the booking for ${reservation.activity?.name}?`)) {
+            const updatedSlot = {
+                ...reservation,
+                user_id: null,  // Removing the user ID
+                booked: false   // Setting booked to false
+            };
+
+            const { success, error } = await updateTimeSlot(updatedSlot);
+            if (success) {
+                console.log('Booking cancelled successfully.');
+                updateUserCreditsCancellation(reservation.user?.user_id, reservation.activity?.credits);
+                fetchData();  // Refresh data
+            } else {
+                console.error('Failed to cancel booking:', error);
+            }
+        }
+    };
+
+
 
 
 
@@ -217,13 +237,13 @@ export default function ViewReservationsComponent() {
                     <table className="table-auto w-full">
                         <thead>
                             <tr className="bg-gray-200 dark:bg-blue-950">
-                                <th className="px-4 py-2">Activity</th>
                                 <th className="px-4 py-2">Select</th>
+                                <th className="px-4 py-2">Cancel</th> {/* Renamed for clarity */}
+                                <th className="px-4 py-2">Activity</th>
                                 <th className="px-4 py-2">Coach Name</th>
                                 <th className="px-4 py-2">Date</th>
                                 <th className="px-4 py-2">Start Time</th>
                                 <th className="px-4 py-2">End Time</th>
-                                <th className="px-4 py-2">User ID</th>
                                 <th className="px-4 py-2">User First Name</th>
                                 <th className="px-4 py-2">User Last Name</th>
                                 <th className="px-4 py-2">Booked</th>
@@ -241,12 +261,25 @@ export default function ViewReservationsComponent() {
                                             checked={selectedReservations.includes(index)}
                                         />
                                     </td>
+                                    <td className="px-4 py-2">
+                                        {reservation.booked ? (
+                                            <button
+                                                onClick={() => cancelBooking(reservation)}
+                                                className="bg-orange-500 hover:bg-orange-700 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center"
+                                            >
+                                                ✖
+                                            </button>
+                                        ) : (
+                                            <div className="bg-gray-300 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center cursor-not-allowed">
+                                                ✖
+                                            </div>
+                                        )}
+                                    </td>
                                     <td className="px-4 py-2">{reservation.activity?.name ?? 'N/A'}</td>
                                     <td className="px-4 py-2">{reservation.coach?.name ?? 'N/A'}</td>
                                     <td className="px-4 py-2">{reservation.date}</td>
                                     <td className="px-4 py-2">{reservation.start_time}</td>
                                     <td className="px-4 py-2">{reservation.end_time}</td>
-                                    <td className="px-4 py-2">{reservation.user?.user_id ?? 'N/A'}</td>
                                     <td className="px-4 py-2">{reservation.user?.first_name ?? 'N/A'}</td>
                                     <td className="px-4 py-2">{reservation.user?.last_name ?? 'N/A'}</td>
                                     <td className="px-4 py-2">{reservation.booked ? 'Yes' : 'No'}</td>
@@ -254,8 +287,8 @@ export default function ViewReservationsComponent() {
                                 </tr>
                             ))}
                         </tbody>
-
                     </table>
+
                 </div>
             </div>
         </section>
