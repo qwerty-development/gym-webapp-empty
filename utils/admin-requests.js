@@ -232,41 +232,39 @@ export const fetchTimeSlots = async () => {
   const { data, error } = await supabase
     .from('time_slots')
     .select(`
-      activities ( name, credits ),
-      coaches ( name ),
-      date,
-      start_time,
-      end_time,
-      users ( user_id, first_name, last_name ),
-      booked
-    `)
-  // Join logic here based on your database relations
+          id,  
+          activities ( name, credits ),
+          coaches ( name ),
+          date,
+          start_time,
+          end_time,
+          users ( user_id, first_name, last_name ),
+          booked
+      `);  // Join logic here based on your database relations
 
   if (error) {
     console.error('Error fetching time slots:', error.message);
     return [];
   }
 
-  // Transform the data here to match the Reservation[] type, handling nulls
-  const transformedData = data.map(slot => {
-    return {
-      activity: slot.activities ? { name: slot.activities.name, credits: slot.activities.credits } : null,
-      coach: slot.coaches ? { name: slot.coaches.name } : null,
-      date: slot.date,
-      start_time: slot.start_time,
-      end_time: slot.end_time,
-      user: slot.users ? {
-        user_id: slot.users.user_id,
-        first_name: slot.users.first_name,
-        last_name: slot.users.last_name
-      } : null,
-      booked: slot.booked
-    };
-  });
+  // Transform the data to ensure it fits the Reservation type
+  const transformedData = data.map(slot => ({
+    id: slot.id,  // Make sure to assign the id to each reservation
+    activity: slot.activities ? { name: slot.activities.name, credits: slot.activities.credits } : null,
+    coach: slot.coaches ? { name: slot.coaches.name } : null,
+    date: slot.date,
+    start_time: slot.start_time,
+    end_time: slot.end_time,
+    user: slot.users ? {
+      user_id: slot.users.user_id,
+      first_name: slot.users.first_name,
+      last_name: slot.users.last_name
+    } : null,
+    booked: slot.booked
+  }));
 
   return transformedData;
 };
-
 // In admin-requests.js
 export const addTimeSlot = async (timeSlot) => {
   const supabase = await supabaseClient();
@@ -352,74 +350,66 @@ export const updateUserCredits = async (userId, wallet) => {
 // admin-requests.js
 
 export const bookTimeSlotForClient = async ({ activityId, coachId, date, startTime, endTime, userId }) => {
-    const supabase = await supabaseClient();
+  const supabase = await supabaseClient();
 
-    try {
-        // Check if the user exists in the 'users' table
-        const { data: user, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('user_id', userId)  // Ensure the column name is 'user_id' if that is how it's defined
-            .single();
+  try {
+    // Check if the user exists in the 'users' table
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('user_id', userId)  // Ensure the column name is 'user_id' if that is how it's defined
+      .single();
 
-        if (userError || !user) {
-            console.error('Error fetching user data:', userError.message);
-            return { error: 'An error occurred while checking user data: ' + userError.message };
-        }
-
-        // Check if the time slot is already booked
-        const { data: existingSlot, error: existingSlotError } = await supabase
-            .from('time_slots')
-            .select('booked')
-            .match({
-                activity_id: activityId,
-                coach_id: coachId,
-                date: date,
-                start_time: startTime,
-                end_time: endTime
-            })
-            .single();
-
-        if (existingSlotError) {
-            console.error('Error checking time slot availability:', existingSlotError.message);
-            return { error: existingSlotError.message };
-        }
-
-        if (existingSlot && existingSlot.booked) {
-            return { error: 'Time slot is already booked.' };
-        }
-
-        // Proceed with booking the time slot
-        const { error: updateError, data: updatedSlot } = await supabase
-            .from('time_slots')
-            .update({ user_id: userId, booked: true })
-            .match({
-                activity_id: activityId,
-                coach_id: coachId,
-                date: date,
-                start_time: startTime,
-                end_time: endTime
-            });
-
-        if (updateError) {
-            console.error('Error booking time slot:', updateError.message);
-            return { error: updateError.message };
-        }
-
-        return { success: true, message: 'Session booked successfully.', timeSlot: updatedSlot };
-    } catch (error) {
-        console.error('Unhandled error booking time slot:', error.message);
-        return { error: 'An unhandled error occurred while booking the time slot: ' + error.message };
+    if (userError || !user) {
+      console.error('Error fetching user data:', userError.message);
+      return { error: 'An error occurred while checking user data: ' + userError.message };
     }
+
+    // Check if the time slot is already booked
+    const { data: existingSlot, error: existingSlotError } = await supabase
+      .from('time_slots')
+      .select('booked')
+      .match({
+        activity_id: activityId,
+        coach_id: coachId,
+        date: date,
+        start_time: startTime,
+        end_time: endTime
+      })
+      .single();
+
+    if (existingSlotError) {
+      console.error('Error checking time slot availability:', existingSlotError.message);
+      return { error: existingSlotError.message };
+    }
+
+    if (existingSlot && existingSlot.booked) {
+      return { error: 'Time slot is already booked.' };
+    }
+
+    // Proceed with booking the time slot
+    const { error: updateError, data: updatedSlot } = await supabase
+      .from('time_slots')
+      .update({ user_id: userId, booked: true })
+      .match({
+        activity_id: activityId,
+        coach_id: coachId,
+        date: date,
+        start_time: startTime,
+        end_time: endTime
+      });
+
+    if (updateError) {
+      console.error('Error booking time slot:', updateError.message);
+      return { error: updateError.message };
+    }
+
+    return { success: true, message: 'Session booked successfully.', timeSlot: updatedSlot };
+  } catch (error) {
+    console.error('Unhandled error booking time slot:', error.message);
+    return { error: 'An unhandled error occurred while booking the time slot: ' + error.message };
+  }
 };
-
-
-
-
-
-
-
-
 
 
 

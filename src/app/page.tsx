@@ -10,7 +10,7 @@ export default function Example() {
   const { isLoaded, isSignedIn, user } = useUser();
 
   return (
-    <div className="bg-[#232623] min-h-screen flex flex-col justify-center items-center">
+    <div className="dark:bg-[#232623] bg-white min-h-screen flex flex-col justify-center items-center">
       <div className="mb-8">
         <img
           src="/images/logo.png"
@@ -21,14 +21,14 @@ export default function Example() {
       {/* Welcome back or Sign in message */}
       <SignedIn>
           <UserButton />
-        <p className="text-white text-center mt-12 font-extrabold text-4xl mb-12">Welcome back {user?.fullName}!</p>
+        <p className="dark:text-white text-center mt-12 font-extrabold text-4xl mb-12">Welcome back {user?.fullName}!</p>
       </SignedIn>
 
 
 
 
       <SignedOut>
-        <p className="text-white text-center font-extrabold text-4xl mb-12">Sign in or create an account</p>
+        <p className="dark:text-white text-[#36783a] text-center font-extrabold text-4xl mb-12">Sign in or create an account</p>
       </SignedOut>
 
       {/* Sign In and Sign Up buttons */}

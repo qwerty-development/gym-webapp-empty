@@ -19,6 +19,7 @@ type User = {
 } | null;
 
 type Reservation = {
+    id: number;
     activity: Activity;
     coach: Coach;
     date: string;
@@ -27,6 +28,8 @@ type Reservation = {
     user: User;
     booked: boolean;
 };
+
+
 
 
 export default function ViewReservationsComponent() {
@@ -43,9 +46,9 @@ export default function ViewReservationsComponent() {
     });
     const [bookedFilter, setBookedFilter] = useState('all'); // 'all', 'booked', 'notBooked'
     const [showFilters, setShowFilters] = useState(false);
+    const [selectedReservations, setSelectedReservations] = useState<number[]>([]);
 
 
-    useEffect(() => {
         const fetchData = async () => {
             const data = await fetchTimeSlots();
             if (Array.isArray(data)) {
@@ -53,6 +56,8 @@ export default function ViewReservationsComponent() {
                 setFilteredReservations(data); // Initialize filtered data
             }
         };
+    useEffect(() => {
+
 
         fetchData();
     }, []);
@@ -114,7 +119,40 @@ export default function ViewReservationsComponent() {
         const adjustedMinutes = adjustedTotalMinutes % 60;
         return `${adjustedHours.toString().padStart(2, '0')}:${adjustedMinutes.toString().padStart(2, '0')}`;
     };
-    
+
+    const handleCheckboxChange = (index: number) => {
+        const currentIndex = selectedReservations.indexOf(index);
+        const newCheckedState = [...selectedReservations];
+
+        if (currentIndex === -1) {
+            newCheckedState.push(index);
+        } else {
+            newCheckedState.splice(currentIndex, 1);
+        }
+
+        setSelectedReservations(newCheckedState);
+    };
+
+    const deleteSelectedReservations = async () => {
+        if (window.confirm('Are you sure you want to delete these sessions}?')) {
+            for (const index of selectedReservations) {
+                const reservation = reservations[index];
+                if (!reservation.booked) {
+                    const success = await deleteTimeSlot(reservation.id);
+                    if (success) {
+                        console.log(`Deleted reservation with ID: ${reservation.id}`);
+                    } else {
+                        console.error(`Failed to delete reservation with ID: ${reservation.id}`);
+                    }
+                }
+            }
+            // Fetch the latest reservations data after deletion
+            fetchData();
+        }
+    };
+
+
+
 
     return (
         <section>
@@ -132,6 +170,10 @@ export default function ViewReservationsComponent() {
                     <div>
                         <input type="text" placeholder="Search..." value={searchTerm} onChange={handleSearchChange} className="border px-2 py-1 rounded" />
                     </div>
+
+                    <button onClick={deleteSelectedReservations} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-1 rounded">
+                        Delete Selected
+                    </button>
                 </div>
 
                 {/* Filters Sidebar */}
@@ -176,6 +218,7 @@ export default function ViewReservationsComponent() {
                         <thead>
                             <tr className="bg-gray-200 dark:bg-blue-950">
                                 <th className="px-4 py-2">Activity</th>
+                                <th className="px-4 py-2">Select</th>
                                 <th className="px-4 py-2">Coach Name</th>
                                 <th className="px-4 py-2">Date</th>
                                 <th className="px-4 py-2">Start Time</th>
@@ -190,6 +233,14 @@ export default function ViewReservationsComponent() {
                         <tbody>
                             {filteredReservations.map((reservation, index) => (
                                 <tr className="text-center" key={index}>
+                                    <td className="px-4 py-2">
+                                        <input
+                                            type="checkbox"
+                                            disabled={reservation.booked}
+                                            onChange={() => handleCheckboxChange(index)}
+                                            checked={selectedReservations.includes(index)}
+                                        />
+                                    </td>
                                     <td className="px-4 py-2">{reservation.activity?.name ?? 'N/A'}</td>
                                     <td className="px-4 py-2">{reservation.coach?.name ?? 'N/A'}</td>
                                     <td className="px-4 py-2">{reservation.date}</td>
