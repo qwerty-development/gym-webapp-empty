@@ -188,21 +188,23 @@ const CoachesandActivitiesAdminPage = () => {
 
 
   return (
-    <div>
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-xl mt-5 font-semibold mb-4">Coaches</h2>
-        <div className="flex items-center space-x-2 mb-4">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold mb-6">Coaches</h2>
+        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-x-4 mb-6">
           <input
             type="text"
             value={newCoachName}
             onChange={(e) => setNewCoachName(e.target.value)}
             placeholder="New Coach Name"
-            className="border border-gray-300 px-3 py-2 rounded-md w-64"
+            className="border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto flex-grow"
           />
-          <input type="file" onChange={handleFileChange} />
-          <button onClick={handleAddCoach} className="bg-blue-500 text-white px-4 py-2 rounded-md">Add Coach</button>
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <input type="file" onChange={handleFileChange} />
+            <button onClick={handleAddCoach} className="bg-blue-500 text-white px-4 py-2 rounded-md ">Add Coach</button>
+          </div>
         </div>
-        {loading ? ( // Render loading spinner while coaches data is being fetched
+        {loading ? (
           <div className="flex justify-center items-center">
             <SyncLoader color="#367831" size={25} />
           </div>
@@ -227,71 +229,72 @@ const CoachesandActivitiesAdminPage = () => {
                       value={updatedCoachName}
                       onChange={(e) => setUpdatedCoachName(e.target.value)}
                       placeholder="New Coach Name"
-                      className="border border-gray-300 px-3 py-2 rounded-md w-64"
+                      className="border border-gray-300 px-3 py-2 mt-4 rounded-md w-64"
                     />
-                    <input type="file" onChange={handleFileChange} />
-                    <button onClick={handleSubmitUpdate} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2">Update</button>
+                    <input className='mt-4' type="file" onChange={handleFileChange} />
+                    <button onClick={handleSubmitUpdate} className="bg-blue-500 text-white items-center px-4 py-2 rounded-md mt-4">Update</button>
                   </div>
                 )}
               </li>
             ))}
           </ul>
+
         )}
       </section>
 
+      <hr className="my-8 border-gray-900 mt-12 mb-12" />
 
-
-
-
-      <section className="container mt-5 mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-xl font-semibold mb-4">Activities</h2>
-        <div className="items-center space-x-2 mb-4">
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold mb-6">Activities</h2>
+        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-x-4 mb-6">
           <input
             type="text"
             value={newActivityName}
             onChange={(e) => setNewActivityName(e.target.value)}
             placeholder="New Activity Name"
-            className="border border-gray-300 px-3 py-2 rounded-md w-64"
+            className="border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto flex-grow"
           />
           <input
             type="number"
             value={newActivityCredits}
             onChange={(e) => setNewActivityCredits(e.target.value)}
             placeholder="Credits"
-            className="border border-gray-300 px-3 py-2 rounded-md w-24"
+            className="border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto"
           />
-          <select value={selectedCoachId || ''} onChange={handleCoachSelection} className="border mt-6 border-gray-300 px-3 py-2 rounded-md">
+          <select
+            value={selectedCoachId || ''}
+            onChange={handleCoachSelection}
+            className="border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto"
+          >
             <option value="">Select Coach</option>
-            {coaches.map((coach: Coach) => (
+            {coaches.map((coach) => (
               <option key={coach.id} value={coach.id}>{coach.name}</option>
             ))}
           </select>
+          <button onClick={handleAddActivity} className="bg-blue-500 text-white px-4 py-2 rounded-md w-full sm:w-auto">Add Activity</button>
         </div>
-        <button onClick={handleAddActivity} className="bg-blue-500 text-white px-4 py-2 rounded-md">Add Activity</button>
-        {loading ? ( // Render loading spinner while activities data is being fetched
+        {loading ? (
           <div className="flex justify-center items-center mt-5">
             <SyncLoader color="#367831" size={25} />
           </div>
         ) : (
-          <ul>
-            <div className="grid mt-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {activities.map((activity: Activity) => (
-                <div key={activity.id} className="bg-gray-100 rounded-md shadow-md p-4 relative">
-                  <h3 className="text-lg dark:text-black font-semibold mb-2">{activity.name}</h3>
-                  <p className="text-gray-500 mb-2">Credits: {activity.credits}</p>
-                  <p className="text-gray-500">Assigned to: {coaches.find(coach => coach.id === activity.coach_id)?.name || 'None'}</p>
-                  <div className="bottom-0 mt-5">
-                    <button onClick={() => handleUpdateActivity(activity.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
-                    <button onClick={() => handleDeleteActivity(activity.id)} className="bg-red-500 text-white px-3 py-1 rounded-md ml-8">Delete</button>
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-12 lg:grid-cols-4 gap-4">
+            {activities.map((activity) => (
+              <div key={activity.id} className="bg-gray-100 rounded-md shadow p-4 relative">
+                <h3 className="text-lg text-black font-semibold mb-2">{activity.name}</h3>
+                <p className="text-gray-500 mb-2">Credits: {activity.credits}</p>
+                <p className="text-gray-500">Assigned to: {coaches.find(coach => coach.id === activity.coach_id)?.name || 'None'}</p>
+                <div className="mt-5">
+                  <button onClick={() => handleUpdateActivity(activity.id)} className="bg-yellow-500 text-white px-3 py-1 rounded-md mr-2">Update</button>
+                  <button onClick={() => handleDeleteActivity(activity.id)} className="bg-red-500 text-white px-3 py-1 rounded-md ml-2">Delete</button>
                 </div>
-              ))}
-            </div>
-          </ul>
+              </div>
+            ))}
+          </div>
         )}
       </section>
-
     </div>
+
   );
 };
 
