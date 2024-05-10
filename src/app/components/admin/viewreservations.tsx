@@ -181,7 +181,7 @@ export default function ViewReservationsComponent() {
                 <div className="flex justify-between items-center">
                     {/* Filter Toggle */}
                     <div>
-                        <button onClick={() => setShowFilters(!showFilters)} className="flex items-center bg-gray-100 hover:bg-gray-200 text-black ml-12 font-bold py-2 px-4 rounded cursor-pointer">
+                        <button onClick={() => setShowFilters(!showFilters)} className="flex items-center bg-gray-100 hover:bg-gray-200 text-black font-bold py-2 px-4 rounded cursor-pointer">
                             🔍 Filters
                         </button>
                     </div>
@@ -191,7 +191,7 @@ export default function ViewReservationsComponent() {
                         <input type="text" placeholder="Search..." value={searchTerm} onChange={handleSearchChange} className="border px-2 py-1 rounded" />
                     </div>
 
-                    <button onClick={deleteSelectedReservations} className="bg-red-500 hover:bg-red-700 mr-12 text-white font-bold py-2 px-2 rounded">
+                    <button onClick={deleteSelectedReservations} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-1 rounded">
                         Delete Selected
                     </button>
                 </div>
