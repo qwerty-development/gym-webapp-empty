@@ -8,6 +8,7 @@ import { DateObject } from 'react-multi-date-picker';
 import DatePanel from 'react-multi-date-picker/plugins/date_panel';
 import Icon from 'react-multi-date-picker/components/icon';
 import Toolbar from 'react-multi-date-picker/plugins/toolbar';
+import toast from 'react-hot-toast';
 
 type OptionType = {
     label: string;
@@ -58,12 +59,13 @@ export default function AddTimeSlotComponent() {
 
             const result = await addTimeSlot(newTimeSlot);
             if (!result.success) {
-                alert(`Error adding new time slot: ${result.error}`);
+
+                toast.error('Error adding new time slot');
                 return;
             }
         }
 
-        alert('New time slots added successfully');
+        toast.success('Time slots added successfully');
     };
 
     return (

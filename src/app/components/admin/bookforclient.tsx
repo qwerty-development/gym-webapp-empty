@@ -14,6 +14,7 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import HealingIcon from '@mui/icons-material/Healing';
 import { selectClasses } from '@mui/material';
 import Select from 'react-select';
+import toast from 'react-hot-toast';
 
 
 export default function BookForClient() {
@@ -128,7 +129,7 @@ export default function BookForClient() {
             alert("Please select all booking details");
             return;
         }
-    
+
         setLoading(true);
         const [startTime, endTime] = selectedTime.split(' - ');
         const result = await bookTimeSlotForClient({
@@ -140,15 +141,15 @@ export default function BookForClient() {
             userId: selectedUser,
         });
         setLoading(false);
-    
+
         if (result.error) {
-            alert("Booking failed: " + result.error);
+          toast.error('Error booking session');
         } else {
-            alert(result.message);
+          toast.success('Session booked successfully');
             window.location.reload(); // Optionally reload/refresh data
         }
     };
-    
+
 
     // Fetch users based on the search query
     useEffect(() => {
