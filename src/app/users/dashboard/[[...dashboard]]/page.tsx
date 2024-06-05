@@ -6,7 +6,8 @@ import {
 	fetchReservations,
 	updateUserRecord,
 	cancelReservation,
-	fetchAllActivities
+	fetchAllActivities,
+	fetchMarket
 } from '../../../../../utils/user-requests'
 import { AddToCalendarButton } from 'add-to-calendar-button-react'
 import { RingLoader } from 'react-spinners'
@@ -26,6 +27,7 @@ type Reservation = {
 		name: string
 		credits: number
 	}
+	additions: string[]
 }
 
 type Activity = {
@@ -40,6 +42,7 @@ export default function Dashboard() {
 	const [activities, setActivities] = useState<Activity[]>([])
 	const [isLoading, setIsLoading] = useState<boolean>(true) // State to track loading status
 	const { refreshWalletBalance } = useWallet()
+	const [market, setMarket] = useState<any[]>([])
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -69,7 +72,8 @@ export default function Dashboard() {
 							activity: {
 								name: reservation.activity.name,
 								credits: reservation.activity.credits
-							}
+							},
+							additions: reservation.additions
 						})
 					)
 
@@ -91,16 +95,17 @@ export default function Dashboard() {
 			const confirmed = await showConfirmationToast(
 				'Are you sure you want to cancel this reservation?'
 			)
-			if (!confirmed) return // Do nothing if user cancels
+			if (!confirmed) return
 
 			const cancelled = await cancelReservation(
 				reservationId,
 				user.id,
 				setReservations
 			)
+
 			if (cancelled) {
-				toast.success('Reservation cancelled successfully!')
 				refreshWalletBalance()
+				toast.success('Reservation cancelled successfully!')
 			} else {
 				toast.error('Failed to cancel reservation!')
 			}
@@ -156,6 +161,9 @@ export default function Dashboard() {
 												</p>
 												<p className='text-gray-600 mb-2'>
 													Cost: {reservation.activity.credits} credits
+												</p>
+												<p className='text-gray-600 mb-2'>
+													Additions: {reservation.additions.join(', ')}
 												</p>
 												<AddToCalendarButton
 													name={

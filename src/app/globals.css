@@ -3,145 +3,164 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 35, 38, 35;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 255, 255, 255;
+	--foreground-rgb: 35, 38, 35;
+	--background-start-rgb: 255, 255, 255;
+	--background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 35, 38, 35;
-    --background-end-rgb: 0, 0, 0;
-  }
+	:root {
+		--foreground-rgb: 255, 255, 255;
+		--background-start-rgb: 35, 38, 35;
+		--background-end-rgb: 0, 0, 0;
+	}
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+	color: rgb(var(--foreground-rgb));
+	background: linear-gradient(
+			to bottom,
+			transparent,
+			rgb(var(--background-end-rgb))
+		)
+		rgb(var(--background-start-rgb));
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+	.text-balance {
+		text-wrap: balance;
+	}
 }
 
 .custom-calendar {
-  border-radius: 15px;
-  border: 1px #0c8af8 solid;
-  padding: 4px 12px;
-  background-color: white;
-  height: 22px;
-  box-shadow: 0 0 2px #0074d9;
+	border-radius: 15px;
+	border: 1px #0c8af8 solid;
+	padding: 4px 12px;
+	background-color: white;
+	height: 22px;
+	box-shadow: 0 0 2px #0074d9;
 }
 
 .custom-calendar:focus {
-  outline: none;
-  border: 1px solid #0c8af8;
-  box-shadow: 0 0 10px 2px #0074d9;
+	outline: none;
+	border: 1px solid #0c8af8;
+	box-shadow: 0 0 10px 2px #0074d9;
 }
 
 .react-datepicker {
-  width: 100% !important; /* Make the datepicker itself take up full width */
+	width: 100% !important; /* Make the datepicker itself take up full width */
 }
 
 .react-datepicker__month-container {
-  width: 100% !important; /* Ensure the month container takes up full width */
+	width: 100% !important; /* Ensure the month container takes up full width */
 }
 
 .react-datepicker__month {
-  width: 100% !important; /* Make the month take up full width */
+	width: 100% !important; /* Make the month take up full width */
 }
 
 .react-datepicker__week {
-  display: flex !important;
+	display: flex !important;
 }
 
 .react-datepicker__day-name {
-  width: 100% !important;
+	width: 100% !important;
 }
 
 .react-datepicker__day-names {
-  display: flex !important;
+	display: flex !important;
 }
 
 .react-datepicker__day {
-  width: 100% !important;
+	width: 100% !important;
 }
 /* Adjust the Add to Calendar button */
 .atcb-button {
-  background-color: #add8e6; /* Light blue */
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
-  cursor: pointer;
+	background-color: #add8e6; /* Light blue */
+	color: white;
+	font-weight: bold;
+	border: none;
+	border-radius: 4px;
+	padding: 10px 20px;
+	cursor: pointer;
 }
 
-.rbc-event-label{
-  display:none !important;
+.rbc-event-label {
+	display: none !important;
 }
 
 .calendar-container {
-  position: relative;
-  overflow: auto;
-  max-height: 300px;  /* Maximum height */
-  width: 100%;
+	position: relative;
+	overflow: auto;
+	max-height: 300px; /* Maximum height */
+	width: 100%;
 }
 
 @media (max-width: 768px) {
-  .calendar-container {
-      max-height: 400px;
-  }
-  .rbc-calendar {
-      min-width: 600px; /* Ensures horizontal scrolling on smaller screens */
-  }
+	.calendar-container {
+		max-height: 400px;
+	}
+	.rbc-calendar {
+		min-width: 600px; /* Ensures horizontal scrolling on smaller screens */
+	}
 }
 
 .calendar-container .rbc-header {
-  top: 0;
-  background: white;
+	top: 0;
+	background: white;
 }
 
-.cl-userButton{
-  background-color: #add8e6 !important;
+.cl-userButton {
+	background-color: #add8e6 !important;
 }
 /* Centering and styling the buttons */
 .addButtonContainer {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px; /* Adjust as needed */
+	display: flex;
+	justify-content: center;
+	margin-top: 20px; /* Adjust as needed */
 }
 
 .addButton {
-  background-color: #4CAF50; /* Green */
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  transition-duration: 0.4s;
-  cursor: pointer;
-  border-radius: 8px;
+	background-color: #4caf50; /* Green */
+	border: none;
+	color: white;
+	padding: 10px 20px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	margin: 4px 2px;
+	transition-duration: 0.4s;
+	cursor: pointer;
+	border-radius: 8px;
 }
 
 .addButton:hover {
-  background-color: #45a049; /* Darker green */
+	background-color: #45a049; /* Darker green */
 }
 
+/* modalStyles.css */
+.modal {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background-color: white;
+	padding: 20px;
+	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+	z-index: 1000;
+	border-radius: 10px;
+	max-width: 90%;
+	max-height: 90%;
+	overflow-y: auto;
+}
 
-
-
-
-
-
+.overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 999;
+}

@@ -1,15 +1,15 @@
 'use client'
-import { Fragment, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import NavbarComponent from '../../components/users/navbar'
 import { useUser } from '@clerk/nextjs'
-import { getWalletBalance } from '../../../../utils/user-requests'
 import { useWallet } from '@/app/components/users/WalletContext'
-
 import {
 	fetchFilteredUnbookedTimeSlots,
 	fetchAllActivities,
 	fetchCoaches,
-	bookTimeSlot
+	bookTimeSlot,
+	fetchMarket,
+	payForItems
 } from '../../../../utils/user-requests'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -22,13 +22,20 @@ import HealingIcon from '@mui/icons-material/Healing'
 import { RotateLoader } from 'react-spinners'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import ReactModal from 'react-modal'
+import Modal from 'react-modal'
+
+// Set the app element for accessibility
 
 export default function Example() {
-	const router = useRouter()
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 	const [selectedTime, setSelectedTime] = useState<string>('')
 	const [selectedActivity, setSelectedActivity] = useState<number | null>(null)
 	const [selectedCoach, setSelectedCoach] = useState<number | null>(null)
+	const [market, setMarket] = useState<any[]>([])
+	const [selectedItems, setSelectedItems] = useState<any[]>([])
+	const [totalPrice, setTotalPrice] = useState<number>(0)
+	const [modalIsOpen, setModalIsOpen] = useState<boolean>(false)
 	const [activities, setActivities] = useState<
 		{ id: number; name: string; credits?: number }[]
 	>([])
@@ -46,6 +53,9 @@ export default function Example() {
 	const [coachesLoading, setCoachesLoading] = useState<boolean>(false)
 	const { user } = useUser()
 	const { refreshWalletBalance } = useWallet()
+	useEffect(() => {
+		Modal.setAppElement('#__next')
+	}, [])
 
 	interface activityIcons {
 		[key: number]: JSX.Element
@@ -66,6 +76,8 @@ export default function Example() {
 			const activitiesData = await fetchAllActivities()
 			setActivities(activitiesData)
 			setActivitiesLoading(false) // Set loading to false after fetching
+			const marketData = await fetchMarket()
+			setMarket(marketData)
 		}
 		fetchInitialData()
 	}, [])
@@ -154,9 +166,40 @@ export default function Example() {
 			console.error('Booking failed:', error)
 			toast.error('Booking failed!') // Display error toast
 		} else {
-			toast.success('Booking successful!') // Display success toast
 			refreshWalletBalance()
-			// router.push('/users/dashboard')
+			toast.success('Booking successful!') // Display success toast
+			setModalIsOpen(true) // Open the modal after successful booking
+		}
+	}
+	const handlePay = async () => {
+		if (!user) {
+			console.error('User is not signed in')
+			return
+		}
+		const response = await payForItems({
+			userId: user.id,
+			activityId: selectedActivity, // This should be the selected activity ID
+			coachId: selectedCoach, // This should be the selected coach ID
+			date: formatDate(selectedDate), // This should be the selected date
+			startTime: selectedTime.split(' - ')[0], // This should be the start time of the selected slot
+			selectedItems
+		})
+
+		if (response.error) {
+			toast.error(response.error) // Display error toast
+		} else {
+			setSelectedItems([])
+			refreshWalletBalance() // Clear selected items after payment
+			setTotalPrice(0) // Reset total price after payment
+			setModalIsOpen(false)
+			setSelectedActivity(null)
+			setSelectedCoach(null)
+			setSelectedDate(null)
+			setSelectedTime('')
+			setAvailableTimes([])
+			setHighlightDates([])
+			toast.success('Items Added Succesfuly') // Display success toast
+			// Close the modal after payment
 		}
 	}
 
@@ -169,8 +212,45 @@ export default function Example() {
 			  ].join('-')
 			: ''
 
+	const handleItemSelect = (item: any) => {
+		const alreadySelected = selectedItems.find(
+			selectedItem => selectedItem.id === item.id
+		)
+		let newSelectedItems
+		if (alreadySelected) {
+			// Remove item from selectedItems
+			newSelectedItems = selectedItems.filter(
+				selectedItem => selectedItem.id !== item.id
+			)
+		} else {
+			// Add item to selectedItems
+			newSelectedItems = [...selectedItems, item]
+		}
+		setSelectedItems(newSelectedItems)
+
+		// Update total price
+		const totalPrice = newSelectedItems.reduce(
+			(total, currentItem) => total + currentItem.price,
+			0
+		)
+		setTotalPrice(totalPrice)
+	}
+
+	const handleCloseModal = () => {
+		setModalIsOpen(false)
+		setSelectedItems([])
+		setTotalPrice(0) // Reset total price after payment
+		setModalIsOpen(false)
+		setSelectedActivity(null)
+		setSelectedCoach(null)
+		setSelectedDate(null)
+		setSelectedTime('')
+		setAvailableTimes([])
+		setHighlightDates([])
+	}
+
 	return (
-		<div>
+		<div id='__next'>
 			<NavbarComponent />
 			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
 				<h1 className='text-3xl font-bold my-4'>Select an activity</h1>
@@ -269,9 +349,7 @@ export default function Example() {
 									<button
 										key={time}
 										className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${
-											selectedTime === time
-												? 'bg-green-200  dark:bg-green-700'
-												: 'hover:bg-gray-100'
+											selectedTime === time ? 'bg-green-200 dark' : 'hover'
 										}`}
 										onClick={() => setSelectedTime(time)}>
 										{time}
@@ -281,7 +359,6 @@ export default function Example() {
 						</div>
 					)}
 				</div>
-
 				{selectedTime && (
 					<div className='mt-12 text-center'>
 						<p className='text-xl font-semibold'>
@@ -299,6 +376,58 @@ export default function Example() {
 					</div>
 				)}
 			</div>
+
+			{/* Modal for Market Items */}
+			<Modal
+				isOpen={modalIsOpen}
+				onRequestClose={() => setModalIsOpen(false)}
+				contentLabel='Market Items'
+				className='modal'
+				overlayClassName='overlay'>
+				<h2 className='text-2xl font-bold mb-4 text-black'>
+					Add to you Session
+				</h2>
+				<div className='grid lg:grid-cols-3 gap-4'>
+					{market.map(item => (
+						<div key={item.id} className='border p-4 rounded-lg'>
+							<div className='flex justify-between items-center text-black'>
+								<span>{item.name}</span>
+								<span>${item.price}</span>
+							</div>
+							<button
+								className={`mt-2 w-full py-2 ${
+									selectedItems.find(
+										selectedItem => selectedItem.id === item.id
+									)
+										? 'bg-red-500 text-white'
+										: 'bg-green-500 text-white'
+								}`}
+								onClick={() => handleItemSelect(item)}>
+								{selectedItems.find(selectedItem => selectedItem.id === item.id)
+									? 'Remove'
+									: 'Add'}
+							</button>
+						</div>
+					))}
+				</div>
+				<div className='mt-4'>
+					<p className='text-xl font-semibold text-black'>
+						Total Price: ${totalPrice}
+					</p>
+					<div>
+						<button
+							className='mt-4 bg-blue-500 text-white py-2 px-4 rounded mx-5'
+							onClick={handlePay}>
+							Pay
+						</button>
+						<button
+							className='mt-4 bg-red-500 text-white py-2 px-4 rounded'
+							onClick={handleCloseModal}>
+							Close
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	)
 }
