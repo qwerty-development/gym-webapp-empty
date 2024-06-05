@@ -5,6 +5,7 @@ import { UserButton } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { getWalletBalance } from '../../../../utils/user-requests'
+import Image from 'next/image'
 
 export default function AdminNavbarComponent() {
 	const [currentPage, setCurrentPage] = useState('')
@@ -119,10 +120,12 @@ export default function AdminNavbarComponent() {
 								</div>
 							</div>
 							<div className=' flex items-center'>
-								<img
+								<Image
 									src='/images/logoinverted.png'
 									alt='Logo'
 									className='h-10 mr-5 w-auto'
+									width={100}
+									height={100}
 								/>
 
 								<UserButton afterSignOutUrl='/' />

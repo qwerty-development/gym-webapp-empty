@@ -7,6 +7,7 @@ import { useAuth } from '@clerk/nextjs'
 import { useUser } from '@clerk/nextjs'
 import { getWalletBalance } from '../../../../utils/user-requests'
 import { useWallet } from './WalletContext'
+import Image from 'next/image'
 export default function NavbarComponent() {
 	const { walletBalance } = useWallet()
 	const [currentPage, setCurrentPage] = useState('')
@@ -38,10 +39,12 @@ export default function NavbarComponent() {
 									{' '}
 									{/* Centering logo horizontally */}
 									<a href='/' className='flex items-center'>
-										<img
+										<Image
 											src='/images/logoinverted.png'
 											alt='Logo'
 											className='h-10 w-auto'
+											width={100}
+											height={100}
 										/>
 									</a>
 								</div>
@@ -51,10 +54,12 @@ export default function NavbarComponent() {
 										{' '}
 										{/* Centering logo horizontally */}
 										<a href='/' className='flex items-center'>
-											<img
+											<Image
 												src='/images/logoinverted.png'
 												alt='Logo'
 												className='h-10 w-auto'
+												width={100}
+												height={100}
 											/>
 										</a>
 									</div>
