@@ -168,7 +168,7 @@ export default function MarketManagement() {
 										</button>
 										<button
 											onClick={() => handleDeleteItem(item.id)}
-											className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-600'>
+											className='bg-red-500 text-white  p-2 rounded-lg hover:bg-red-600'>
 											Delete
 										</button>
 									</div>

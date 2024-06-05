@@ -261,18 +261,20 @@ export default function ViewReservationsComponent() {
                                             checked={selectedReservations.includes(index)}
                                         />
                                     </td>
-                                    <td className="px-4 py-2">
+                                    <td className="px-4 py-3 ">
                                         {reservation.booked ? (
-                                            <button
+                                            <center><button
                                                 onClick={() => cancelBooking(reservation)}
                                                 className="bg-orange-500 hover:bg-orange-700 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center"
                                             >
                                                 ✖
                                             </button>
+                                            </center>
                                         ) : (
-                                            <div className="bg-gray-300 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center cursor-not-allowed">
+                                            <center><div className="bg-gray-300 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center cursor-not-allowed">
                                                 ✖
                                             </div>
+                                            </center>
                                         )}
                                     </td>
                                     <td className="px-4 py-2">{reservation.activity?.name ?? 'N/A'}</td>
