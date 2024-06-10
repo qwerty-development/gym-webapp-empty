@@ -6,8 +6,7 @@ import {
 	deleteMarketItem
 } from '../../../../utils/admin-requests'
 import { fetchMarket } from '../../../../utils/user-requests'
-import NavbarComponent from '@/app/components/users/navbar'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import AdminNavbarComponent from '@/app/components/admin/adminnavbar'
 
 interface MarketItem {
@@ -86,7 +85,6 @@ export default function MarketManagement() {
 					Market Management
 				</h1>
 
-				{/* Add New Item */}
 				<div className=' p-6 rounded-lg shadow-md mb-6'>
 					<h2 className='text-2xl font-bold mb-4'>Add New Item</h2>
 					<div className='flex flex-col space-y-4'>
@@ -113,7 +111,6 @@ export default function MarketManagement() {
 					</div>
 				</div>
 
-				{/* List of Items */}
 				<div className=' p-6 rounded-lg shadow-md'>
 					<h2 className='text-2xl font-bold mb-4'>Items List</h2>
 					{items.map(item => (
@@ -125,14 +122,14 @@ export default function MarketManagement() {
 									<input
 										type='text'
 										className='p-3 border rounded-lg text-black'
-										placeholder='Edit Name'
+										placeholder='Modify Name'
 										value={editName}
 										onChange={e => setEditName(e.target.value)}
 									/>
 									<input
 										type='number'
 										className='p-3 border rounded-lg text-black'
-										placeholder='Edit Price'
+										placeholder='Modify Price'
 										value={editPrice}
 										min={0}
 										onChange={e => setEditPrice(e.target.value)}
@@ -164,7 +161,7 @@ export default function MarketManagement() {
 												setEditPrice(item.price.toString())
 											}}
 											className='bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600'>
-											Edit
+											Modify
 										</button>
 										<button
 											onClick={() => handleDeleteItem(item.id)}
