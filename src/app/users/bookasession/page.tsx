@@ -11,7 +11,8 @@ import {
 	fetchMarket,
 	payForItems,
 	fetchAllActivitiesGroup,
-	fetchFilteredUnbookedTimeSlotsGroup
+	fetchFilteredUnbookedTimeSlotsGroup,
+	bookTimeSlotGroup
 } from '../../../../utils/user-requests'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -41,7 +42,7 @@ export default function Example() {
 	const [activities, setActivities] = useState<
 		{ id: number; name: string; credits?: number }[]
 	>([])
-	const [activitiesgroup, setActivitiesgroup] = useState<
+	const [activitiesGroup, setActivitiesGroup] = useState<
 		{ id: number; name: string; credits?: number; capacity: number }[]
 	>([])
 	const [coaches, setCoaches] = useState<
@@ -52,10 +53,12 @@ export default function Example() {
 		}[]
 	>([])
 	const [availableTimes, setAvailableTimes] = useState<string[]>([])
-	const [groupavailableTimes, setgroupavailabletimes] = useState<string[]>([])
+	const [groupAvailableTimes, setGroupAvailableTimes] = useState<string[]>([])
 	const [highlightDates, setHighlightDates] = useState<Date[]>([])
 	const [loading, setLoading] = useState<boolean>(false)
 	const [activitiesLoading, setActivitiesLoading] = useState<boolean>(true)
+	const [groupActivitiesLoading, setGroupActivitiesLoading] =
+		useState<boolean>(true)
 	const [coachesLoading, setCoachesLoading] = useState<boolean>(false)
 	const [isPrivateTraining, setIsPrivateTraining] = useState<boolean>(true) // State for toggle
 	const { user } = useUser()
@@ -76,15 +79,44 @@ export default function Example() {
 		10: <FitnessCenterIcon />,
 		11: <HealingIcon />
 	}
+	const handleBookGroupSession = async () => {
+		if (!user) {
+			console.error('User is not signed in')
+			return
+		}
+		setLoading(true)
+		const [startTime, endTime] = selectedTime.split(' - ')
+		const { error, data } = await bookTimeSlotGroup({
+			activityId: selectedActivity,
+			coachId: selectedCoach,
+			date: formatDate(selectedDate),
+			startTime,
+			endTime,
+			userId: user.id
+		})
+		setLoading(false)
+		if (error) {
+			console.error('Booking failed:', error)
+			toast.error('Booking failed!') // Display error toast
+		} else {
+			refreshWalletBalance()
+			toast.success('Booking successful!') // Display success toast
+			setModalIsOpen(true) // Open the modal after successful booking
+		}
+	}
 
 	useEffect(() => {
 		const fetchInitialData = async () => {
 			setActivitiesLoading(true) // Set loading to true while fetching
 			const activitiesData = await fetchAllActivities()
 			setActivities(activitiesData)
-			const groupactivitiesdata = await fetchAllActivitiesGroup()
-			setActivitiesgroup(groupactivitiesdata)
 			setActivitiesLoading(false) // Set loading to false after fetching
+
+			setGroupActivitiesLoading(true) // Set loading to true while fetching
+			const groupActivitiesData = await fetchAllActivitiesGroup()
+			setActivitiesGroup(groupActivitiesData)
+			setGroupActivitiesLoading(false) // Set loading to false after fetching
+
 			const marketData = await fetchMarket()
 			setMarket(marketData)
 		}
@@ -101,6 +133,7 @@ export default function Example() {
 				setSelectedDate(null) // Reset selectedDate
 				setSelectedTime('')
 				setAvailableTimes([])
+				setGroupAvailableTimes([])
 				setHighlightDates([]) // Reset highlight dates when coach changes
 				setCoachesLoading(false) // Set loading to false after fetching
 			}
@@ -122,41 +155,78 @@ export default function Example() {
 	useEffect(() => {
 		const fetchDatesAndTimes = async () => {
 			if (selectedActivity && selectedCoach) {
-				const data = await fetchFilteredUnbookedTimeSlots({
-					activityId: selectedActivity,
-					coachId: selectedCoach,
-					date: selectedDate ? formatDate(selectedDate) : undefined
-				})
-				if (data) {
-					if (!selectedDate) {
-						const datesForSelectedCoach = data
-							.filter(slot => slot.coach_id === selectedCoach)
-							.map(slot => new Date(slot.date))
-						setHighlightDates(datesForSelectedCoach)
+				if (isPrivateTraining) {
+					const data = await fetchFilteredUnbookedTimeSlots({
+						activityId: selectedActivity,
+						coachId: selectedCoach,
+						date: selectedDate ? formatDate(selectedDate) : undefined
+					})
+					if (data) {
+						if (!selectedDate) {
+							const datesForSelectedCoach = data
+								.filter(slot => slot.coach_id === selectedCoach)
+								.map(slot => new Date(slot.date))
+							setHighlightDates(datesForSelectedCoach)
+						}
+						if (selectedDate) {
+							const timesForSelectedDate = data
+								.filter(
+									slot =>
+										new Date(slot.date).toDateString() ===
+										selectedDate.toDateString()
+								)
+								.map(slot => {
+									const startTime = slot.start_time.substr(0, 5) // Take the substring to include only hours and minutes
+									const endTime = slot.end_time.substr(0, 5) // Similarly for end time
+									return `${startTime} - ${endTime}`
+								})
+							setAvailableTimes(timesForSelectedDate)
+						}
 					}
-					if (selectedDate) {
-						const timesForSelectedDate = data
-							.filter(
-								slot =>
-									new Date(slot.date).toDateString() ===
-									selectedDate.toDateString()
-							)
-							.map(slot => {
-								const startTime = slot.start_time.substr(0, 5) // Take the substring to include only hours and minutes
-								const endTime = slot.end_time.substr(0, 5) // Similarly for end time
-								return `${startTime} - ${endTime}`
-							})
-						setAvailableTimes(timesForSelectedDate)
+				} else {
+					const data = await fetchFilteredUnbookedTimeSlotsGroup({
+						activityId: selectedActivity,
+						coachId: selectedCoach,
+						date: selectedDate ? formatDate(selectedDate) : undefined
+					})
+					if (data) {
+						if (!selectedDate) {
+							const datesForSelectedCoach = data
+								.filter(slot => slot.coach_id === selectedCoach)
+								.map(slot => new Date(slot.date))
+							setHighlightDates(datesForSelectedCoach)
+						}
+						if (selectedDate) {
+							const timesForSelectedDate = data
+								.filter(
+									slot =>
+										new Date(slot.date).toDateString() ===
+										selectedDate.toDateString()
+								)
+								.map(slot => {
+									const startTime = slot.start_time.substr(0, 5) // Take the substring to include only hours and minutes
+									const endTime = slot.end_time.substr(0, 5) // Similarly for end time
+									return `${startTime} - ${endTime}`
+								})
+							setGroupAvailableTimes(timesForSelectedDate)
+						}
 					}
 				}
 			}
 		}
 
 		fetchDatesAndTimes()
-	}, [selectedActivity, selectedCoach, selectedDate])
-
+	}, [selectedActivity, selectedCoach, selectedDate, isPrivateTraining])
 
 	const handleBookSession = async () => {
+		if (isPrivateTraining) {
+			await handleBookPrivateSession()
+		} else {
+			await handleBookGroupSession()
+		}
+	}
+
+	const handleBookPrivateSession = async () => {
 		if (!user) {
 			console.error('User is not signed in')
 			return
@@ -181,6 +251,7 @@ export default function Example() {
 			setModalIsOpen(true) // Open the modal after successful booking
 		}
 	}
+
 	const handlePay = async () => {
 		if (!user) {
 			console.error('User is not signed in')
@@ -216,10 +287,10 @@ export default function Example() {
 	const formatDate = (date: Date | null): string =>
 		date
 			? [
-				date.getFullYear(),
-				('0' + (date.getMonth() + 1)).slice(-2),
-				('0' + date.getDate()).slice(-2)
-			].join('-')
+					date.getFullYear(),
+					('0' + (date.getMonth() + 1)).slice(-2),
+					('0' + date.getDate()).slice(-2)
+			  ].join('-')
 			: ''
 
 	const handleItemSelect = (item: any) => {
@@ -250,12 +321,12 @@ export default function Example() {
 		setModalIsOpen(false)
 		setSelectedItems([])
 		setTotalPrice(0) // Reset total price after payment
-		setModalIsOpen(false)
 		setSelectedActivity(null)
 		setSelectedCoach(null)
 		setSelectedDate(null)
 		setSelectedTime('')
 		setAvailableTimes([])
+		setGroupAvailableTimes([])
 		setHighlightDates([])
 	}
 
@@ -270,14 +341,16 @@ export default function Example() {
 				<div className='flex justify-center items-center py-4'>
 					<div className='flex items-center'>
 						<button
-							className={`px-4 py-2 mr-2 rounded ${isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
-								}`}
+							className={`px-4 py-2 mr-2 rounded ${
+								isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+							}`}
 							onClick={handleToggle}>
 							Private Training
 						</button>
 						<button
-							className={`px-4 py-2 rounded ${!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
-								}`}
+							className={`px-4 py-2 rounded ${
+								!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+							}`}
 							onClick={handleToggle}>
 							Public Training
 						</button>
@@ -303,10 +376,11 @@ export default function Example() {
 									activities.map(activity => (
 										<button
 											key={activity.id}
-											className={`flex border p-4 rounded-lg ${selectedActivity === activity.id
-												? 'bg-green-200 dark:bg-green-700'
-												: 'hover:bg-gray-100 dark:hover:bg-gray-900'
-												}`}
+											className={`flex border p-4 rounded-lg ${
+												selectedActivity === activity.id
+													? 'bg-green-200 dark:bg-green-700'
+													: 'hover:bg-gray-100 dark:hover:bg-gray-900'
+											}`}
 											onClick={() => setSelectedActivity(activity.id)}>
 											<span className='items-left justify-start'>
 												{activityIcons[activity.id]}
@@ -341,10 +415,11 @@ export default function Example() {
 										coaches.map(coach => (
 											<button
 												key={coach.id}
-												className={`border p-4 rounded-lg ${selectedCoach === coach.id
-													? 'bg-green-200  dark:bg-green-700'
-													: 'hover:bg-gray-100'
-													}`}
+												className={`border p-4 rounded-lg ${
+													selectedCoach === coach.id
+														? 'bg-green-200  dark:bg-green-700'
+														: 'hover:bg-gray-100'
+												}`}
 												onClick={() => setSelectedCoach(coach.id)}>
 												<img
 													src={coach.profile_picture}
@@ -360,29 +435,29 @@ export default function Example() {
 						</div>
 					</>
 				) : (
-
 					<>
 						<h1 className='text-3xl font-bold my-4'>Select an activity</h1>
-						{activitiesLoading ? ( // Display loading indicator while fetching activities
+						{groupActivitiesLoading ? ( // Display loading indicator while fetching activities
 							<div className='flex items-center justify-center'>
 								<RotateLoader
 									color={'#367831'}
-									loading={activitiesLoading}
+									loading={groupActivitiesLoading}
 									size={15}
 								/>
 							</div>
 						) : (
 							<div className='grid lg:grid-cols-3 -1 gap-4'>
-								{activitiesgroup.length === 0 ? ( // Display sad emoji when no activities available
+								{activitiesGroup.length === 0 ? ( // Display sad emoji when no activities available
 									<p>No activities available 😞</p>
 								) : (
-									activitiesgroup.map(activity => (
+									activitiesGroup.map(activity => (
 										<button
 											key={activity.id}
-											className={`flex border p-4 rounded-lg ${selectedActivity === activity.id
-												? 'bg-green-200 dark:bg-green-700'
-												: 'hover:bg-gray-100 dark:hover:bg-gray-900'
-												}`}
+											className={`flex border p-4 rounded-lg ${
+												selectedActivity === activity.id
+													? 'bg-green-200 dark:bg-green-700'
+													: 'hover:bg-gray-100 dark:hover:bg-gray-900'
+											}`}
 											onClick={() => setSelectedActivity(activity.id)}>
 											<span className='items-left justify-start'>
 												{activityIcons[activity.id]}
@@ -417,10 +492,11 @@ export default function Example() {
 										coaches.map(coach => (
 											<button
 												key={coach.id}
-												className={`border p-4 rounded-lg ${selectedCoach === coach.id
-													? 'bg-green-200  dark:bg-green-700'
-													: 'hover:bg-gray-100'
-													}`}
+												className={`border p-4 rounded-lg ${
+													selectedCoach === coach.id
+														? 'bg-green-200  dark:bg-green-700'
+														: 'hover:bg-gray-100'
+												}`}
 												onClick={() => setSelectedCoach(coach.id)}>
 												<img
 													src={coach.profile_picture}
@@ -451,42 +527,27 @@ export default function Example() {
 									<div className='lg:ml-4 w-full md:w-1/3'>
 										<h2 className='text-3xl font-bold mb-4'>Available Times</h2>
 										<div className='flex flex-col'>
-											{availableTimes.map(time => (
+											{groupAvailableTimes.map(time => (
 												<button
 													key={time}
-													className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${selectedTime === time ? 'bg-green-200 dark' : 'hover'
-														}`}
+													className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${
+														selectedTime === time
+															? 'bg-green-200 dark'
+															: 'hover'
+													}`}
 													onClick={() => setSelectedTime(time)}>
 													{time}
 												</button>
 											))}
 										</div>
 									</div>
-
 								)}
-
 							</div>
 							{selectedTime && (
 								<div className='mt-12 text-center'>
 									<p className='text-xl font-semibold'>
-										Booking {activities.find(a => a.id === selectedActivity)?.name}{' '}
-										with {coaches.find(c => c.id === selectedCoach)?.name} on{' '}
-										{selectedDate?.toLocaleDateString()} at {selectedTime}.
-									</p>
-									<button
-										type='button'
-										onClick={handleBookSession}
-										disabled={loading}
-										className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
-										{loading ? 'Processing...' : 'Confirm Booking'}
-									</button>
-								</div>
-							)}
-
-							{selectedTime && isPrivateTraining && (
-								<div className='mt-12 text-center'>
-									<p className='text-xl font-semibold'>
-										Booking {activities.find(a => a.id === selectedActivity)?.name}{' '}
+										Booking{' '}
+										{activitiesGroup.find(a => a.id === selectedActivity)?.name}{' '}
 										with {coaches.find(c => c.id === selectedCoach)?.name} on{' '}
 										{selectedDate?.toLocaleDateString()} at {selectedTime}.
 									</p>
@@ -503,11 +564,6 @@ export default function Example() {
 					</>
 				)}
 			</div>
-
-
-
-
-
 
 			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
 				{isPrivateTraining && (
@@ -530,8 +586,9 @@ export default function Example() {
 									{availableTimes.map(time => (
 										<button
 											key={time}
-											className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${selectedTime === time ? 'bg-green-200 dark' : 'hover'
-												}`}
+											className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${
+												selectedTime === time ? 'bg-green-200 dark' : 'hover'
+											}`}
 											onClick={() => setSelectedTime(time)}>
 											{time}
 										</button>
@@ -577,12 +634,13 @@ export default function Example() {
 								<span>${item.price}</span>
 							</div>
 							<button
-								className={`mt-2 w-full py-2 ${selectedItems.find(
-									selectedItem => selectedItem.id === item.id
-								)
-									? 'bg-red-500 text-white'
-									: 'bg-green-500 text-white'
-									}`}
+								className={`mt-2 w-full py-2 ${
+									selectedItems.find(
+										selectedItem => selectedItem.id === item.id
+									)
+										? 'bg-red-500 text-white'
+										: 'bg-green-500 text-white'
+								}`}
 								onClick={() => handleItemSelect(item)}>
 								{selectedItems.find(selectedItem => selectedItem.id === item.id)
 									? 'Remove'
