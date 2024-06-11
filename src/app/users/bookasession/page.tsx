@@ -9,7 +9,9 @@ import {
 	fetchCoaches,
 	bookTimeSlot,
 	fetchMarket,
-	payForItems
+	payForItems,
+	fetchAllActivitiesGroup,
+	fetchFilteredUnbookedTimeSlotsGroup
 } from '../../../../utils/user-requests'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -39,6 +41,9 @@ export default function Example() {
 	const [activities, setActivities] = useState<
 		{ id: number; name: string; credits?: number }[]
 	>([])
+	const [activitiesgroup, setActivitiesgroup] = useState<
+		{ id: number; name: string; credits?: number; capacity: number }[]
+	>([])
 	const [coaches, setCoaches] = useState<
 		{
 			profile_picture: string | undefined
@@ -47,10 +52,12 @@ export default function Example() {
 		}[]
 	>([])
 	const [availableTimes, setAvailableTimes] = useState<string[]>([])
+	const [groupavailableTimes, setgroupavailabletimes] = useState<string[]>([])
 	const [highlightDates, setHighlightDates] = useState<Date[]>([])
 	const [loading, setLoading] = useState<boolean>(false)
 	const [activitiesLoading, setActivitiesLoading] = useState<boolean>(true)
 	const [coachesLoading, setCoachesLoading] = useState<boolean>(false)
+	const [isPrivateTraining, setIsPrivateTraining] = useState<boolean>(true) // State for toggle
 	const { user } = useUser()
 	const { refreshWalletBalance } = useWallet()
 	useEffect(() => {
@@ -75,6 +82,8 @@ export default function Example() {
 			setActivitiesLoading(true) // Set loading to true while fetching
 			const activitiesData = await fetchAllActivities()
 			setActivities(activitiesData)
+			const groupactivitiesdata = await fetchAllActivitiesGroup()
+			setActivitiesgroup(groupactivitiesdata)
 			setActivitiesLoading(false) // Set loading to false after fetching
 			const marketData = await fetchMarket()
 			setMarket(marketData)
@@ -146,6 +155,7 @@ export default function Example() {
 		fetchDatesAndTimes()
 	}, [selectedActivity, selectedCoach, selectedDate])
 
+
 	const handleBookSession = async () => {
 		if (!user) {
 			console.error('User is not signed in')
@@ -198,7 +208,7 @@ export default function Example() {
 			setSelectedTime('')
 			setAvailableTimes([])
 			setHighlightDates([])
-			toast.success('Items Added Succesfuly') // Display success toast
+			toast.success('Items Added Successfully') // Display success toast
 			// Close the modal after payment
 		}
 	}
@@ -206,10 +216,10 @@ export default function Example() {
 	const formatDate = (date: Date | null): string =>
 		date
 			? [
-					date.getFullYear(),
-					('0' + (date.getMonth() + 1)).slice(-2),
-					('0' + date.getDate()).slice(-2)
-			  ].join('-')
+				date.getFullYear(),
+				('0' + (date.getMonth() + 1)).slice(-2),
+				('0' + date.getDate()).slice(-2)
+			].join('-')
 			: ''
 
 	const handleItemSelect = (item: any) => {
@@ -249,117 +259,289 @@ export default function Example() {
 		setHighlightDates([])
 	}
 
+	const handleToggle = () => {
+		setIsPrivateTraining(!isPrivateTraining)
+	}
+
 	return (
 		<div id='__next'>
 			<NavbarComponent />
 			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-				<h1 className='text-3xl font-bold my-4'>Select an activity</h1>
-				{activitiesLoading ? ( // Display loading indicator while fetching activities
-					<div className='flex items-center justify-center'>
-						<RotateLoader
-							color={'#367831'}
-							loading={activitiesLoading}
-							size={15}
-						/>
+				<div className='flex justify-center items-center py-4'>
+					<div className='flex items-center'>
+						<button
+							className={`px-4 py-2 mr-2 rounded ${isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+								}`}
+							onClick={handleToggle}>
+							Private Training
+						</button>
+						<button
+							className={`px-4 py-2 rounded ${!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+								}`}
+							onClick={handleToggle}>
+							Public Training
+						</button>
 					</div>
-				) : (
-					<div className='grid lg:grid-cols-3 -1 gap-4'>
-						{activities.length === 0 ? ( // Display sad emoji when no activities available
-							<p>No activities available 😞</p>
+				</div>
+				{isPrivateTraining ? (
+					// Private training content
+					<>
+						<h1 className='text-3xl font-bold my-4'>Select an activity</h1>
+						{activitiesLoading ? ( // Display loading indicator while fetching activities
+							<div className='flex items-center justify-center'>
+								<RotateLoader
+									color={'#367831'}
+									loading={activitiesLoading}
+									size={15}
+								/>
+							</div>
 						) : (
-							activities.map(activity => (
-								<button
-									key={activity.id}
-									className={`flex border p-4 rounded-lg ${
-										selectedActivity === activity.id
-											? 'bg-green-200 dark:bg-green-700'
-											: 'hover:bg-gray-100 dark:hover:bg-gray-900'
-									}`}
-									onClick={() => setSelectedActivity(activity.id)}>
-									<span className='items-left justify-start'>
-										{activityIcons[activity.id]}
-									</span>{' '}
-									{/* Display the corresponding icon */}
-									<span className='mx-auto'>{activity.name}</span>{' '}
-									{/* Display the activity name */}
-								</button>
-							))
+							<div className='grid lg:grid-cols-3 -1 gap-4'>
+								{activities.length === 0 ? ( // Display sad emoji when no activities available
+									<p>No activities available 😞</p>
+								) : (
+									activities.map(activity => (
+										<button
+											key={activity.id}
+											className={`flex border p-4 rounded-lg ${selectedActivity === activity.id
+												? 'bg-green-200 dark:bg-green-700'
+												: 'hover:bg-gray-100 dark:hover:bg-gray-900'
+												}`}
+											onClick={() => setSelectedActivity(activity.id)}>
+											<span className='items-left justify-start'>
+												{activityIcons[activity.id]}
+											</span>{' '}
+											{/* Display the corresponding icon */}
+											<span className='mx-auto'>{activity.name}</span>{' '}
+											{/* Display the activity name */}
+										</button>
+									))
+								)}
+							</div>
+						)}
+
+						{/* Coaches section with loading indicator and sad emoji */}
+						<div className='mt-12'>
+							<h2 className='text-3xl font-bold mb-4'>Select a Coach</h2>
+							{selectedActivity === null ? (
+								<p>Please choose an activity to be able to see the coaches</p>
+							) : coachesLoading ? (
+								<div className='flex items-center justify-center'>
+									<RotateLoader
+										color={'#367831'}
+										loading={coachesLoading}
+										size={15}
+									/>
+								</div>
+							) : (
+								<div className='grid lg:grid-cols-3 gap-4'>
+									{coaches.length === 0 ? (
+										<p>No coaches available for the chosen activity 😞</p>
+									) : (
+										coaches.map(coach => (
+											<button
+												key={coach.id}
+												className={`border p-4 rounded-lg ${selectedCoach === coach.id
+													? 'bg-green-200  dark:bg-green-700'
+													: 'hover:bg-gray-100'
+													}`}
+												onClick={() => setSelectedCoach(coach.id)}>
+												<img
+													src={coach.profile_picture}
+													alt={`${coach.name}`}
+													className='w-16 h-16 rounded-full mx-auto mb-2'
+												/>
+												{coach.name}
+											</button>
+										))
+									)}
+								</div>
+							)}
+						</div>
+					</>
+				) : (
+
+					<>
+						<h1 className='text-3xl font-bold my-4'>Select an activity</h1>
+						{activitiesLoading ? ( // Display loading indicator while fetching activities
+							<div className='flex items-center justify-center'>
+								<RotateLoader
+									color={'#367831'}
+									loading={activitiesLoading}
+									size={15}
+								/>
+							</div>
+						) : (
+							<div className='grid lg:grid-cols-3 -1 gap-4'>
+								{activitiesgroup.length === 0 ? ( // Display sad emoji when no activities available
+									<p>No activities available 😞</p>
+								) : (
+									activitiesgroup.map(activity => (
+										<button
+											key={activity.id}
+											className={`flex border p-4 rounded-lg ${selectedActivity === activity.id
+												? 'bg-green-200 dark:bg-green-700'
+												: 'hover:bg-gray-100 dark:hover:bg-gray-900'
+												}`}
+											onClick={() => setSelectedActivity(activity.id)}>
+											<span className='items-left justify-start'>
+												{activityIcons[activity.id]}
+											</span>{' '}
+											{/* Display the corresponding icon */}
+											<span className='mx-auto'>{activity.name}</span>{' '}
+											{/* Display the activity name */}
+										</button>
+									))
+								)}
+							</div>
+						)}
+
+						{/* Coaches section with loading indicator and sad emoji */}
+						<div className='mt-12'>
+							<h2 className='text-3xl font-bold mb-4'>Select a Coach</h2>
+							{selectedActivity === null ? (
+								<p>Please choose an activity to be able to see the coaches</p>
+							) : coachesLoading ? (
+								<div className='flex items-center justify-center'>
+									<RotateLoader
+										color={'#367831'}
+										loading={coachesLoading}
+										size={15}
+									/>
+								</div>
+							) : (
+								<div className='grid lg:grid-cols-3 gap-4'>
+									{coaches.length === 0 ? (
+										<p>No coaches available for the chosen activity 😞</p>
+									) : (
+										coaches.map(coach => (
+											<button
+												key={coach.id}
+												className={`border p-4 rounded-lg ${selectedCoach === coach.id
+													? 'bg-green-200  dark:bg-green-700'
+													: 'hover:bg-gray-100'
+													}`}
+												onClick={() => setSelectedCoach(coach.id)}>
+												<img
+													src={coach.profile_picture}
+													alt={`${coach.name}`}
+													className='w-16 h-16 rounded-full mx-auto mb-2'
+												/>
+												{coach.name}
+											</button>
+										))
+									)}
+								</div>
+							)}
+						</div>
+						<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+							<div className='mt-12 sm:flex'>
+								<div className='flex-grow'>
+									<h2 className='text-3xl mb-10 font-bold'>Select a Date</h2>
+									<DatePicker
+										selected={selectedDate}
+										onChange={setSelectedDate}
+										inline
+										calendarClassName='react-datepicker-popper'
+										minDate={new Date()}
+										highlightDates={highlightDates}
+									/>
+								</div>
+								{selectedDate && (
+									<div className='lg:ml-4 w-full md:w-1/3'>
+										<h2 className='text-3xl font-bold mb-4'>Available Times</h2>
+										<div className='flex flex-col'>
+											{availableTimes.map(time => (
+												<button
+													key={time}
+													className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${selectedTime === time ? 'bg-green-200 dark' : 'hover'
+														}`}
+													onClick={() => setSelectedTime(time)}>
+													{time}
+												</button>
+											))}
+										</div>
+									</div>
+
+								)}
+
+							</div>
+							{selectedTime && (
+								<div className='mt-12 text-center'>
+									<p className='text-xl font-semibold'>
+										Booking {activities.find(a => a.id === selectedActivity)?.name}{' '}
+										with {coaches.find(c => c.id === selectedCoach)?.name} on{' '}
+										{selectedDate?.toLocaleDateString()} at {selectedTime}.
+									</p>
+									<button
+										type='button'
+										onClick={handleBookSession}
+										disabled={loading}
+										className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
+										{loading ? 'Processing...' : 'Confirm Booking'}
+									</button>
+								</div>
+							)}
+
+							{selectedTime && isPrivateTraining && (
+								<div className='mt-12 text-center'>
+									<p className='text-xl font-semibold'>
+										Booking {activities.find(a => a.id === selectedActivity)?.name}{' '}
+										with {coaches.find(c => c.id === selectedCoach)?.name} on{' '}
+										{selectedDate?.toLocaleDateString()} at {selectedTime}.
+									</p>
+									<button
+										type='button'
+										onClick={handleBookSession}
+										disabled={loading}
+										className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
+										{loading ? 'Processing...' : 'Confirm Booking'}
+									</button>
+								</div>
+							)}
+						</div>
+					</>
+				)}
+			</div>
+
+
+
+
+
+
+			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+				{isPrivateTraining && (
+					<div className='mt-12 sm:flex'>
+						<div className='flex-grow'>
+							<h2 className='text-3xl mb-10 font-bold'>Select a Date</h2>
+							<DatePicker
+								selected={selectedDate}
+								onChange={setSelectedDate}
+								inline
+								calendarClassName='react-datepicker-popper'
+								minDate={new Date()}
+								highlightDates={highlightDates}
+							/>
+						</div>
+						{selectedDate && (
+							<div className='lg:ml-4 w-full md:w-1/3'>
+								<h2 className='text-3xl font-bold mb-4'>Available Times</h2>
+								<div className='flex flex-col'>
+									{availableTimes.map(time => (
+										<button
+											key={time}
+											className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${selectedTime === time ? 'bg-green-200 dark' : 'hover'
+												}`}
+											onClick={() => setSelectedTime(time)}>
+											{time}
+										</button>
+									))}
+								</div>
+							</div>
 						)}
 					</div>
 				)}
-
-				{/* Coaches section with loading indicator and sad emoji */}
-				<div className='mt-12'>
-					<h2 className='text-3xl font-bold mb-4'>Select a Coach</h2>
-					{selectedActivity === null ? (
-						<p>Please choose an activity to be able to see the coaches</p>
-					) : coachesLoading ? (
-						<div className='flex items-center justify-center'>
-							<RotateLoader
-								color={'#367831'}
-								loading={coachesLoading}
-								size={15}
-							/>
-						</div>
-					) : (
-						<div className='grid lg:grid-cols-3 gap-4'>
-							{coaches.length === 0 ? (
-								<p>No coaches available for the chosen activity 😞</p>
-							) : (
-								coaches.map(coach => (
-									<button
-										key={coach.id}
-										className={`border p-4 rounded-lg ${
-											selectedCoach === coach.id
-												? 'bg-green-200  dark:bg-green-700'
-												: 'hover:bg-gray-100'
-										}`}
-										onClick={() => setSelectedCoach(coach.id)}>
-										<img
-											src={coach.profile_picture}
-											alt={`${coach.name}`}
-											className='w-16 h-16 rounded-full mx-auto mb-2'
-										/>
-										{coach.name}
-									</button>
-								))
-							)}
-						</div>
-					)}
-				</div>
-			</div>
-			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-				<div className='mt-12 sm:flex'>
-					<div className='flex-grow'>
-						<h2 className='text-3xl mb-10 font-bold'>Select a Date</h2>
-						<DatePicker
-							selected={selectedDate}
-							onChange={setSelectedDate}
-							inline
-							calendarClassName='react-datepicker-popper'
-							minDate={new Date()}
-							highlightDates={highlightDates}
-						/>
-					</div>
-					{selectedDate && (
-						<div className='lg:ml-4 w-full md:w-1/3'>
-							<h2 className='text-3xl font-bold mb-4'>Available Times</h2>
-							<div className='flex flex-col'>
-								{availableTimes.map(time => (
-									<button
-										key={time}
-										className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${
-											selectedTime === time ? 'bg-green-200 dark' : 'hover'
-										}`}
-										onClick={() => setSelectedTime(time)}>
-										{time}
-									</button>
-								))}
-							</div>
-						</div>
-					)}
-				</div>
-				{selectedTime && (
+				{selectedTime && isPrivateTraining && (
 					<div className='mt-12 text-center'>
 						<p className='text-xl font-semibold'>
 							Booking {activities.find(a => a.id === selectedActivity)?.name}{' '}
@@ -385,7 +567,7 @@ export default function Example() {
 				className='modal'
 				overlayClassName='overlay'>
 				<h2 className='text-2xl font-bold mb-4 text-black'>
-					Add to you Session
+					Add to your Session
 				</h2>
 				<div className='grid lg:grid-cols-3 gap-4'>
 					{market.map(item => (
@@ -395,13 +577,12 @@ export default function Example() {
 								<span>${item.price}</span>
 							</div>
 							<button
-								className={`mt-2 w-full py-2 ${
-									selectedItems.find(
-										selectedItem => selectedItem.id === item.id
-									)
-										? 'bg-red-500 text-white'
-										: 'bg-green-500 text-white'
-								}`}
+								className={`mt-2 w-full py-2 ${selectedItems.find(
+									selectedItem => selectedItem.id === item.id
+								)
+									? 'bg-red-500 text-white'
+									: 'bg-green-500 text-white'
+									}`}
 								onClick={() => handleItemSelect(item)}>
 								{selectedItems.find(selectedItem => selectedItem.id === item.id)
 									? 'Remove'
