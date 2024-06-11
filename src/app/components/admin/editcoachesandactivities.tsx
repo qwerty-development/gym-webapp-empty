@@ -9,11 +9,12 @@ import {
 	fetchCoaches,
 	fetchActivities,
 	updateActivity,
-	updateCoach
+	updateCoach,
+	fetchGroupActivities
 } from '../../../../utils/admin-requests'
 import AdminNavbarComponent from '@/app/components/admin/adminnavbar'
 import { SyncLoader } from 'react-spinners'
-import toast from 'react-hot-toast'
+import toast, { LoaderIcon } from 'react-hot-toast'
 
 type Coach = {
 	id: number
@@ -26,15 +27,28 @@ type Activity = {
 	name: string
 	credits: number
 	coach_id: number
+	capacity: number
+	group: boolean
+}
+
+type GroupActivity = {
+	id: number
+	name: string
+	credits: number
+	coach_id: number
+	capacity: number
+	group: boolean
 }
 
 const CoachesandActivitiesAdminPage = () => {
 	const [coaches, setCoaches] = useState<Coach[]>([])
 	const [activities, setActivities] = useState<Activity[]>([])
+	const [groupactivities, setGroupActivities] = useState<Activity[]>([])
 	const [loading, setLoading] = useState(true)
 	const [newCoachName, setNewCoachName] = useState('')
 	const [newActivityName, setNewActivityName] = useState('')
 	const [newActivityCredits, setNewActivityCredits] = useState('')
+	const [newActvityCapacity, setNewActivityCapacity] = useState('')
 	const [selectedCoachId, setSelectedCoachId] = useState<number | null>(null)
 	const [updateTrigger, setUpdateTrigger] = useState(false)
 	const [showUpdateForm, setShowUpdateForm] = useState(false) // State for showing the update form
@@ -44,14 +58,17 @@ const CoachesandActivitiesAdminPage = () => {
 		null
 	) // State for updated coach picture
 	const [newCoachPicture, setNewCoachPicture] = useState<File | null>(null)
+	const [isPrivateTraining, setIsPrivateTraining] = useState<boolean>(true) // State for toggle under activities
 
 	useEffect(() => {
 		const loadInitialData = async () => {
 			setLoading(true)
 			const loadedCoaches = await fetchCoaches()
 			const loadedActivities = await fetchActivities()
+			const loadedGroupActivities = await fetchGroupActivities()
 			setCoaches(loadedCoaches || [])
 			setActivities(loadedActivities || [])
+			setGroupActivities(loadedGroupActivities || [])
 			setLoading(false)
 		}
 		loadInitialData()
@@ -99,11 +116,13 @@ const CoachesandActivitiesAdminPage = () => {
 		const activity = await addActivity({
 			name: newActivityName,
 			credits: parseInt(newActivityCredits, 10),
-			coach_id: selectedCoachId || 0
+			coach_id: selectedCoachId || 0,
+			capacity: newActvityCapacity || null
 		})
 		if (activity) setActivities([...activities, activity])
 		setNewActivityName('')
 		setNewActivityCredits('')
+		setNewActivityCapacity('')
 		fetchActivities().then(setActivities)
 	}
 
@@ -123,38 +142,58 @@ const CoachesandActivitiesAdminPage = () => {
 	}
 
 	const handleUpdateActivity = async (activityId: number) => {
-		const newName = prompt('Enter new name for activity:')
-		const creditsInput = prompt('Enter new credits for activity:')
-		if (creditsInput !== null) {
+		const newName = prompt('Enter new name for activity (leave empty to skip):')
+		const creditsInput = prompt('Enter new credits for activity (leave empty to skip):')
+		const capacityInput = prompt('Enter new capacity (leave empty to skip):')
+
+		const updatedActivity = { id: activityId } as any
+
+		if (newName !== null && newName.trim() !== '') {
+			updatedActivity.name = newName
+		}
+
+		if (creditsInput !== null && creditsInput.trim() !== '') {
 			const newCredits = parseInt(creditsInput, 10)
 			if (!isNaN(newCredits)) {
-				try {
-					// Construct the activity object to update
-					const updatedActivity = {
-						id: activityId,
-						name: newName, // Assuming you want to update the name
-						credits: newCredits // Assuming you have a credits field to update
-					}
-
-					// Call the update function
-					const result = await updateActivity(updatedActivity)
-					fetchActivities().then(setActivities)
-					if (result) {
-						console.log('Activity updated successfully:', result)
-						fetchActivities().then(setActivities)
-					} else {
-						console.error()
-					}
-				} catch (error) {
-					console.error('Error updating activity:,', error)
-				}
+				updatedActivity.credits = newCredits
 			} else {
 				console.error('Invalid credits input.')
+				return
 			}
-		} else {
-			console.error('User cancelled the operation.')
+		}
+
+		if (capacityInput !== null && capacityInput.trim() !== '') {
+			let newCapacity = parseInt(capacityInput, 10)
+			if (!isNaN(newCapacity)) {
+				if (newCapacity === 1 || newCapacity === 0) {
+					newCapacity === null
+					updatedActivity.group = false
+				} else {
+					updatedActivity.group = true
+				}
+				updatedActivity.capacity = newCapacity
+			} else {
+				console.error('Invalid capacity input.')
+				return
+			}
+		}
+
+		try {
+			const result = await updateActivity(updatedActivity)
+			fetchActivities().then(setActivities)
+			fetchGroupActivities().then(setGroupActivities)
+			if (result) {
+				console.log('Activity updated successfully:', result)
+			} else {
+				console.error('Error updating activity.')
+			}
+		} catch (error) {
+			console.error('Error updating activity:', error)
 		}
 	}
+
+
+
 
 	const [file, setFile] = useState<File | null>(null)
 
@@ -182,6 +221,10 @@ const CoachesandActivitiesAdminPage = () => {
 	}
 
 	// Similarly, adjust handleUpdateCoach to pass the file if it's updated
+
+	const handleToggle = () => {
+		setIsPrivateTraining(!isPrivateTraining)
+	}
 
 	return (
 		<div className='container mx-auto px-4 sm:px-6 lg:px-8'>
@@ -266,75 +309,172 @@ const CoachesandActivitiesAdminPage = () => {
 			<hr className='my-8 border-gray-900 mt-12 mb-12' />
 
 			<section className='mt-10'>
-				<h2 className='text-xl font-semibold mb-6'>Activities</h2>
-				<div className='flex flex-col sm:flex-row items-center space-y-4 sm:space-x-4 mb-6'>
-					<input
-						type='text'
-						value={newActivityName}
-						onChange={e => setNewActivityName(e.target.value)}
-						placeholder='New Activity Name'
-						className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto flex-grow'
-					/>
-					<input
-						type='number'
-						value={newActivityCredits}
-						onChange={e => setNewActivityCredits(e.target.value)}
-						placeholder='Credits'
-						className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'
-					/>
-					<select
-						value={selectedCoachId || ''}
-						onChange={handleCoachSelection}
-						className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'>
-						<option value=''>Select Coach</option>
-						{coaches.map(coach => (
-							<option key={coach.id} value={coach.id}>
-								{coach.name}
-							</option>
-						))}
-					</select>
-					<button
-						onClick={handleAddActivity}
-						className='bg-blue-500 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
-						Add Activity
-					</button>
+				<div className='justify-between items-center py-4'>
+					<h1 className='text-3xl font-bold'>Activities</h1>
+					<div className='flex m-6 justify-center'>
+						<button
+							className={`px-4 py-2 mr-2 rounded ${isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+								}`}
+							onClick={handleToggle}>
+							Private Training
+						</button>
+						<button
+							className={`px-4 py-2 rounded ${!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+								}`}
+							onClick={handleToggle}>
+							Public Training
+						</button>
+					</div>
 				</div>
-				{loading ? (
-					<div className='flex justify-center items-center mt-5'>
-						<SyncLoader color='#367831' size={25} />
-					</div>
-				) : (
-					<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-12 lg:grid-cols-4 gap-4'>
-						{activities.map(activity => (
-							<div
-								key={activity.id}
-								className='bg-gray-100 rounded-md shadow p-4 relative'>
-								<h3 className='text-lg text-black font-semibold mb-2'>
-									{activity.name}
-								</h3>
-								<p className='text-gray-500 mb-2'>
-									Credits: {activity.credits}
-								</p>
-								<p className='text-gray-500'>
-									Assigned to:{' '}
-									{coaches.find(coach => coach.id === activity.coach_id)
-										?.name || 'None'}
-								</p>
-								<div className='mt-5'>
-									<button
-										onClick={() => handleUpdateActivity(activity.id)}
-										className='bg-yellow-500 text-white px-3 py-1 rounded-md mr-2'>
-										Update
-									</button>
-									<button
-										onClick={() => handleDeleteActivity(activity.id)}
-										className='bg-red-500 text-white px-3 py-1 rounded-md ml-2'>
-										Delete
-									</button>
-								</div>
+				{isPrivateTraining ? (
+					<>
+						<div className='flex flex-col sm:flex-row items-center space-y-4 lg:space-y-0 space-x-4 mb-6'>
+							<input
+								type='text'
+								value={newActivityName}
+								onChange={e => setNewActivityName(e.target.value)}
+								placeholder='New Activity Name'
+								className='border border-gray-300 px-3 py-2  rounded-md w-full sm:w-auto flex-grow'
+							/>
+							<input
+								type='number'
+								value={newActivityCredits}
+								onChange={e => setNewActivityCredits(e.target.value)}
+								placeholder='Credits'
+								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'
+							/>
+							<select
+								value={selectedCoachId || ''}
+								onChange={handleCoachSelection}
+								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'>
+								<option value=''>Select Coach</option>
+								{coaches.map(coach => (
+									<option key={coach.id} value={coach.id}>
+										{coach.name}
+									</option>
+								))}
+							</select>
+							<button
+								onClick={handleAddActivity}
+								className='bg-blue-500 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
+								Add Activity
+							</button>
+						</div>
+						{loading ? (
+							<div className='flex justify-center items-center mt-5'>
+								<SyncLoader color='#367831' size={25} />
 							</div>
-						))}
-					</div>
+						) : (
+							<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-12 lg:grid-cols-4 gap-4'>
+								{activities.map(activity => (
+									<div
+										key={activity.id}
+										className='bg-gray-100 rounded-md shadow p-4 relative'>
+										<h3 className='text-lg text-black font-semibold mb-2'>
+											{activity.name}
+										</h3>
+										<p className='text-gray-500 mb-2'>
+											Credits: {activity.credits}
+										</p>
+										<p className='text-gray-500'>
+											Assigned to:{' '}
+											{coaches.find(coach => coach.id === activity.coach_id)
+												?.name || 'None'}
+										</p>
+										<div className='mt-5'>
+											<button
+												onClick={() => handleUpdateActivity(activity.id)}
+												className='bg-yellow-500 text-white px-3 py-1 rounded-md mr-2'>
+												Update
+											</button>
+											<button
+												onClick={() => handleDeleteActivity(activity.id)}
+												className='bg-red-500 text-white px-3 py-1 rounded-md ml-2'>
+												Delete
+											</button>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</>
+				) : (
+					// Public training content
+					<>
+						<div className='flex flex-col sm:flex-row items-center space-y-4 lg:space-y-0 space-x-4 mb-6'>
+							<input
+								type='text'
+								value={newActivityName}
+								onChange={e => setNewActivityName(e.target.value)}
+								placeholder='New Activity Name'
+								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto flex-grow'
+							/>
+							<input
+								type='number'
+								value={newActivityCredits}
+								onChange={e => setNewActivityCredits(e.target.value)}
+								placeholder='Credits'
+								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'
+							/>
+							<input
+								type='number'
+								value={newActvityCapacity}
+								onChange={e => setNewActivityCapacity(e.target.value)}
+								placeholder='Capacity'
+								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'
+							/>
+							<select
+								value={selectedCoachId || ''}
+								onChange={handleCoachSelection}
+								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'>
+								<option value=''>Select Coach</option>
+								{coaches.map(coach => (
+									<option key={coach.id} value={coach.id}>
+										{coach.name}
+									</option>
+								))}
+							</select>
+							<button
+								onClick={handleAddActivity}
+								className='bg-blue-500 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
+								Add Activity
+							</button>
+						</div>						<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-12 lg:grid-cols-4 gap-4'>
+							{groupactivities.map(activity => (
+								<div
+									key={activity.id}
+									className='bg-gray-100 rounded-md shadow p-4 relative'>
+									<h3 className='text-lg text-black font-semibold mb-2'>
+										{activity.name}
+									</h3>
+									<p className='text-gray-500 mb-2'>
+										Credits: {activity.credits}
+									</p>
+									<p className='text-gray-500 mb-2'>
+										Assigned to:{' '}
+										{coaches.find(coach => coach.id === activity.coach_id)
+											?.name || 'None'}
+									</p>
+									<p className='text-gray-500'>
+										Capacity: {activity.capacity}
+									</p>
+									<div className='mt-5'>
+										<button
+											onClick={() => handleUpdateActivity(activity.id)}
+											className='bg-yellow-500 text-white px-3 py-1 rounded-md mr-2'>
+											Update
+										</button>
+										<button
+											onClick={() => handleDeleteActivity(activity.id)}
+											className='bg-red-500 text-white px-3 py-1 rounded-md ml-2'>
+											Delete
+										</button>
+									</div>
+								</div>
+							))}
+						</div>
+
+					</>
 				)}
 			</section>
 		</div>

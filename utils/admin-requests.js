@@ -3,6 +3,12 @@ import { supabaseClient } from './supabaseClient'
 // Functions to manage coaches
 export const addActivity = async activity => {
 	const supabase = await supabaseClient()
+
+	// Set group to true if capacity is not null
+	if (activity.capacity !== null && activity.capacity !== undefined) {
+		activity.group = true
+	}
+
 	const { data, error } = await supabase
 		.from('activities')
 		.insert([{ ...activity, coach_id: activity.coach_id }])
@@ -12,9 +18,9 @@ export const addActivity = async activity => {
 		return null
 	}
 
-	// Only return data[0] if data is not null
 	return data ? data[0] : null
 }
+
 
 export const addCoach = async (coach, file) => {
 	const supabase = await supabaseClient()
@@ -178,7 +184,7 @@ export const fetchCoachesActivities = async activityId => {
 	const { data: coaches, error: coachesError } = await supabase
 		.from('coaches')
 		.select('*')
-		.in('id', coachIds) // This fetches all coaches whose ID is in the coachIds array
+		.in('id', coachIds) // This fetches all coaches whose ID is in the coachIds arraya
 
 	if (coachesError) {
 		console.error('Error fetching coaches:', coachesError.message)
@@ -190,15 +196,28 @@ export const fetchCoachesActivities = async activityId => {
 
 export const fetchActivities = async () => {
 	const supabase = await supabaseClient()
-	const { data, error } = await supabase.from('activities').select('*')
+	const { data, error } = await supabase.from('activities').select('*').eq('group', false)
 
 	if (error) {
-		console.error('Error fetching activities:', error.message)
+		console.error('Error fetching private activities:', error.message)
 		return []
 	}
 
 	return data
 }
+
+export const fetchGroupActivities = async () => {
+	const supabase = await supabaseClient()
+	const { data, error } = await supabase.from('activities').select('*').eq('group', true)
+
+	if (error) {
+		console.error('Error fetching group activities:', error.message)
+		return []
+	}
+
+	return data
+}
+
 
 // In admin-requests.js
 
@@ -233,10 +252,10 @@ export const fetchTimeSlots = async () => {
 		end_time: slot.end_time,
 		user: slot.users
 			? {
-					user_id: slot.users.user_id,
-					first_name: slot.users.first_name,
-					last_name: slot.users.last_name
-			  }
+				user_id: slot.users.user_id,
+				first_name: slot.users.first_name,
+				last_name: slot.users.last_name
+			}
 			: null,
 		booked: slot.booked
 	}))
@@ -303,8 +322,8 @@ export const fetchUsers = async searchQuery => {
 	if (searchQuery) {
 		query = query.or(
 			`username.ilike.%${searchQuery}%,` +
-				`first_name.ilike.%${searchQuery}%,` +
-				`last_name.ilike.%${searchQuery}%`
+			`first_name.ilike.%${searchQuery}%,` +
+			`last_name.ilike.%${searchQuery}%`
 		)
 	}
 
