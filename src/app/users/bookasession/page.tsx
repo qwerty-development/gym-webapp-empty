@@ -79,6 +79,7 @@ export default function Example() {
 		10: <FitnessCenterIcon />,
 		11: <HealingIcon />
 	}
+
 	const handleBookGroupSession = async () => {
 		if (!user) {
 			console.error('User is not signed in')
@@ -291,7 +292,7 @@ export default function Example() {
 		const activity = activitiesGroup.find(
 			activity => activity.id === selectedActivity
 		)
-		return activity ? `Capacity: ${activity.capacity}` : 'Activity not found'
+		return activity ? `${activity.capacity}` : ''
 	}
 
 	const formatDate = (date: Date | null): string =>
@@ -343,6 +344,29 @@ export default function Example() {
 	const handleToggle = () => {
 		setIsPrivateTraining(!isPrivateTraining)
 	}
+
+	const getSelectedReservationCount = async () => {
+		if (selectedActivity && selectedCoach && selectedDate) {
+			const data = await fetchFilteredUnbookedTimeSlotsGroup({
+				activityId: selectedActivity,
+				coachId: selectedCoach,
+				date: formatDate(selectedDate)
+			})
+			return data ? data.reduce((total, slot) => total + slot.count, 0) : 0
+		}
+		return 0
+	}
+
+	const [reservationCount, setReservationCount] = useState<number>(0)
+
+	useEffect(() => {
+		const fetchReservationCount = async () => {
+			const count = await getSelectedReservationCount()
+			setReservationCount(count)
+		}
+
+		fetchReservationCount()
+	}, [selectedActivity, selectedCoach, selectedDate, highlightDates])
 
 	return (
 		<div id='__next'>
@@ -520,7 +544,7 @@ export default function Example() {
 								</div>
 							)}
 						</div>
-						<div className='mx-auto max-w-7xl'>
+						<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
 							<div className='mt-12 sm:flex'>
 								<div className='flex-grow'>
 									<h2 className='text-3xl mb-10 font-bold'>Select a Date</h2>
@@ -546,7 +570,7 @@ export default function Example() {
 															: 'hover'
 													}`}
 													onClick={() => setSelectedTime(time)}>
-													{time} {getCapacity()}
+													{time} Reservations:{reservationCount}/{getCapacity()}
 												</button>
 											))}
 										</div>
@@ -600,7 +624,7 @@ export default function Example() {
 												selectedTime === time ? 'bg-green-200 dark' : 'hover'
 											}`}
 											onClick={() => setSelectedTime(time)}>
-											{time} {getCapacity()}
+											{time}
 										</button>
 									))}
 								</div>
