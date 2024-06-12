@@ -219,22 +219,23 @@ export default function Dashboard() {
 													<h3 className='text-lg dark:text-black font-semibold mb-2'>
 														{reservation.activity.name}
 													</h3>
-													<p className='text-gray-600'>
+													<p className='text-gray-600 mb-2'>
 														Date: {reservation.date}
 													</p>
-													<p className='text-gray-600'>
+													<p className='text-gray-600 mb-2 '>
 														Time: {reservation.start_time} -{' '}
 														{reservation.end_time}
 													</p>
-													<p className='text-gray-600'>
+													<p className='text-gray-600 mb-2'>
 														Coach: {reservation.coach.name}
 													</p>
 													<p className='text-gray-600 mb-2'>
 														Cost: {reservation.activity.credits} credits
 													</p>
 													<p className='text-gray-600 mb-2'>
-														Additions: {reservation.additions.join(', ')}
+														Additions: {reservation.additions ? reservation.additions.join(', ') : 'No additions'}
 													</p>
+
 													<AddToCalendarButton
 														name={
 															reservation.activity.name +
