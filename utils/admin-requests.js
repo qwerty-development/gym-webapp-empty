@@ -460,38 +460,17 @@ export const updateGroupTimeSlot = async timeSlot => {
 	}
 
 	// Add the new user_id to the existing user_id array
-	const updatedUserIdArray = existingSlot.user_id
-		? [...existingSlot.user_id, timeSlot.user_id]
-		: [timeSlot.user_id]
-
-	// Increment the count
-	const updatedCount = existingSlot.count + 1
 
 	// Fetch activity details to check the capacity
-	const { data: activityData, error: activityError } = await supabase
-		.from('activities')
-		.select('capacity')
-		.eq('id', existingSlot.activity_id)
-		.single()
-
-	if (activityError || !activityData) {
-		console.error('Error fetching activity details:', activityError?.message)
-		return {
-			success: false,
-			error: activityError?.message || 'Activity not found.'
-		}
-	}
-
 	// Determine if the slot should be marked as booked
-	const isBooked = updatedCount === activityData.capacity
 
 	// Update the group time slot
 	const { data, error } = await supabase
 		.from('group_time_slots')
 		.update({
-			user_id: updatedUserIdArray,
-			count: updatedCount,
-			booked: isBooked
+			user_id: [],
+			count: 0,
+			booked: false
 		})
 		.eq('id', timeSlot.id)
 

@@ -11,6 +11,7 @@ import {
 	fetchGroupTimeSlots,
 	updateGroupTimeSlot
 } from '../../../../utils/admin-requests'
+import { supabaseClient } from '../../../../utils/supabaseClient'
 
 type Activity = {
 	name: string
@@ -39,10 +40,8 @@ type Reservation = {
 }
 
 export default function ViewReservationsComponent() {
-	const [reservations, setReservations] = useState<Reservation[]>([])
-	const [filteredReservations, setFilteredReservations] = useState<
-		Reservation[]
-	>([])
+	const [reservations, setReservations] = useState<any[]>([])
+	const [filteredReservations, setFilteredReservations] = useState<any[]>([])
 	const [searchTerm, setSearchTerm] = useState('')
 	const [filter, setFilter] = useState({
 		activity: '',
@@ -206,26 +205,85 @@ export default function ViewReservationsComponent() {
 				`Are you sure you want to cancel the booking for ${reservation.activity?.name}?`
 			)
 		) {
-			const updatedSlot = {
-				...reservation,
-				user_id: null,
-				booked: false
-			}
+			if (isPrivateTraining) {
+				const updatedSlot = {
+					...reservation,
+					user_id: null,
+					booked: false
+				}
 
-			const { success, error } = isPrivateTraining
-				? await updateTimeSlot(updatedSlot)
-				: await updateGroupTimeSlot(updatedSlot)
-			if (success) {
-				console.log('Booking cancelled successfully.')
-				updateUserCreditsCancellation(
-					reservation.user?.user_id,
+				const { success, error } = await updateTimeSlot(updatedSlot)
+				if (success) {
+					console.log('Booking cancelled successfully.')
+					updateUserCreditsCancellation(
+						reservation.user?.user_id,
+						reservation.activity?.credits
+					)
+					fetchData()
+				} else {
+					console.error('Failed to cancel booking:', error)
+				}
+			} else {
+				const { success, error } = await cancelGroupBooking(
+					reservation.id,
 					reservation.activity?.credits
 				)
-				fetchData()
-			} else {
-				console.error('Failed to cancel booking:', error)
+				if (success) {
+					console.log('Group booking cancelled successfully.')
+					fetchData()
+				} else {
+					console.error('Failed to cancel group booking:', error)
+				}
 			}
 		}
+	}
+
+	const cancelGroupBooking = async (
+		timeSlotId: number,
+		credits: number | undefined
+	) => {
+		const supabase = await supabaseClient()
+
+		// Fetch existing group time slot data
+		const { data: existingSlot, error: existingSlotError } = await supabase
+			.from('group_time_slots')
+			.select('user_id, count, activity_id')
+			.eq('id', timeSlotId)
+			.single()
+
+		if (existingSlotError) {
+			console.error(
+				'Error fetching existing group time slot:',
+				existingSlotError.message
+			)
+			return { success: false, error: existingSlotError.message }
+		}
+
+		if (!existingSlot) {
+			return { success: false, error: 'Group Time Slot not found.' }
+		}
+
+		// Refund credits to each user in the user_id array
+		for (const userId of existingSlot.user_id) {
+			await updateUserCreditsCancellation(userId, credits)
+		}
+
+		// Update the group time slot to clear users and reset count
+		const { data, error } = await supabase
+			.from('group_time_slots')
+			.update({
+				user_id: [],
+				count: 0,
+				booked: false
+			})
+			.eq('id', timeSlotId)
+
+		if (error) {
+			console.error('Error updating group time slot:', error.message)
+			return { success: false, error: error.message }
+		}
+
+		return { success: true, data }
 	}
 
 	return (
@@ -413,7 +471,7 @@ export default function ViewReservationsComponent() {
 											: reservation.users && reservation.users.length > 0
 											? reservation.users
 
-													.map(user =>
+													.map((user: any) =>
 														user
 															? `${user.first_name} ${user.last_name}`
 															: 'N/A'
