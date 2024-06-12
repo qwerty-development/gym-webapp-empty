@@ -510,7 +510,7 @@ export default function Example() {
 								</div>
 							)}
 						</div>
-						<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+						<div className='mx-auto max-w-7xl'>
 							<div className='mt-12 sm:flex'>
 								<div className='flex-grow'>
 									<h2 className='text-3xl mb-10 font-bold'>Select a Date</h2>
