@@ -284,6 +284,16 @@ export default function Example() {
 		}
 	}
 
+	const getCapacity = () => {
+		if (selectedActivity === null) {
+			return 'No activity selected'
+		}
+		const activity = activitiesGroup.find(
+			activity => activity.id === selectedActivity
+		)
+		return activity ? `Capacity: ${activity.capacity}` : 'Activity not found'
+	}
+
 	const formatDate = (date: Date | null): string =>
 		date
 			? [
@@ -536,7 +546,7 @@ export default function Example() {
 															: 'hover'
 													}`}
 													onClick={() => setSelectedTime(time)}>
-													{time}
+													{time} {getCapacity()}
 												</button>
 											))}
 										</div>
@@ -590,9 +600,7 @@ export default function Example() {
 												selectedTime === time ? 'bg-green-200 dark' : 'hover'
 											}`}
 											onClick={() => setSelectedTime(time)}>
-											{time}
-											
-											
+											{time} {getCapacity()}
 										</button>
 									))}
 								</div>
