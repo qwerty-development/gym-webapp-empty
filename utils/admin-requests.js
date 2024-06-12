@@ -307,7 +307,8 @@ export const fetchGroupTimeSlots = async () => {
 			date,
 			start_time,
 			end_time,
-			user_id
+			user_id,
+			booked
 		`)
 
 	if (error) {

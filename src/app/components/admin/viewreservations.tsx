@@ -364,12 +364,12 @@ export default function ViewReservationsComponent() {
 								<th className='px-4 py-2'>Date</th>
 								<th className='px-4 py-2'>Start Time</th>
 								<th className='px-4 py-2'>End Time</th>
-								<th className='px-4 py-2'>User First Name</th>
-								<th className='px-4 py-2'>User Last Name</th>
+								<th className='px-4 py-2'>Name</th>
 								<th className='px-4 py-2'>Booked</th>
 								<th className='px-4 py-2'>Credits</th>
 							</tr>
 						</thead>
+
 						<tbody>
 							{filteredReservations.map((reservation, index) => (
 								<tr className='text-center' key={index}>
@@ -408,10 +408,18 @@ export default function ViewReservationsComponent() {
 									<td className='px-4 py-2'>{reservation.start_time}</td>
 									<td className='px-4 py-2'>{reservation.end_time}</td>
 									<td className='px-4 py-2'>
-										{reservation.user?.first_name ?? 'N/A'}
-									</td>
-									<td className='px-4 py-2'>
-										{reservation.user?.last_name ?? 'N/A'}
+										{reservation.user && isPrivateTraining
+											? `${reservation.user.first_name} ${reservation.user.last_name}`
+											: reservation.users && reservation.users.length > 0
+											? reservation.users
+
+													.map(user =>
+														user
+															? `${user.first_name} ${user.last_name}`
+															: 'N/A'
+													)
+													.join(', ')
+											: 'N/A'}
 									</td>
 									<td className='px-4 py-2'>
 										{reservation.booked ? 'Yes' : 'No'}
