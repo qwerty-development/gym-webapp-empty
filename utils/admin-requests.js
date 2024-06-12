@@ -21,7 +21,6 @@ export const addActivity = async activity => {
 	return data ? data[0] : null
 }
 
-
 export const addCoach = async (coach, file) => {
 	const supabase = await supabaseClient()
 
@@ -196,7 +195,10 @@ export const fetchCoachesActivities = async activityId => {
 
 export const fetchActivities = async () => {
 	const supabase = await supabaseClient()
-	const { data, error } = await supabase.from('activities').select('*').eq('group', false)
+	const { data, error } = await supabase
+		.from('activities')
+		.select('*')
+		.eq('group', false)
 
 	if (error) {
 		console.error('Error fetching private activities:', error.message)
@@ -208,7 +210,10 @@ export const fetchActivities = async () => {
 
 export const fetchGroupActivities = async () => {
 	const supabase = await supabaseClient()
-	const { data, error } = await supabase.from('activities').select('*').eq('group', true)
+	const { data, error } = await supabase
+		.from('activities')
+		.select('*')
+		.eq('group', true)
 
 	if (error) {
 		console.error('Error fetching group activities:', error.message)
@@ -217,7 +222,6 @@ export const fetchGroupActivities = async () => {
 
 	return data
 }
-
 
 // In admin-requests.js
 
@@ -252,10 +256,10 @@ export const fetchTimeSlots = async () => {
 		end_time: slot.end_time,
 		user: slot.users
 			? {
-				user_id: slot.users.user_id,
-				first_name: slot.users.first_name,
-				last_name: slot.users.last_name
-			}
+					user_id: slot.users.user_id,
+					first_name: slot.users.first_name,
+					last_name: slot.users.last_name
+			  }
 			: null,
 		booked: slot.booked
 	}))
@@ -266,6 +270,20 @@ export const fetchTimeSlots = async () => {
 export const addTimeSlot = async timeSlot => {
 	const supabase = await supabaseClient()
 	const { data, error } = await supabase.from('time_slots').insert([timeSlot])
+
+	if (error) {
+		console.error('Error adding new time slot:', error.message)
+		return { success: false, error: error.message }
+	}
+
+	return { success: true, data }
+}
+
+export const addTimeSlotGroup = async timeSlot => {
+	const supabase = await supabaseClient()
+	const { data, error } = await supabase
+		.from('group_time_slots')
+		.insert([timeSlot])
 
 	if (error) {
 		console.error('Error adding new time slot:', error.message)
@@ -322,8 +340,8 @@ export const fetchUsers = async searchQuery => {
 	if (searchQuery) {
 		query = query.or(
 			`username.ilike.%${searchQuery}%,` +
-			`first_name.ilike.%${searchQuery}%,` +
-			`last_name.ilike.%${searchQuery}%`
+				`first_name.ilike.%${searchQuery}%,` +
+				`last_name.ilike.%${searchQuery}%`
 		)
 	}
 
