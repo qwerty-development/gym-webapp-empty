@@ -1,6 +1,7 @@
 import { supabaseClient } from './supabaseClient'
 
 // Functions to manage coaches
+
 export const addActivity = async activity => {
 	const supabase = await supabaseClient()
 
@@ -298,18 +299,64 @@ export const fetchTimeSlots = async () => {
 	return transformedData
 }
 
+export const cancelGroupBooking = async (timeSlotId, creditsToAdd) => {
+	const supabase = await supabaseClient()
+
+	// Fetch existing group time slot data
+	const { data: existingSlot, error: existingSlotError } = await supabase
+		.from('group_time_slots')
+		.select('user_id, count, activity_id')
+		.eq('id', timeSlotId)
+		.single()
+
+	if (existingSlotError) {
+		console.error(
+			'Error fetching existing group time slot:',
+			existingSlotError.message
+		)
+		return { success: false, error: existingSlotError.message }
+	}
+
+	if (!existingSlot) {
+		return { success: false, error: 'Group Time Slot not found.' }
+	}
+
+	// Refund credits to each user in the user_id array
+	for (const userId of existingSlot.user_id) {
+		await updateUserCreditsCancellation(userId, credits)
+	}
+
+	// Update the group time slot to clear users and reset count
+	const { data, error } = await supabase
+		.from('group_time_slots')
+		.update({
+			user_id: [],
+			count: 0,
+			booked: false
+		})
+		.eq('id', timeSlotId)
+
+	if (error) {
+		console.error('Error updating group time slot:', error.message)
+		return { success: false, error: error.message }
+	}
+
+	return { success: true, data }
+}
+
+// Existing fetchGroupTimeSlots function
 export const fetchGroupTimeSlots = async () => {
 	const supabase = await supabaseClient()
 	const { data, error } = await supabase.from('group_time_slots').select(`
-			id,
-			activities ( name, credits ),
-			coaches ( name ),
-			date,
-			start_time,
-			end_time,
-			user_id,
-			booked
-		`)
+    id,
+    activities ( name, credits ),
+    coaches ( name ),
+    date,
+    start_time,
+    end_time,
+    user_id,
+    booked
+  `)
 
 	if (error) {
 		console.error('Error fetching group time slots:', error.message)

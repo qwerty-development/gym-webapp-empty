@@ -5,11 +5,10 @@ import {
 	fetchTimeSlots,
 	deleteTimeSlot,
 	updateTimeSlot,
-	updateUserCredits,
 	updateUserCreditsCancellation,
 	deleteGroupTimeSlot,
 	fetchGroupTimeSlots,
-	updateGroupTimeSlot
+	cancelGroupBooking
 } from '../../../../utils/admin-requests'
 import { supabaseClient } from '../../../../utils/supabaseClient'
 
@@ -64,6 +63,59 @@ export default function ViewReservationsComponent() {
 			setReservations(data)
 			setFilteredReservations(data)
 		}
+	}
+
+	const removeUserFromGroup = async (
+		timeSlotId: any,
+		userId: any,
+		credits: any
+	) => {
+		const supabase = await supabaseClient()
+
+		// Fetch existing group time slot data
+		const { data: existingSlot, error: existingSlotError } = await supabase
+			.from('group_time_slots')
+			.select('user_id, count, booked')
+			.eq('id', timeSlotId)
+			.single()
+
+		if (existingSlotError) {
+			console.error(
+				'Error fetching existing group time slot:',
+				existingSlotError.message
+			)
+			return
+		}
+
+		if (!existingSlot) {
+			return
+		}
+
+		// Remove the user from the group_time_slots
+		const updatedUserIds = existingSlot.user_id.filter(
+			(id: any) => id !== userId
+		)
+		const updatedCount = existingSlot.count - 1
+		const isUnbooked = updatedCount === 0 ? false : existingSlot.booked
+
+		const { data, error } = await supabase
+			.from('group_time_slots')
+			.update({
+				user_id: updatedUserIds,
+				count: updatedCount,
+				booked: isUnbooked
+			})
+			.eq('id', timeSlotId)
+
+		if (error) {
+			console.error('Error updating group time slot:', error.message)
+			return
+		}
+
+		// Refund the credits to the user
+		await updateUserCreditsCancellation(userId, credits)
+
+		fetchData()
 	}
 
 	useEffect(() => {
@@ -236,54 +288,6 @@ export default function ViewReservationsComponent() {
 				}
 			}
 		}
-	}
-
-	const cancelGroupBooking = async (
-		timeSlotId: number,
-		credits: number | undefined
-	) => {
-		const supabase = await supabaseClient()
-
-		// Fetch existing group time slot data
-		const { data: existingSlot, error: existingSlotError } = await supabase
-			.from('group_time_slots')
-			.select('user_id, count, activity_id')
-			.eq('id', timeSlotId)
-			.single()
-
-		if (existingSlotError) {
-			console.error(
-				'Error fetching existing group time slot:',
-				existingSlotError.message
-			)
-			return { success: false, error: existingSlotError.message }
-		}
-
-		if (!existingSlot) {
-			return { success: false, error: 'Group Time Slot not found.' }
-		}
-
-		// Refund credits to each user in the user_id array
-		for (const userId of existingSlot.user_id) {
-			await updateUserCreditsCancellation(userId, credits)
-		}
-
-		// Update the group time slot to clear users and reset count
-		const { data, error } = await supabase
-			.from('group_time_slots')
-			.update({
-				user_id: [],
-				count: 0,
-				booked: false
-			})
-			.eq('id', timeSlotId)
-
-		if (error) {
-			console.error('Error updating group time slot:', error.message)
-			return { success: false, error: error.message }
-		}
-
-		return { success: true, data }
 	}
 
 	return (
@@ -469,14 +473,26 @@ export default function ViewReservationsComponent() {
 										{reservation.user && isPrivateTraining
 											? `${reservation.user.first_name} ${reservation.user.last_name}`
 											: reservation.users && reservation.users.length > 0
-											? reservation.users
-
-													.map((user: any) =>
-														user
+											? reservation.users.map((user: any, userIndex: any) => (
+													<div
+														key={userIndex}
+														className='flex items-center justify-between'>
+														{user
 															? `${user.first_name} ${user.last_name}`
-															: 'N/A'
-													)
-													.join(', ')
+															: 'N/A'}
+														<button
+															onClick={() =>
+																removeUserFromGroup(
+																	reservation.id,
+																	user.user_id,
+																	reservation.activity?.credits
+																)
+															}
+															className='ml-2 bg-red-500 hover:bg-red-700 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center'>
+															✖
+														</button>
+													</div>
+											  ))
 											: 'N/A'}
 									</td>
 									<td className='px-4 py-2'>
