@@ -203,8 +203,8 @@ export default function AddTimeSlotComponent() {
 					Add Time Slots
 				</button>
 			</div>
-
-			<h1 className='text-2xl font-bold mb-4'>Add Group Time Slots</h1>
+<hr className='mt-12 mb-12'></hr>
+			<h1 className='text-2xl mt-12 font-bold mb-4'>Add Group Time Slots</h1>
 			<div className='flex flex-wrap mb-4'>
 				<div className='w-full md:w-1/2 px-2 mb-4 md:mb-0'>
 					<Select
@@ -260,7 +260,7 @@ export default function AddTimeSlotComponent() {
 			<div className='text-center'>
 				<button
 					onClick={handleAddGroupTimeSlot}
-					className='bg-green-500 hover:bg-green-700 mb-5 text-white font-bold py-2 px-4 rounded'>
+					className='bg-blue-500 hover:bg-green-700 mb-5 text-white font-bold py-2 px-4 rounded'>
 					Add Group Time Slots
 				</button>
 			</div>
