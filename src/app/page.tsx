@@ -20,9 +20,22 @@ export default function Example() {
 
       {/* Welcome back or Sign in message */}
       <SignedIn>
-          <UserButton />
-        <p className="dark:text-white text-center mt-12 font-extrabold text-4xl mb-12">Welcome back {user?.fullName}!</p>
+        <div className="flex flex-col items-center mt-12">
+          <UserButton
+            appearance={{
+              elements: {
+                userButtonAvatarBox: 'w-60 h-60', // Increase the width and height
+                userButtonAvatarImage: 'w-full h-full', // Ensure the image scales correctly
+              },
+            }}
+          />
+          <p className="dark:text-white text-center mt-4 font-extrabold text-4xl mb-12">
+            Welcome back {user?.fullName}!
+          </p>
+        </div>
       </SignedIn>
+
+
 
 
 
