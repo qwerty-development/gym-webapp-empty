@@ -544,7 +544,7 @@ export default function Example() {
 								</div>
 							)}
 						</div>
-						<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+						<div className='mx-auto max-w-7xl '>
 							<div className='mt-12 sm:flex'>
 								<div className='flex-grow'>
 									<h2 className='text-3xl mb-10 font-bold'>Select a Date</h2>
@@ -564,13 +564,14 @@ export default function Example() {
 											{groupAvailableTimes.map(time => (
 												<button
 													key={time}
-													className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${
+													className={`p-4 mt-6 border rounded-lg text-lg font-semibold mb-2 ${
 														selectedTime === time
 															? 'bg-green-200 dark'
 															: 'hover'
 													}`}
 													onClick={() => setSelectedTime(time)}>
-													{time} Reservations:{reservationCount}/{getCapacity()}
+													{time} 
+													<p className='text-gray-400 mt-2 text-xs'> Capacity: {reservationCount}/{getCapacity()}</p>
 												</button>
 											))}
 										</div>
@@ -620,7 +621,7 @@ export default function Example() {
 									{availableTimes.map(time => (
 										<button
 											key={time}
-											className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${
+											className={`p-4 mt-6 border rounded-lg text-lg font-semibold mb-2 ${
 												selectedTime === time ? 'bg-green-200 dark' : 'hover'
 											}`}
 											onClick={() => setSelectedTime(time)}>

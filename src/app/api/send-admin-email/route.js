@@ -26,20 +26,108 @@ export async function POST(request) {
 		from: 'noreply@notqwerty.com',
 		to: 'asif.k.alam@net.usek.edu.lb', // Replace with your admin email
 		subject: 'New Booking',
-		text: `
-      A new Booking Occured:
-      User Name: ${user_name}
-      User Email: ${user_email}
-       User Wallet: ${user_wallet}
-      Activity Name: ${activity_name}
-      Activity Price: ${activity_price}
-      Activity Date: ${activity_date}
-      Start Time: ${start_time}
-      End Time: ${end_time}
-      Coach Name: ${coach_name}
+		html: `
+		  <!DOCTYPE html>
+		  <html lang="en">
+		  <head>
+			  <meta charset="UTF-8">
+			  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+			  <title>New Booking</title>
+			  <style>
+				  body {
+					  font-family: Arial, sans-serif;
+					  background-color: #f4f4f4;
+					  margin: 0;
+					  padding: 0;
+					  color: #333;
+				  }
+				  .container {
+					  width: 100%;
+					  padding: 20px;
+					  background-color: #fff;
+					  max-width: 600px;
+					  margin: 20px auto;
+					  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+				  }
+				  .header {
+					  background-color: #4CAF50;
+					  color: #fff;
+					  padding: 10px 0;
+					  text-align: center;
+				  }
+				  .header h1 {
+					  margin: 0;
+					  font-size: 24px;
+				  }
+				  .content {
+					  padding: 20px;
+					  text-align: center;
+				  }
+				  .content .activity-name {
+					  font-size: 28px;
+					  font-weight: bold;
+					  margin: 20px 0;
+				  }
+				  .content .calendar {
+					  display: inline-block;
+					  padding: 10px;
+					  border: 1px solid #ddd;
+					  border-radius: 5px;
+					  margin: 20px 0;
+				  }
+				  .content .calendar .date {
+					  font-size: 20px;
+					  font-weight: bold;
+				  }
+				  .content .calendar .time {
+					  font-size: 16px;
+					  color: #555;
+				  }
+				  .content p {
+					  margin: 0 0 10px;
+					  line-height: 1.6;
+					  text-align: left;
+				  }
+				  .content p strong {
+					  display: block;
+					  margin-bottom: 5px;
+					  color: #555;
+				  }
+				  .footer {
+					  text-align: center;
+					  padding: 10px 0;
+					  background-color: #f4f4f4;
+					  color: #777;
+					  font-size: 12px;
+				  }
+			  </style>
+		  </head>
+		  <body>
+			  <div class="container">
+				  <div class="header">
+					  <h1>New Booking</h1>
+				  </div>
+				  <div class="content">
+					  <div class="activity-name">${activity_name}</div>
+					  <div class="calendar">
+						  <div class="date">${activity_date}</div>
+						  <div class="time">${start_time} - ${end_time}</div>
+					  </div>
+					  <p><strong>User Name:</strong> ${user_name}</p>
+					  <p><strong>User Email:</strong> ${user_email}</p>
+					  <p><strong>User Wallet:</strong> ${user_wallet}</p>
+					  <p><strong>Activity Price:</strong> ${activity_price}</p>
+					  <p><strong>Coach Name:</strong> ${coach_name}</p>
+				  </div>
+				  <div class="footer">
+					  <p>&copy; 2024 NotQwerty. All rights reserved.</p>
+				  </div>
+			  </div>
+		  </body>
+		  </html>
+		`
+	};
 
-    `
-	}
 
 	try {
 		await transporter.sendMail(mailOptions)
