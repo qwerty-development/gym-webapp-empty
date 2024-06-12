@@ -14,7 +14,7 @@ import {
 
 type Activity = {
 	name: string
-	credits: number // Assuming credits is a number
+	credits: number
 } | null
 
 type Coach = {
@@ -52,25 +52,29 @@ export default function ViewReservationsComponent() {
 		startTime: '',
 		endTime: ''
 	})
-	const [bookedFilter, setBookedFilter] = useState('all') // 'all', 'booked', 'notBooked'
+	const [bookedFilter, setBookedFilter] = useState('all')
 	const [showFilters, setShowFilters] = useState(false)
 	const [selectedReservations, setSelectedReservations] = useState<number[]>([])
+	const [isPrivateTraining, setIsPrivateTraining] = useState<boolean>(true)
 
 	const fetchData = async () => {
-		const data = await fetchTimeSlots()
+		const data = isPrivateTraining
+			? await fetchTimeSlots()
+			: await fetchGroupTimeSlots()
 		if (Array.isArray(data)) {
 			setReservations(data)
-			setFilteredReservations(data) // Initialize filtered data
+			setFilteredReservations(data)
 		}
 	}
+
 	useEffect(() => {
 		fetchData()
-	}, [])
+	}, [isPrivateTraining])
 
 	useEffect(() => {
 		const filteredData = applyFilters(reservations)
 		setFilteredReservations(filteredData)
-	}, [searchTerm, filter, reservations, bookedFilter]) // Include bookedFilter in dependencies
+	}, [searchTerm, filter, reservations, bookedFilter])
 
 	const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchTerm(event.target.value)
@@ -121,7 +125,6 @@ export default function ViewReservationsComponent() {
 						.toLowerCase()
 						.includes(searchTerm.toLowerCase())
 				: true
-			// Updated booked filter logic
 			const bookedMatch =
 				bookedFilter === 'all'
 					? true
@@ -129,9 +132,6 @@ export default function ViewReservationsComponent() {
 					? reservation.booked === true
 					: reservation.booked === false
 			const dateMatch = filter.date ? reservation.date === filter.date : true
-
-			// Assuming reservation.start_time and reservation.end_time are in 'HH:MM' format
-			// and filter.startTime and filter.endTime are also provided in 'HH:MM' format.
 			const startTimeMatch = filter.startTime
 				? reservation.start_time >= filter.startTime
 				: true
@@ -154,6 +154,7 @@ export default function ViewReservationsComponent() {
 			)
 		})
 	}
+
 	const addOneMinuteToTime = (time: string) => {
 		const [hours, minutes] = time.split(':').map(part => parseInt(part, 10))
 		const totalMinutes = hours * 60 + minutes
@@ -179,11 +180,13 @@ export default function ViewReservationsComponent() {
 	}
 
 	const deleteSelectedReservations = async () => {
-		if (window.confirm('Are you sure you want to delete these sessions}?')) {
+		if (window.confirm('Are you sure you want to delete these sessions?')) {
 			for (const index of selectedReservations) {
 				const reservation = reservations[index]
 				if (!reservation.booked) {
-					const success = await deleteTimeSlot(reservation.id)
+					const success = isPrivateTraining
+						? await deleteTimeSlot(reservation.id)
+						: await deleteGroupTimeSlot(reservation.id)
 					if (success) {
 						console.log(`Deleted reservation with ID: ${reservation.id}`)
 					} else {
@@ -193,21 +196,11 @@ export default function ViewReservationsComponent() {
 					}
 				}
 			}
-			// Fetch the latest reservations data after deletion
 			fetchData()
 		}
 	}
 
-	const cancelBooking = async (reservation: {
-		id?: number
-		activity: any
-		coach?: Coach
-		date?: string
-		start_time?: string
-		end_time?: string
-		user: any
-		booked?: boolean
-	}) => {
+	const cancelBooking = async (reservation: Reservation) => {
 		if (
 			window.confirm(
 				`Are you sure you want to cancel the booking for ${reservation.activity?.name}?`
@@ -215,18 +208,20 @@ export default function ViewReservationsComponent() {
 		) {
 			const updatedSlot = {
 				...reservation,
-				user_id: null, // Removing the user ID
-				booked: false // Setting booked to false
+				user_id: null,
+				booked: false
 			}
 
-			const { success, error } = await updateTimeSlot(updatedSlot)
+			const { success, error } = isPrivateTraining
+				? await updateTimeSlot(updatedSlot)
+				: await updateGroupTimeSlot(updatedSlot)
 			if (success) {
 				console.log('Booking cancelled successfully.')
 				updateUserCreditsCancellation(
 					reservation.user?.user_id,
 					reservation.activity?.credits
 				)
-				fetchData() // Refresh data
+				fetchData()
 			} else {
 				console.error('Failed to cancel booking:', error)
 			}
@@ -238,7 +233,22 @@ export default function ViewReservationsComponent() {
 			<div className='mb-4'>
 				<h1 className='text-2xl text-center font-bold mb-4'>Time Slots</h1>
 				<div className='flex justify-between items-center'>
-					{/* Filter Toggle */}
+					<div className='flex items-center'>
+						<button
+							className={`px-4 py-2 mr-2 rounded ${
+								isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+							}`}
+							onClick={() => setIsPrivateTraining(true)}>
+							Private Sessions
+						</button>
+						<button
+							className={`px-4 py-2 rounded ${
+								!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+							}`}
+							onClick={() => setIsPrivateTraining(false)}>
+							Public Sessions
+						</button>
+					</div>
 					<div>
 						<button
 							onClick={() => setShowFilters(!showFilters)}
@@ -246,8 +256,6 @@ export default function ViewReservationsComponent() {
 							🔍 Filters
 						</button>
 					</div>
-
-					{/* Search Bar */}
 					<div>
 						<input
 							type='text'
@@ -257,18 +265,14 @@ export default function ViewReservationsComponent() {
 							className='border px-2 py-1 rounded'
 						/>
 					</div>
-
 					<button
 						onClick={deleteSelectedReservations}
 						className='bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-1 rounded'>
 						Delete Selected
 					</button>
 				</div>
-
-				{/* Filters Sidebar */}
 				{showFilters && (
 					<div className='absolute left-0 mt-1 bg-white p-4 rounded shadow-lg z-10'>
-						{/* Existing filters */}
 						<input
 							type='text'
 							name='activity'
@@ -301,7 +305,6 @@ export default function ViewReservationsComponent() {
 							<option value='booked'>Booked</option>
 							<option value='notBooked'>Not Booked</option>
 						</select>
-						{/* New Date Filter */}
 						<input
 							type='date'
 							name='date'
@@ -310,7 +313,6 @@ export default function ViewReservationsComponent() {
 							onChange={handleFilterChange}
 							className='mb-3 border block w-full'
 						/>
-						{/* Start Time Filter */}
 						<input
 							type='time'
 							name='startTime'
@@ -319,7 +321,6 @@ export default function ViewReservationsComponent() {
 							onChange={handleFilterChange}
 							className='mb-3 border block w-full'
 						/>
-						{/* End Time Filter */}
 						<input
 							type='time'
 							name='endTime'
@@ -328,16 +329,12 @@ export default function ViewReservationsComponent() {
 							onChange={handleFilterChange}
 							className='mb-3 border block w-full'
 						/>
-
 						<div className='flex justify-between mt-4'>
-							{/* Close Button */}
 							<button
 								onClick={() => setShowFilters(false)}
 								className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out'>
 								Close
 							</button>
-
-							{/* Reset Filters Button */}
 							<button
 								onClick={() => {
 									setFilter({
@@ -356,14 +353,12 @@ export default function ViewReservationsComponent() {
 						</div>
 					</div>
 				)}
-
 				<div className='overflow-x-auto mt-5'>
 					<table className='table-auto w-full'>
 						<thead>
 							<tr className='bg-gray-200 dark:bg-blue-950'>
 								<th className='px-4 py-2'>Select</th>
-								<th className='px-4 py-2'>Cancel</th>{' '}
-								{/* Renamed for clarity */}
+								<th className='px-4 py-2'>Cancel</th>
 								<th className='px-4 py-2'>Activity</th>
 								<th className='px-4 py-2'>Coach Name</th>
 								<th className='px-4 py-2'>Date</th>
@@ -386,7 +381,7 @@ export default function ViewReservationsComponent() {
 											checked={selectedReservations.includes(index)}
 										/>
 									</td>
-									<td className='px-4 py-3 '>
+									<td className='px-4 py-3'>
 										{reservation.booked ? (
 											<center>
 												<button
@@ -433,4 +428,3 @@ export default function ViewReservationsComponent() {
 		</section>
 	)
 }
-function setFilteredReservations(filteredData: Reservation[]) {}

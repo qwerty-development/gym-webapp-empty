@@ -301,23 +301,38 @@ export const fetchTimeSlots = async () => {
 export const fetchGroupTimeSlots = async () => {
 	const supabase = await supabaseClient()
 	const { data, error } = await supabase.from('group_time_slots').select(`
-          id,
-          activities ( name, credits ),
-          coaches ( name ),
-          date,
-          start_time,
-          end_time,
-          users ( user_id, first_name, last_name ),
-          booked
-      `)
+			id,
+			activities ( name, credits ),
+			coaches ( name ),
+			date,
+			start_time,
+			end_time,
+			user_id
+		`)
 
 	if (error) {
 		console.error('Error fetching group time slots:', error.message)
 		return []
 	}
 
+	const userIds = data.flatMap(slot => slot.user_id)
+	const { data: usersData, error: usersError } = await supabase
+		.from('users')
+		.select('user_id, first_name, last_name')
+		.in('user_id', userIds)
+
+	if (usersError) {
+		console.error('Error fetching users:', usersError.message)
+		return []
+	}
+
+	const usersMap = usersData.reduce((acc, user) => {
+		acc[user.user_id] = user
+		return acc
+	}, {})
+
 	const transformedData = data.map(slot => ({
-		id: slot.id, // Make sure to assign the id to each reservation
+		id: slot.id,
 		activity: slot.activities
 			? { name: slot.activities.name, credits: slot.activities.credits }
 			: null,
@@ -325,13 +340,7 @@ export const fetchGroupTimeSlots = async () => {
 		date: slot.date,
 		start_time: slot.start_time,
 		end_time: slot.end_time,
-		user: slot.users
-			? {
-					user_id: slot.users.user_id,
-					first_name: slot.users.first_name,
-					last_name: slot.users.last_name
-			  }
-			: null,
+		users: slot.user_id.map(userId => usersMap[userId] || null),
 		booked: slot.booked
 	}))
 
