@@ -193,6 +193,37 @@ export const fetchCoachesActivities = async activityId => {
 	return coaches
 }
 
+export const fetchCoachesActivitiesGroup = async activityId => {
+	const supabase = await supabaseClient()
+
+	// First, fetch all time slots for the given activityId to get associated coach_ids
+	const { data: timeSlots, error: timeSlotsError } = await supabase
+		.from('group_time_slots')
+		.select('coach_id')
+		.eq('activity_id', activityId)
+
+	if (timeSlotsError || !timeSlots.length) {
+		console.error('Error fetching time slots:', timeSlotsError?.message)
+		return []
+	}
+
+	// Extract unique coach IDs from time slots
+	const coachIds = timeSlots.map(slot => slot.coach_id)
+
+	// Then, fetch coach details for the collected coach_ids
+	const { data: coaches, error: coachesError } = await supabase
+		.from('coaches')
+		.select('*')
+		.in('id', coachIds) // This fetches all coaches whose ID is in the coachIds array
+
+	if (coachesError) {
+		console.error('Error fetching coaches:', coachesError.message)
+		return []
+	}
+
+	return coaches
+}
+
 export const fetchActivities = async () => {
 	const supabase = await supabaseClient()
 	const { data, error } = await supabase
@@ -615,6 +646,198 @@ export const bookTimeSlotForClient = async ({
 		success: true,
 		message: 'Session booked successfully, credits deducted.',
 		timeSlot: bookingData
+	}
+}
+
+export const bookTimeSlotForClientGroup = async ({
+	activityId,
+	coachId,
+	date,
+	startTime,
+	endTime,
+	userId
+}) => {
+	const supabase = await supabaseClient()
+
+	// Fetch activity details to get the credits cost and capacity
+	const { data: activityData, error: activityError } = await supabase
+		.from('activities')
+		.select('credits, name, capacity')
+		.eq('id', activityId)
+		.single()
+
+	if (activityError || !activityData) {
+		console.error('Error fetching activity data:', activityError?.message)
+		return {
+			error:
+				'Failed to fetch activity data: ' +
+				(activityError?.message || 'Activity not found')
+		}
+	}
+
+	// Check if the user has enough credits
+	const { data: userData, error: userError } = await supabase
+		.from('users')
+		.select('wallet, first_name, last_name, email')
+		.eq('user_id', userId)
+		.single()
+
+	if (userError || !userData || userData.wallet < activityData.credits) {
+		return { error: 'Not enough credits or user not found' }
+	}
+
+	// Check if the time slot is already booked
+	const { data: existingSlot, error: existingSlotError } = await supabase
+		.from('group_time_slots')
+		.select('id, booked, user_id, count')
+		.eq('activity_id', activityId)
+		.eq('coach_id', coachId)
+		.eq('date', date)
+		.eq('start_time', startTime)
+		.eq('end_time', endTime)
+		.single()
+
+	if (existingSlotError && existingSlotError.code !== 'PGRST116') {
+		console.error(
+			'Error checking group time slot availability:',
+			existingSlotError.message
+		)
+		return { error: existingSlotError.message }
+	}
+
+	if (existingSlot && existingSlot.booked) {
+		return { error: 'Time slot is already booked.' }
+	}
+
+	if (
+		existingSlot &&
+		existingSlot.user_id &&
+		existingSlot.user_id.includes(userId)
+	) {
+		return { error: 'You are already enrolled in this class.' }
+	}
+
+	// Deduct credits from user's wallet
+	const newWalletBalance = userData.wallet - activityData.credits
+	const { error: updateWalletError } = await supabase
+		.from('users')
+		.update({ wallet: newWalletBalance })
+		.eq('user_id', userId)
+
+	if (updateWalletError) {
+		console.error('Error updating user wallet:', updateWalletError.message)
+		return {
+			error: 'Failed to update user wallet: ' + updateWalletError.message
+		}
+	}
+
+	// Proceed with booking the time slot
+	let newCount = 1
+	let user_id = [userId]
+	let isBooked = false
+	let slotId
+
+	if (existingSlot) {
+		newCount = existingSlot.count + 1
+		user_id = existingSlot.user_id
+			? [...existingSlot.user_id, userId]
+			: [userId]
+		isBooked = newCount === activityData.capacity
+		slotId = existingSlot.id
+	}
+
+	const upsertData = {
+		activity_id: activityId,
+		coach_id: coachId,
+		date: date,
+		start_time: startTime,
+		end_time: endTime,
+		user_id,
+		count: newCount,
+		booked: isBooked
+	}
+
+	let timeSlotData, timeSlotError
+
+	if (slotId) {
+		// Update existing slot
+		;({ data: timeSlotData, error: timeSlotError } = await supabase
+			.from('group_time_slots')
+			.update(upsertData)
+			.eq('id', slotId))
+	} else {
+		// Insert new slot
+		;({ data: timeSlotData, error: timeSlotError } = await supabase
+			.from('group_time_slots')
+			.insert(upsertData)
+			.single())
+
+		// Ensure no duplicates by deleting any older entries
+		await supabase
+			.from('group_time_slots')
+			.delete()
+			.eq('activity_id', activityId)
+			.eq('coach_id', coachId)
+			.eq('date', date)
+			.eq('start_time', startTime)
+			.eq('end_time', endTime)
+			.neq('id')
+	}
+
+	if (timeSlotError) {
+		console.error('Error booking group time slot:', timeSlotError.message)
+		return { error: timeSlotError.message }
+	}
+
+	// Fetch coach name
+	const { data: coachData, error: coachError } = await supabase
+		.from('coaches')
+		.select('name')
+		.eq('id', coachId)
+		.single()
+
+	if (coachError || !coachData) {
+		console.error('Error fetching coach data:', coachError?.message)
+		return { error: coachError?.message || 'Coach not found.' }
+	}
+
+	// Prepare email data
+	const emailData = {
+		user_name: userData.first_name + ' ' + userData.last_name,
+		user_email: userData.email,
+		activity_name: activityData.name,
+		activity_price: activityData.credits,
+		activity_date: date,
+		start_time: startTime,
+		end_time: endTime,
+		coach_name: coachData.name,
+		user_wallet: newWalletBalance
+	}
+
+	// Send email notification to user
+	try {
+		const responseUser = await fetch('/api/send-user-email', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		const resultUser = await responseUser.json()
+		if (responseUser.ok) {
+			console.log('User email sent successfully')
+		} else {
+			console.error(`Failed to send user email: ${resultUser.error}`)
+		}
+	} catch (error) {
+		console.error('Error sending user email:', error)
+	}
+
+	return {
+		success: true,
+		message: 'Group session booked successfully, credits deducted.',
+		timeSlot: timeSlotData
 	}
 }
 
