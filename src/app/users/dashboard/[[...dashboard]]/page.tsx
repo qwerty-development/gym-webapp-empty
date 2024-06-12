@@ -266,71 +266,74 @@ export default function Dashboard() {
 										</p>
 									)}
 								</div>
-								<div className='container mx-auto px-4 lg:px-8 mt-10'>
-									<h2 className='text-2xl font-semibold text-gray-900'>
-										Group Reservations
-									</h2>
-									{groupReservations.length > 0 ? (
-										<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-											{groupReservations.map(reservation => (
-												<div
-													key={reservation.id}
-													className='bg-white p-6 rounded-lg shadow-md'>
-													<h3 className='text-lg dark:text-black font-semibold mb-2'>
-														{reservation.activity.name}
-													</h3>
-													<p className='text-gray-600'>
-														Date: {reservation.date}
-													</p>
-													<p className='text-gray-600'>
-														Time: {reservation.start_time} -{' '}
-														{reservation.end_time}
-													</p>
-													<p className='text-gray-600'>
-														Coach: {reservation.coach.name}
-													</p>
-													<p className='text-gray-600 mb-2'>
-														Cost: {reservation.activity.credits} credits
-													</p>
-													<p className='text-gray-600 mb-2'>
-														Participants: {reservation.count}
-													</p>
-													<AddToCalendarButton
-														name={
-															reservation.activity.name +
-															' with ' +
-															reservation.coach.name
-														}
-														startDate={reservation.date}
-														startTime={reservation.start_time}
-														endTime={reservation.end_time}
-														options={['Apple', 'Google']}
-														timeZone='Asia/Beirut'
-														buttonStyle='default'
-														styleLight='--btn-background: #5c6dc2; --btn-text: #fff;'
-														styleDark='--btn-background:#fff #; --btn-text: #000;'
-														size='5'
-														inline='true'
-													/>
-													<button
-														onClick={() => handleCancelGroup(reservation.id)}
-														className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'>
-														Cancel
-													</button>
-												</div>
-											))}
-										</div>
-									) : (
-										<p className='text-xl text-gray-600'>
-											NO UPCOMING GROUP RESERVATIONS
-										</p>
-									)}
-								</div>
+
 							</>
 						)}
 					</main>
+					<div className='bg-gray-100 mt-5 rounded-3xl py-8'>
+						<div className='container  mx-auto px-4 lg:px-8'>
+							<h2 className='text-2xl font-semibold text-gray-900'>
+								Group Reservations
+							</h2>
+							{groupReservations.length > 0 ? (
+								<div className='grid grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-4'>
+									{groupReservations.map(reservation => (
+										<div
+											key={reservation.id}
+											className='bg-white p-6 rounded-lg shadow-md'>
+											<h3 className='text-lg dark:text-black font-semibold mb-2'>
+												{reservation.activity.name}
+											</h3>
+											<p className='text-gray-600'>
+												Date: {reservation.date}
+											</p>
+											<p className='text-gray-600'>
+												Time: {reservation.start_time} -{' '}
+												{reservation.end_time}
+											</p>
+											<p className='text-gray-600'>
+												Coach: {reservation.coach.name}
+											</p>
+											<p className='text-gray-600 mb-2'>
+												Cost: {reservation.activity.credits} credits
+											</p>
+											<p className='text-gray-600 mb-2'>
+												Attendance: {reservation.count}
+											</p>
+											<AddToCalendarButton
+												name={
+													reservation.activity.name +
+													' with ' +
+													reservation.coach.name
+												}
+												startDate={reservation.date}
+												startTime={reservation.start_time}
+												endTime={reservation.end_time}
+												options={['Apple', 'Google']}
+												timeZone='Asia/Beirut'
+												buttonStyle='default'
+												styleLight='--btn-background: #5c6dc2; --btn-text: #fff;'
+												styleDark='--btn-background:#fff #; --btn-text: #000;'
+												size='5'
+												inline='true'
+											/>
+											<button
+												onClick={() => handleCancelGroup(reservation.id)}
+												className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'>
+												Cancel
+											</button>
+										</div>
+									))}
+								</div>
+							) : (
+								<p className='text-xl text-gray-600'>
+									NO UPCOMING GROUP RESERVATIONS
+								</p>
+							)}
+						</div>
+					</div>
 				</div>
 			</div>
-		</div>
+		</div >
 	)
 }

@@ -189,8 +189,7 @@ export const cancelReservation = async (
 
 		if (reservationError || !reservationData) {
 			throw new Error(
-				`Error fetching reservation: ${
-					reservationError?.message || 'Reservation not found'
+				`Error fetching reservation: ${reservationError?.message || 'Reservation not found'
 				}`
 			)
 		}
@@ -207,8 +206,7 @@ export const cancelReservation = async (
 
 		if (activityError || !activityData) {
 			throw new Error(
-				`Error fetching activity credits: ${
-					activityError?.message || 'Activity not found'
+				`Error fetching activity credits: ${activityError?.message || 'Activity not found'
 				}`
 			)
 		}
@@ -348,8 +346,7 @@ export const cancelReservationGroup = async (
 
 		if (reservationError || !reservationData) {
 			throw new Error(
-				`Error fetching reservation: ${
-					reservationError?.message || 'Reservation not found'
+				`Error fetching reservation: ${reservationError?.message || 'Reservation not found'
 				}`
 			)
 		}
@@ -366,8 +363,7 @@ export const cancelReservationGroup = async (
 
 		if (activityError || !activityData) {
 			throw new Error(
-				`Error fetching activity credits: ${
-					activityError?.message || 'Activity not found'
+				`Error fetching activity credits: ${activityError?.message || 'Activity not found'
 				}`
 			)
 		}
@@ -808,7 +804,7 @@ export const bookTimeSlotGroup = async ({
 	endTime,
 	userId
 }) => {
-	const supabase = await supabaseClient()
+	const supabase = await supabaseClient();
 
 	// Check if the time slot is already booked
 	const { data: existingSlot, error: existingSlotError } = await supabase
@@ -819,18 +815,22 @@ export const bookTimeSlotGroup = async ({
 		.eq('date', date)
 		.eq('start_time', startTime)
 		.eq('end_time', endTime)
-		.single()
+		.single();
 
 	if (existingSlotError && existingSlotError.code !== 'PGRST116') {
 		console.error(
 			'Error checking group time slot availability:',
 			existingSlotError.message
-		)
-		return { error: existingSlotError.message }
+		);
+		return { error: existingSlotError.message };
 	}
 
 	if (existingSlot && existingSlot.booked) {
-		return { error: 'Time slot is already booked.' }
+		return { error: 'Time slot is already booked.' };
+	}
+
+	if (existingSlot && existingSlot.user_id && existingSlot.user_id.includes(userId)) {
+		return { error: 'You are already enrolled in this class.' };
 	}
 
 	// Fetch user's current credits
@@ -838,11 +838,11 @@ export const bookTimeSlotGroup = async ({
 		.from('users')
 		.select('*')
 		.eq('user_id', userId)
-		.single()
+		.single();
 
 	if (userError || !userData) {
-		console.error('Error fetching user credits:', userError?.message)
-		return { error: userError?.message || 'User not found.' }
+		console.error('Error fetching user credits:', userError?.message);
+		return { error: userError?.message || 'User not found.' };
 	}
 
 	// Fetch activity details including capacity and credits required
@@ -850,26 +850,26 @@ export const bookTimeSlotGroup = async ({
 		.from('activities')
 		.select('*')
 		.eq('id', activityId)
-		.single()
+		.single();
 
 	if (activityError || !activityData) {
-		console.error('Error fetching activity details:', activityError?.message)
-		return { error: activityError?.message || 'Activity not found.' }
+		console.error('Error fetching activity details:', activityError?.message);
+		return { error: activityError?.message || 'Activity not found.' };
 	}
 
 	if (userData.wallet >= activityData.credits) {
-		let newCount = 1
-		let user_id = [userId]
-		let isBooked = false
-		let slotId
+		let newCount = 1;
+		let user_id = [userId];
+		let isBooked = false;
+		let slotId;
 
 		if (existingSlot) {
-			newCount = existingSlot.count + 1
+			newCount = existingSlot.count + 1;
 			user_id = existingSlot.user_id
 				? [...existingSlot.user_id, userId]
-				: [userId]
-			isBooked = newCount === activityData.capacity
-			slotId = existingSlot.id
+				: [userId];
+			isBooked = newCount === activityData.capacity;
+			slotId = existingSlot.id;
 		}
 
 		const upsertData = {
@@ -881,22 +881,22 @@ export const bookTimeSlotGroup = async ({
 			user_id,
 			count: newCount,
 			booked: isBooked
-		}
+		};
 
-		let timeSlotData, timeSlotError
+		let timeSlotData, timeSlotError;
 
 		if (slotId) {
 			// Update existing slot
-			;({ data: timeSlotData, error: timeSlotError } = await supabase
+			({ data: timeSlotData, error: timeSlotError } = await supabase
 				.from('group_time_slots')
 				.update(upsertData)
-				.eq('id', slotId))
+				.eq('id', slotId));
 		} else {
 			// Insert new slot
-			;({ data: timeSlotData, error: timeSlotError } = await supabase
+			({ data: timeSlotData, error: timeSlotError } = await supabase
 				.from('group_time_slots')
 				.insert(upsertData)
-				.single())
+				.single());
 
 			// Ensure no duplicates by deleting any older entries
 			await supabase
@@ -907,35 +907,35 @@ export const bookTimeSlotGroup = async ({
 				.eq('date', date)
 				.eq('start_time', startTime)
 				.eq('end_time', endTime)
-				.neq('id')
+				.neq('id');
 		}
 
 		if (timeSlotError) {
-			console.error('Error booking group time slot:', timeSlotError.message)
-			return { error: timeSlotError.message }
+			console.error('Error booking group time slot:', timeSlotError.message);
+			return { error: timeSlotError.message };
 		}
 
 		// Deduct credits from user's account
-		const newWalletBalance = userData.wallet - activityData.credits
+		const newWalletBalance = userData.wallet - activityData.credits;
 		const { error: updateError } = await supabase
 			.from('users')
 			.update({ wallet: newWalletBalance })
-			.eq('user_id', userId)
+			.eq('user_id', userId);
 
 		if (updateError) {
-			console.error('Error updating user credits:', updateError.message)
-			return { error: updateError.message }
+			console.error('Error updating user credits:', updateError.message);
+			return { error: updateError.message };
 		}
 
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
 			.select('name')
 			.eq('id', coachId)
-			.single()
+			.single();
 
 		if (coachError || !coachData) {
-			console.error('Error fetching coach data:', coachError?.message)
-			return { error: coachError?.message || 'Coach not found.' }
+			console.error('Error fetching coach data:', coachError?.message);
+			return { error: coachError?.message || 'Coach not found.' };
 		}
 
 		// Prepare email data
@@ -949,7 +949,7 @@ export const bookTimeSlotGroup = async ({
 			end_time: endTime,
 			coach_name: coachData.name,
 			user_wallet: newWalletBalance
-		}
+		};
 
 		// Send email notification to admin
 		try {
@@ -959,16 +959,16 @@ export const bookTimeSlotGroup = async ({
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(emailData)
-			})
+			});
 
-			const resultAdmin = await responseAdmin.json()
+			const resultAdmin = await responseAdmin.json();
 			if (responseAdmin.ok) {
-				console.log('Admin email sent successfully')
+				console.log('Admin email sent successfully');
 			} else {
-				console.error(`Failed to send admin email: ${resultAdmin.error}`)
+				console.error(`Failed to send admin email: ${resultAdmin.error}`);
 			}
 		} catch (error) {
-			console.error('Error sending admin email:', error)
+			console.error('Error sending admin email:', error);
 		}
 
 		// Send email notification to user
@@ -979,26 +979,27 @@ export const bookTimeSlotGroup = async ({
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(emailData)
-			})
+			});
 
-			const resultUser = await responseUser.json()
+			const resultUser = await responseUser.json();
 			if (responseUser.ok) {
-				console.log('User email sent successfully')
+				console.log('User email sent successfully');
 			} else {
-				console.error(`Failed to send user email: ${resultUser.error}`)
+				console.error(`Failed to send user email: ${resultUser.error}`);
 			}
 		} catch (error) {
-			console.error('Error sending user email:', error)
+			console.error('Error sending user email:', error);
 		}
 
 		return {
 			data: timeSlotData,
 			message: 'Session booked and credits deducted.'
-		}
+		};
 	} else {
-		return { error: 'Not enough credits to book the session.' }
+		return { error: 'Not enough credits to book the session.' };
 	}
-}
+};
+
 
 export const fetchMarket = async () => {
 	const supabase = await supabaseClient()

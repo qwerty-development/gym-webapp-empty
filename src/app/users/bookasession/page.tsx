@@ -97,7 +97,7 @@ export default function Example() {
 		setLoading(false)
 		if (error) {
 			console.error('Booking failed:', error)
-			toast.error('Booking failed!') // Display error toast
+			toast.error(error) // Display error toast
 		} else {
 			refreshWalletBalance()
 			toast.success('Booking successful!') // Display success toast
@@ -244,7 +244,7 @@ export default function Example() {
 		setLoading(false)
 		if (error) {
 			console.error('Booking failed:', error)
-			toast.error('Booking failed!') // Display error toast
+			toast.error(error) // Display error toast
 		} else {
 			refreshWalletBalance()
 			toast.success('Booking successful!') // Display success toast
@@ -591,6 +591,8 @@ export default function Example() {
 											}`}
 											onClick={() => setSelectedTime(time)}>
 											{time}
+											
+											
 										</button>
 									))}
 								</div>
