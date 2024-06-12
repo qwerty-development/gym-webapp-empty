@@ -4,9 +4,12 @@ import NavbarComponent from '@/app/components/users/navbar'
 import { useUser } from '@clerk/nextjs'
 import {
 	fetchReservations,
+	fetchReservationsGroup,
 	updateUserRecord,
 	cancelReservation,
+	cancelReservationGroup,
 	fetchAllActivities,
+	fetchAllActivitiesGroup,
 	fetchMarket
 } from '../../../../../utils/user-requests'
 import { AddToCalendarButton } from 'add-to-calendar-button-react'
@@ -30,6 +33,21 @@ type Reservation = {
 	additions: string[]
 }
 
+type GroupReservation = {
+	id: number
+	date: string
+	start_time: string
+	end_time: string
+	coach: {
+		name: string
+	}
+	activity: {
+		name: string
+		credits: number
+	}
+	count: number
+}
+
 type Activity = {
 	id: number
 	name: string
@@ -39,6 +57,9 @@ type Activity = {
 export default function Dashboard() {
 	const { isLoaded, isSignedIn, user } = useUser()
 	const [reservations, setReservations] = useState<Reservation[]>([])
+	const [groupReservations, setGroupReservations] = useState<
+		GroupReservation[]
+	>([])
 	const [activities, setActivities] = useState<Activity[]>([])
 	const [isLoading, setIsLoading] = useState<boolean>(true) // State to track loading status
 	const { refreshWalletBalance } = useWallet()
@@ -80,6 +101,29 @@ export default function Dashboard() {
 					setReservations(transformedReservations)
 				}
 
+				const fetchedGroupReservations = await fetchReservationsGroup(user.id)
+				if (fetchedGroupReservations) {
+					const transformedGroupReservations = fetchedGroupReservations.map(
+						(reservation: any) => ({
+							id: reservation.id,
+							date: reservation.date,
+							start_time: reservation.start_time
+								.split(':')
+								.slice(0, 2)
+								.join(':'),
+							end_time: reservation.end_time.split(':').slice(0, 2).join(':'),
+							coach: { name: reservation.coach.name },
+							activity: {
+								name: reservation.activity.name,
+								credits: reservation.activity.credits
+							},
+							count: reservation.count
+						})
+					)
+
+					setGroupReservations(transformedGroupReservations)
+				}
+
 				const fetchedActivities = await fetchAllActivities()
 				if (fetchedActivities) {
 					setIsLoading(false)
@@ -112,6 +156,28 @@ export default function Dashboard() {
 		}
 	}
 
+	const handleCancelGroup = async (reservationId: number) => {
+		if (user) {
+			const confirmed = await showConfirmationToast(
+				'Are you sure you want to cancel this group reservation?'
+			)
+			if (!confirmed) return
+
+			const cancelled = await cancelReservationGroup(
+				reservationId,
+				user.id,
+				setGroupReservations
+			)
+
+			if (cancelled) {
+				refreshWalletBalance()
+				toast.success('Group reservation cancelled successfully!')
+			} else {
+				toast.error('Failed to cancel group reservation!')
+			}
+		}
+	}
+
 	if (!isLoaded || !isSignedIn) {
 		return null
 	}
@@ -139,63 +205,128 @@ export default function Dashboard() {
 								<RingLoader color={'#367831'} size={100} />
 							</div>
 						) : (
-							<div className='container mx-auto px-4 lg:px-8'>
-								{reservations.length > 0 ? (
-									<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-										{reservations.map(reservation => (
-											<div
-												key={reservation.id}
-												className='bg-white p-6 rounded-lg shadow-md'>
-												<h3 className='text-lg dark:text-black font-semibold mb-2'>
-													{reservation.activity.name}
-												</h3>
-												<p className='text-gray-600'>
-													Date: {reservation.date}
-												</p>
-												<p className='text-gray-600'>
-													Time: {reservation.start_time} -{' '}
-													{reservation.end_time}
-												</p>
-												<p className='text-gray-600'>
-													Coach: {reservation.coach.name}
-												</p>
-												<p className='text-gray-600 mb-2'>
-													Cost: {reservation.activity.credits} credits
-												</p>
-												<p className='text-gray-600 mb-2'>
-													Additions: {reservation.additions.join(', ')}
-												</p>
-												<AddToCalendarButton
-													name={
-														reservation.activity.name +
-														' with ' +
-														reservation.coach.name
-													}
-													startDate={reservation.date}
-													startTime={reservation.start_time}
-													endTime={reservation.end_time}
-													options={['Apple', 'Google']}
-													timeZone='Asia/Beirut'
-													buttonStyle='default'
-													styleLight='--btn-background: #5c6dc2; --btn-text: #fff;'
-													styleDark='--btn-background:#fff #; --btn-text: #000;'
-													size='5'
-													inline='true'
-												/>
-												<button
-													onClick={() => handleCancel(reservation.id)}
-													className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'>
-													Cancel
-												</button>
-											</div>
-										))}
-									</div>
-								) : (
-									<p className='text-xl text-gray-600'>
-										NO UPCOMING RESERVATIONS
-									</p>
-								)}
-							</div>
+							<>
+								<div className='container mx-auto px-4 lg:px-8'>
+									<h2 className='text-2xl font-semibold text-gray-900'>
+										Individual Reservations
+									</h2>
+									{reservations.length > 0 ? (
+										<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+											{reservations.map(reservation => (
+												<div
+													key={reservation.id}
+													className='bg-white p-6 rounded-lg shadow-md'>
+													<h3 className='text-lg dark:text-black font-semibold mb-2'>
+														{reservation.activity.name}
+													</h3>
+													<p className='text-gray-600'>
+														Date: {reservation.date}
+													</p>
+													<p className='text-gray-600'>
+														Time: {reservation.start_time} -{' '}
+														{reservation.end_time}
+													</p>
+													<p className='text-gray-600'>
+														Coach: {reservation.coach.name}
+													</p>
+													<p className='text-gray-600 mb-2'>
+														Cost: {reservation.activity.credits} credits
+													</p>
+													<p className='text-gray-600 mb-2'>
+														Additions: {reservation.additions.join(', ')}
+													</p>
+													<AddToCalendarButton
+														name={
+															reservation.activity.name +
+															' with ' +
+															reservation.coach.name
+														}
+														startDate={reservation.date}
+														startTime={reservation.start_time}
+														endTime={reservation.end_time}
+														options={['Apple', 'Google']}
+														timeZone='Asia/Beirut'
+														buttonStyle='default'
+														styleLight='--btn-background: #5c6dc2; --btn-text: #fff;'
+														styleDark='--btn-background:#fff #; --btn-text: #000;'
+														size='5'
+														inline='true'
+													/>
+													<button
+														onClick={() => handleCancel(reservation.id)}
+														className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'>
+														Cancel
+													</button>
+												</div>
+											))}
+										</div>
+									) : (
+										<p className='text-xl text-gray-600'>
+											NO UPCOMING RESERVATIONS
+										</p>
+									)}
+								</div>
+								<div className='container mx-auto px-4 lg:px-8 mt-10'>
+									<h2 className='text-2xl font-semibold text-gray-900'>
+										Group Reservations
+									</h2>
+									{groupReservations.length > 0 ? (
+										<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+											{groupReservations.map(reservation => (
+												<div
+													key={reservation.id}
+													className='bg-white p-6 rounded-lg shadow-md'>
+													<h3 className='text-lg dark:text-black font-semibold mb-2'>
+														{reservation.activity.name}
+													</h3>
+													<p className='text-gray-600'>
+														Date: {reservation.date}
+													</p>
+													<p className='text-gray-600'>
+														Time: {reservation.start_time} -{' '}
+														{reservation.end_time}
+													</p>
+													<p className='text-gray-600'>
+														Coach: {reservation.coach.name}
+													</p>
+													<p className='text-gray-600 mb-2'>
+														Cost: {reservation.activity.credits} credits
+													</p>
+													<p className='text-gray-600 mb-2'>
+														Participants: {reservation.count}
+													</p>
+													<AddToCalendarButton
+														name={
+															reservation.activity.name +
+															' with ' +
+															reservation.coach.name
+														}
+														startDate={reservation.date}
+														startTime={reservation.start_time}
+														endTime={reservation.end_time}
+														options={['Apple', 'Google']}
+														timeZone='Asia/Beirut'
+														buttonStyle='default'
+														styleLight='--btn-background: #5c6dc2; --btn-text: #fff;'
+														styleDark='--btn-background:#fff #; --btn-text: #000;'
+														size='5'
+														inline='true'
+													/>
+													<button
+														onClick={() => handleCancelGroup(reservation.id)}
+														className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'>
+														Cancel
+													</button>
+												</div>
+											))}
+										</div>
+									) : (
+										<p className='text-xl text-gray-600'>
+											NO UPCOMING GROUP RESERVATIONS
+										</p>
+									)}
+								</div>
+							</>
 						)}
 					</main>
 				</div>

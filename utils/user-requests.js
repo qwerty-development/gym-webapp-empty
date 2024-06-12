@@ -128,6 +128,43 @@ export const fetchReservations = async userId => {
 	})
 }
 
+export const fetchReservationsGroup = async userId => {
+	const supabase = supabaseClient() // Ensure you're correctly initializing this with any necessary tokens
+	const today = new Date().toISOString().slice(0, 10) // Get today's date in YYYY-MM-DD format
+
+	const { data, error } = await supabase
+		.from('group_time_slots')
+		.select(
+			` *,
+            id,
+            user_id,
+            start_time,
+            end_time,
+            date,
+            count,
+            activity:activities (
+                id,
+                name,
+                coach_id,
+                credits
+            ),
+            coach:coaches (
+                id,
+                name
+            )
+        `
+		)
+		.contains('user_id', [userId])
+		.gte('date', today) // Use greater than or equal to filter for date
+
+	if (error) {
+		console.error('Error fetching reservations:', error.message)
+		return null
+	}
+
+	return data.map(reservation => reservation)
+}
+
 // utils/requests.js
 
 // Function to cancel a reservation
@@ -201,6 +238,153 @@ export const cancelReservation = async (
 				user_id: null,
 				booked: false,
 				additions: []
+			})
+			.eq('id', reservationId)
+
+		if (updateError) {
+			throw new Error(`Error canceling reservation: ${updateError.message}`)
+		}
+
+		const { data: userData, error: userError } = await supabase
+			.from('users')
+			.select('wallet, first_name, last_name, email')
+			.eq('user_id', userId)
+			.single()
+
+		if (userError || !userData) {
+			throw new Error(
+				`Error fetching user data: ${userError?.message || 'User not found'}`
+			)
+		}
+
+		const newWalletBalance = userData.wallet + totalRefund
+
+		const { error: walletUpdateError } = await supabase
+			.from('users')
+			.update({ wallet: newWalletBalance })
+			.eq('user_id', userId)
+
+		if (walletUpdateError) {
+			throw new Error(
+				`Error updating user wallet: ${walletUpdateError.message}`
+			)
+		}
+
+		const { data: coachData, error: coachError } = await supabase
+			.from('coaches')
+			.select('name')
+			.eq('id', reservationData.coach_id)
+			.single()
+
+		if (coachError) {
+			throw new Error(`Error fetching coach data: ${coachError.message}`)
+		}
+
+		const emailData = {
+			user_name: userData.first_name + ' ' + userData.last_name,
+			user_email: userData.email,
+			activity_name: activityData.name,
+			activity_date: reservationData.date,
+			start_time: reservationData.start_time,
+			end_time: reservationData.end_time,
+			coach_name: coachData.name
+		}
+
+		const responseAdmin = await fetch('/api/send-cancel-admin', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		if (!responseAdmin.ok) {
+			const resultAdmin = await responseAdmin.json()
+			throw new Error(
+				`Failed to send admin cancellation email: ${resultAdmin.error}`
+			)
+		}
+
+		const responseUser = await fetch('/api/send-cancel-user', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		if (!responseUser.ok) {
+			const resultUser = await responseUser.json()
+			throw new Error(
+				`Failed to send user cancellation email: ${resultUser.error}`
+			)
+		}
+		setReservations(prevReservations =>
+			prevReservations.filter(reservation => reservation.id !== reservationId)
+		)
+		return true
+	} catch (error) {
+		console.error('Cancel reservation error:', error)
+		return false
+	}
+}
+
+export const cancelReservationGroup = async (
+	reservationId,
+	userId,
+	setReservations
+) => {
+	const supabase = await supabaseClient()
+
+	try {
+		// Fetch the reservation details
+		const { data: reservationData, error: reservationError } = await supabase
+			.from('group_time_slots')
+			.select(
+				'activity_id, user_id, booked, coach_id, date, start_time, end_time'
+			)
+			.eq('id', reservationId)
+			.single()
+
+		if (reservationError || !reservationData) {
+			throw new Error(
+				`Error fetching reservation: ${
+					reservationError?.message || 'Reservation not found'
+				}`
+			)
+		}
+
+		if (!reservationData.user_id.includes(userId)) {
+			throw new Error('Unauthorized to cancel this reservation.')
+		}
+
+		const { data: activityData, error: activityError } = await supabase
+			.from('activities')
+			.select('credits, name')
+			.eq('id', reservationData.activity_id)
+			.single()
+
+		if (activityError || !activityData) {
+			throw new Error(
+				`Error fetching activity credits: ${
+					activityError?.message || 'Activity not found'
+				}`
+			)
+		}
+
+		let totalRefund = activityData.credits
+
+		// Remove user from the user_id array
+		const updatedUserIds = reservationData.user_id.filter(id => id !== userId)
+		const newCount = updatedUserIds.length
+		const isBooked = newCount >= activityData.capacity
+
+		const { error: updateError } = await supabase
+			.from('group_time_slots')
+			.update({
+				user_id: updatedUserIds,
+				count: newCount,
+				booked: isBooked
 			})
 			.eq('id', reservationId)
 
