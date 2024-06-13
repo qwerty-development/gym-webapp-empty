@@ -158,42 +158,42 @@ export default function ViewReservationsComponent() {
 		return data.filter(reservation => {
 			const activityMatch = filter.activity
 				? reservation.activity?.name
-						.toLowerCase()
-						.includes(filter.activity.toLowerCase())
+					.toLowerCase()
+					.includes(filter.activity.toLowerCase())
 				: true
 			const coachMatch = filter.coach
 				? reservation.coach?.name
-						.toLowerCase()
-						.includes(filter.coach.toLowerCase())
+					.toLowerCase()
+					.includes(filter.coach.toLowerCase())
 				: true
 			const userMatch = filter.user
 				? reservation.user?.first_name
-						.toLowerCase()
-						.includes(filter.user.toLowerCase()) ||
-				  reservation.user?.last_name
-						.toLowerCase()
-						.includes(filter.user.toLowerCase())
+					.toLowerCase()
+					.includes(filter.user.toLowerCase()) ||
+				reservation.user?.last_name
+					.toLowerCase()
+					.includes(filter.user.toLowerCase())
 				: true
 			const searchTermMatch = searchTerm
 				? reservation.activity?.name
-						.toLowerCase()
-						.includes(searchTerm.toLowerCase()) ||
-				  reservation.coach?.name
-						.toLowerCase()
-						.includes(searchTerm.toLowerCase()) ||
-				  reservation.user?.first_name
-						.toLowerCase()
-						.includes(searchTerm.toLowerCase()) ||
-				  reservation.user?.last_name
-						.toLowerCase()
-						.includes(searchTerm.toLowerCase())
+					.toLowerCase()
+					.includes(searchTerm.toLowerCase()) ||
+				reservation.coach?.name
+					.toLowerCase()
+					.includes(searchTerm.toLowerCase()) ||
+				reservation.user?.first_name
+					.toLowerCase()
+					.includes(searchTerm.toLowerCase()) ||
+				reservation.user?.last_name
+					.toLowerCase()
+					.includes(searchTerm.toLowerCase())
 				: true
 			const bookedMatch =
 				bookedFilter === 'all'
 					? true
 					: bookedFilter === 'booked'
-					? reservation.booked === true
-					: reservation.booked === false
+						? reservation.booked === true
+						: reservation.booked === false
 			const dateMatch = filter.date ? reservation.date === filter.date : true
 			const startTimeMatch = filter.startTime
 				? reservation.start_time >= filter.startTime
@@ -341,39 +341,38 @@ export default function ViewReservationsComponent() {
 		<section>
 			<div className='mb-4'>
 				<h1 className='text-2xl text-center font-bold mb-4'>Time Slots</h1>
-				<div className='flex justify-between items-center'>
-					<div className='flex items-center'>
+				<div className='mt-12'>
+					<center>
 						<button
-							className={`px-4 py-2 mr-2 rounded ${
-								isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
-							}`}
+							className={`px-4 py-2 mr-2 rounded ${isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+								}`}
 							onClick={() => setIsPrivateTraining(true)}>
 							Private Sessions
 						</button>
+
 						<button
-							className={`px-4 py-2 rounded ${
-								!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
-							}`}
+							className={`px-4 py-2 rounded ${!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+								}`}
 							onClick={() => setIsPrivateTraining(false)}>
 							Public Sessions
 						</button>
-					</div>
-					<div>
-						<button
-							onClick={() => setShowFilters(!showFilters)}
-							className='flex items-center bg-gray-100 hover:bg-gray-200 text-black font-bold py-2 px-4 rounded cursor-pointer'>
-							🔍 Filters
-						</button>
-					</div>
-					<div>
-						<input
-							type='text'
-							placeholder='Search...'
-							value={searchTerm}
-							onChange={handleSearchChange}
-							className='border px-2 py-1 rounded'
-						/>
-					</div>
+					</center>
+				</div>
+				<div className='lg:mx-80 mx-24 flex'>
+					<input
+						type='text'
+						placeholder='Search...'
+						value={searchTerm}
+						onChange={handleSearchChange}
+						className='border mt-12 mb-6 px-2 mr-12 py-3 rounded w-full'
+					/>
+					<button
+						onClick={() => setShowFilters(!showFilters)}
+						className='flex items-center bg-gray-100 hover:bg-gray-200 mt-12 text-black font-bold py-2 px-4 h-12 rounded-full cursor-pointer'>
+						🔍
+					</button>
+				</div>
+				<div className='flex mx-12 gap-x-12 justify-center'>
 					<button
 						onClick={deleteSelectedReservations}
 						className='bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-1 rounded'>
@@ -381,7 +380,7 @@ export default function ViewReservationsComponent() {
 					</button>
 				</div>
 				{showFilters && (
-					<div className='absolute left-0 mt-1 bg-white p-4 rounded shadow-lg z-10'>
+					<div className='absolute right-3 top-14  p-2 mt-4 bg-white  rounded shadow-lg z-10'>
 						<input
 							type='text'
 							name='activity'
@@ -457,7 +456,7 @@ export default function ViewReservationsComponent() {
 									setBookedFilter('all')
 								}}
 								className='bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out'>
-								Reset Filters
+								Reset
 							</button>
 						</div>
 					</div>
@@ -521,7 +520,7 @@ export default function ViewReservationsComponent() {
 										{reservation.user && isPrivateTraining
 											? `${reservation.user.first_name} ${reservation.user.last_name}`
 											: reservation.users && reservation.users.length > 0
-											? reservation.users.map((user: any, userIndex: any) => (
+												? reservation.users.map((user: any, userIndex: any) => (
 													<div
 														key={userIndex}
 														className='flex items-center justify-between'>
@@ -540,8 +539,8 @@ export default function ViewReservationsComponent() {
 															✖
 														</button>
 													</div>
-											  ))
-											: 'N/A'}
+												))
+												: 'N/A'}
 									</td>
 									<td className='px-4 py-2'>
 										{reservation.booked ? 'Yes' : 'No'}
