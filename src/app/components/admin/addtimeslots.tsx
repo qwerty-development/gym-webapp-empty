@@ -128,7 +128,8 @@ export default function AddTimeSlotComponent() {
 				end_time: endTime,
 				booked: false,
 				user_id: [],
-				count: 0
+				count: 0,
+				additions: []
 			}
 
 			const result = await addTimeSlotGroup(newGroupTimeSlot)
@@ -203,7 +204,7 @@ export default function AddTimeSlotComponent() {
 					Add Time Slots
 				</button>
 			</div>
-<hr className='mt-12 mb-12'></hr>
+			<hr className='mt-12 mb-12'></hr>
 			<h1 className='text-2xl mt-12 font-bold mb-4'>Add Group Time Slots</h1>
 			<div className='flex flex-wrap mb-4'>
 				<div className='w-full md:w-1/2 px-2 mb-4 md:mb-0'>
