@@ -305,7 +305,7 @@ export const cancelGroupBooking = async (timeSlotId, creditsToAdd) => {
 	// Fetch existing group time slot data
 	const { data: existingSlot, error: existingSlotError } = await supabase
 		.from('group_time_slots')
-		.select('user_id, count, activity_id')
+		.select('user_id, count, activity_id, additions')
 		.eq('id', timeSlotId)
 		.single()
 
@@ -321,9 +321,36 @@ export const cancelGroupBooking = async (timeSlotId, creditsToAdd) => {
 		return { success: false, error: 'Group Time Slot not found.' }
 	}
 
-	// Refund credits to each user in the user_id array
+	const { data: activityData, error: activityError } = await supabase
+		.from('activities')
+		.select('credits')
+		.eq('id', existingSlot.activity_id)
+		.single()
+
+	if (activityError || !activityData) {
+		console.error(
+			'Error fetching activity credits:',
+			activityError?.message || 'Activity not found'
+		)
+		return {
+			success: false,
+			error: activityError?.message || 'Activity not found'
+		}
+	}
+
+	const activityCredits = activityData.credits
+
+	// Refund credits to each user in the user_id array including additions
 	for (const userId of existingSlot.user_id) {
-		await updateUserCreditsCancellation(userId, credits)
+		const userAdditions = existingSlot.additions.find(
+			addition => addition.user_id === userId
+		)
+		const additionsTotalPrice = userAdditions
+			? userAdditions.items.reduce((total, item) => total + item.price, 0)
+			: 0
+		const totalRefund = activityCredits + additionsTotalPrice
+
+		await updateUserCreditsCancellation(userId, totalRefund)
 	}
 
 	// Update the group time slot to clear users and reset count
@@ -332,7 +359,8 @@ export const cancelGroupBooking = async (timeSlotId, creditsToAdd) => {
 		.update({
 			user_id: [],
 			count: 0,
-			booked: false
+			booked: false,
+			additions: []
 		})
 		.eq('id', timeSlotId)
 
@@ -877,7 +905,7 @@ export const bookTimeSlotForClientGroup = async ({
 	}
 }
 
-export const updateUserCreditsCancellation = async (userId, creditsToAdd) => {
+export const updateUserCreditsCancellation = async (userId, totalRefund) => {
 	const supabase = await supabaseClient()
 	const userResponse = await supabase
 		.from('users')
@@ -886,7 +914,7 @@ export const updateUserCreditsCancellation = async (userId, creditsToAdd) => {
 		.single()
 
 	if (userResponse.data) {
-		const newWalletBalance = userResponse.data.wallet + creditsToAdd
+		const newWalletBalance = userResponse.data.wallet + totalRefund
 		const { data, error } = await supabase
 			.from('users')
 			.update({ wallet: newWalletBalance })

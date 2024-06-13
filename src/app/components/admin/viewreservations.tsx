@@ -96,14 +96,13 @@ export default function ViewReservationsComponent() {
 			(id: any) => id !== userId
 		)
 		const updatedCount = existingSlot.count - 1
-		const isUnbooked = updatedCount === 0 ? false : existingSlot.booked
 
 		const { data, error } = await supabase
 			.from('group_time_slots')
 			.update({
 				user_id: updatedUserIds,
 				count: updatedCount,
-				booked: isUnbooked
+				booked: false
 			})
 			.eq('id', timeSlotId)
 
@@ -258,19 +257,54 @@ export default function ViewReservationsComponent() {
 			)
 		) {
 			if (isPrivateTraining) {
+				const supabase = await supabaseClient()
+				const { data: reservationData, error: reservationError } =
+					await supabase
+						.from('time_slots')
+						.select('additions')
+						.eq('id', reservation.id)
+						.single()
+
+				if (reservationError || !reservationData) {
+					console.error(
+						'Error fetching reservation details:',
+						reservationError?.message || 'Reservation not found'
+					)
+					return
+				}
+
+				// Fetch additions prices from the market table
+				const { data: additionsData, error: additionsError } = await supabase
+					.from('market')
+					.select('name, price')
+					.in('name', reservationData.additions || [])
+
+				if (additionsError) {
+					console.error(
+						'Error fetching additions data:',
+						additionsError.message
+					)
+					return
+				}
+
+				const additionsTotalPrice = additionsData.reduce(
+					(total, item) => total + item.price,
+					0
+				)
+				const totalRefund =
+					(reservation.activity?.credits || 0) + additionsTotalPrice
+
 				const updatedSlot = {
 					...reservation,
 					user_id: null,
-					booked: false
+					booked: false,
+					additions: [] // Clear additions after cancellation
 				}
 
 				const { success, error } = await updateTimeSlot(updatedSlot)
 				if (success) {
 					console.log('Booking cancelled successfully.')
-					updateUserCreditsCancellation(
-						reservation.user?.user_id,
-						reservation.activity?.credits
-					)
+					updateUserCreditsCancellation(reservation.user?.user_id, totalRefund)
 					fetchData()
 				} else {
 					console.error('Failed to cancel booking:', error)
