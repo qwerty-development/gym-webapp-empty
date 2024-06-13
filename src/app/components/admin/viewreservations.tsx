@@ -523,7 +523,7 @@ export default function ViewReservationsComponent() {
 												? reservation.users.map((user: any, userIndex: any) => (
 													<div
 														key={userIndex}
-														className='flex items-center justify-between'>
+														className='flex items-center border justify-between'>
 														{user
 															? `${user.first_name} ${user.last_name}`
 															: 'N/A'}
@@ -535,7 +535,7 @@ export default function ViewReservationsComponent() {
 																	reservation.activity?.credits
 																)
 															}
-															className='ml-2 bg-red-500 hover:bg-red-700 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center'>
+															className='ml-2 bg-red-500 mt-3 hover:bg-red-700 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center'>
 															✖
 														</button>
 													</div>
