@@ -254,48 +254,49 @@ export default function Example() {
 		}
 	}
 
-const handlePay = async () => {
-	if (!user) {
-		console.error('User is not signed in')
-		return
-	}
-	const response = isPrivateTraining
-		? await payForItems({
-				userId: user.id,
-				activityId: selectedActivity, // This should be the selected activity ID
-				coachId: selectedCoach, // This should be the selected coach ID
-				date: formatDate(selectedDate), // This should be the selected date
-				startTime: selectedTime.split(' - ')[0], // This should be the start time of the selected slot
-				selectedItems
-		  })
-		: await payForGroupItems({
-				userId: user.id,
-				activityId: selectedActivity, // This should be the selected activity ID
-				coachId: selectedCoach, // This should be the selected coach ID
-				date: formatDate(selectedDate), // This should be the selected date
-				startTime: selectedTime.split(' - ')[0], // This should be the start time of the selected slot
-				selectedItems
-		  })
+	const handlePay = async () => {
+		setLoading(true)
+		if (!user) {
+			console.error('User is not signed in')
+			return
+		}
+		const response = isPrivateTraining
+			? await payForItems({
+					userId: user.id,
+					activityId: selectedActivity, // This should be the selected activity ID
+					coachId: selectedCoach, // This should be the selected coach ID
+					date: formatDate(selectedDate), // This should be the selected date
+					startTime: selectedTime.split(' - ')[0], // This should be the start time of the selected slot
+					selectedItems
+			  })
+			: await payForGroupItems({
+					userId: user.id,
+					activityId: selectedActivity, // This should be the selected activity ID
+					coachId: selectedCoach, // This should be the selected coach ID
+					date: formatDate(selectedDate), // This should be the selected date
+					startTime: selectedTime.split(' - ')[0], // This should be the start time of the selected slot
+					selectedItems
+			  })
 
-	if (response.error) {
-		toast.error(response.error) // Display error toast
-	} else {
-		setSelectedItems([])
-		refreshWalletBalance() // Clear selected items after payment
-		setTotalPrice(0) // Reset total price after payment
-		setModalIsOpen(false)
-		setSelectedActivity(null)
-		setSelectedCoach(null)
-		setSelectedDate(null)
-		setSelectedTime('')
-		setAvailableTimes([])
-		setGroupAvailableTimes([])
-		setHighlightDates([])
-		toast.success('Items Added Successfully') // Display success toast
-		// Close the modal after payment
+		if (response.error) {
+			toast.error(response.error) // Display error toast
+		} else {
+			setSelectedItems([])
+			refreshWalletBalance() // Clear selected items after payment
+			setTotalPrice(0) // Reset total price after payment
+			setModalIsOpen(false)
+			setSelectedActivity(null)
+			setSelectedCoach(null)
+			setSelectedDate(null)
+			setSelectedTime('')
+			setAvailableTimes([])
+			setGroupAvailableTimes([])
+			setHighlightDates([])
+			toast.success('Items Added Successfully') // Display success toast
+			// Close the modal after payment
+			setLoading(false)
+		}
 	}
-}
-
 
 	const getCapacity = () => {
 		if (selectedActivity === null) {
@@ -706,8 +707,9 @@ const handlePay = async () => {
 					<div>
 						<button
 							className='mt-4 bg-blue-500 text-white py-2 px-4 rounded mx-5'
-							onClick={handlePay}>
-							Pay
+							onClick={handlePay}
+							disabled={loading}>
+							{loading ? 'Processing...' : 'Pay'}
 						</button>
 						<button
 							className='mt-4 bg-red-500 text-white py-2 px-4 rounded'

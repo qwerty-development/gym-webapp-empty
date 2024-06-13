@@ -71,6 +71,13 @@ export default function ViewReservationsComponent() {
 		userId: any,
 		credits: any
 	) => {
+		const confirm = window.confirm(
+			'Are you sure you want to remove this user from the group?'
+		)
+		if (!confirm) {
+			return
+		}
+
 		const supabase = await supabaseClient()
 
 		// Fetch existing group time slot data

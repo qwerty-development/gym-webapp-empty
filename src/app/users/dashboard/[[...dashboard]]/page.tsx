@@ -143,12 +143,16 @@ export default function Dashboard() {
 		fetchData()
 	}, [isLoaded, isSignedIn, user])
 
+	const [buttonLoading, setButtonLoading] = useState(false)
+
 	const handleCancel = async (reservationId: number) => {
 		if (user) {
 			const confirmed = await showConfirmationToast(
 				'Are you sure you want to cancel this reservation?'
 			)
 			if (!confirmed) return
+
+			setButtonLoading(true)
 
 			const cancelled = await cancelReservation(
 				reservationId,
@@ -163,6 +167,7 @@ export default function Dashboard() {
 				toast.error('Failed to cancel reservation!')
 			}
 		}
+		setButtonLoading(false)
 	}
 
 	const handleCancelGroup = async (reservationId: number) => {
@@ -171,6 +176,8 @@ export default function Dashboard() {
 				'Are you sure you want to cancel this group reservation?'
 			)
 			if (!confirmed) return
+
+			setButtonLoading(true)
 
 			const cancelled = await cancelReservationGroup(
 				reservationId,
@@ -185,6 +192,7 @@ export default function Dashboard() {
 				toast.error('Failed to cancel group reservation!')
 			}
 		}
+		setButtonLoading(false)
 	}
 
 	if (!isLoaded || !isSignedIn) {
@@ -267,8 +275,9 @@ export default function Dashboard() {
 													/>
 													<button
 														onClick={() => handleCancel(reservation.id)}
-														className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'>
-														Cancel
+														className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'
+														disabled={buttonLoading}>
+														{buttonLoading ? 'Cancelling...' : 'Cancel'}
 													</button>
 												</div>
 											))}
@@ -348,8 +357,9 @@ export default function Dashboard() {
 											/>
 											<button
 												onClick={() => handleCancelGroup(reservation.id)}
-												className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'>
-												Cancel
+												className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'
+												disabled={buttonLoading}>
+												{buttonLoading ? 'Cancelling...' : 'Cancel'}
 											</button>
 										</div>
 									))}
