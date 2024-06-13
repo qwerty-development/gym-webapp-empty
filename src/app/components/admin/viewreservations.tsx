@@ -55,11 +55,16 @@ export default function ViewReservationsComponent() {
 	const [showFilters, setShowFilters] = useState(false)
 	const [selectedReservations, setSelectedReservations] = useState<number[]>([])
 	const [isPrivateTraining, setIsPrivateTraining] = useState<boolean>(true)
+	const [privateSession, setPrivateSession] = useState<any[]>([])
+	const [publicSession, setPublicSession] = useState<any[]>([])
 
 	const fetchData = async () => {
-		const data = isPrivateTraining
-			? await fetchTimeSlots()
-			: await fetchGroupTimeSlots()
+		const privateSession = await fetchTimeSlots()
+		setPrivateSession(privateSession)
+		const publicSession = await fetchGroupTimeSlots()
+		setPublicSession(publicSession)
+
+		const data = isPrivateTraining ? privateSession : publicSession
 		if (Array.isArray(data)) {
 			setReservations(data)
 			setFilteredReservations(data)
