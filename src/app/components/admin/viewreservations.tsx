@@ -15,6 +15,7 @@ import { supabaseClient } from '../../../../utils/supabaseClient'
 type Activity = {
 	name: string
 	credits: number
+	capacity: number | null
 } | null
 
 type Coach = {
@@ -463,6 +464,7 @@ export default function ViewReservationsComponent() {
 								<th className='px-4 py-2'>Name</th>
 								<th className='px-4 py-2'>Booked</th>
 								<th className='px-4 py-2'>Credits</th>
+								{!isPrivateTraining && <th className='px-4 py-2'>Capacity</th>}
 							</tr>
 						</thead>
 
@@ -535,6 +537,12 @@ export default function ViewReservationsComponent() {
 									<td className='px-4 py-2'>
 										{reservation.activity?.credits ?? 'N/A'}
 									</td>
+
+									{!isPrivateTraining && (
+										<td className='px-4 py-2'>
+											{reservation.activity?.capacity ?? 'N/A'}
+										</td>
+									)}
 								</tr>
 							))}
 						</tbody>

@@ -377,7 +377,7 @@ export const fetchGroupTimeSlots = async () => {
 	const supabase = await supabaseClient()
 	const { data, error } = await supabase.from('group_time_slots').select(`
     id,
-    activities ( name, credits ),
+    activities ( name, credits,capacity ),
     coaches ( name ),
     date,
     start_time,
@@ -410,7 +410,11 @@ export const fetchGroupTimeSlots = async () => {
 	const transformedData = data.map(slot => ({
 		id: slot.id,
 		activity: slot.activities
-			? { name: slot.activities.name, credits: slot.activities.credits }
+			? {
+					name: slot.activities.name,
+					credits: slot.activities.credits,
+					capacity: slot.activities.capacity
+			  }
 			: null,
 		coach: slot.coaches ? { name: slot.coaches.name } : null,
 		date: slot.date,
