@@ -46,6 +46,10 @@ type GroupReservation = {
 		credits: number
 	}
 	count: number
+	additions: {
+		user_id: string
+		items: { id: string; name: string; price: number }[]
+	}[]
 }
 
 type Activity = {
@@ -117,7 +121,12 @@ export default function Dashboard() {
 								name: reservation.activity.name,
 								credits: reservation.activity.credits
 							},
-							count: reservation.count
+							count: reservation.count,
+							additions: reservation.additions
+								? reservation.additions.filter(
+										(addition: any) => addition.user_id === user.id
+								  )
+								: []
 						})
 					)
 
@@ -233,7 +242,10 @@ export default function Dashboard() {
 														Cost: {reservation.activity.credits} credits
 													</p>
 													<p className='text-gray-600 mb-2'>
-														Additions: {reservation.additions ? reservation.additions.join(', ') : 'No additions'}
+														Additions:{' '}
+														{reservation.additions
+															? reservation.additions.join(', ')
+															: 'No additions'}
 													</p>
 
 													<AddToCalendarButton
@@ -267,7 +279,6 @@ export default function Dashboard() {
 										</p>
 									)}
 								</div>
-
 							</>
 						)}
 					</main>
@@ -285,12 +296,9 @@ export default function Dashboard() {
 											<h3 className='text-lg dark:text-black font-semibold mb-2'>
 												{reservation.activity.name}
 											</h3>
+											<p className='text-gray-600'>Date: {reservation.date}</p>
 											<p className='text-gray-600'>
-												Date: {reservation.date}
-											</p>
-											<p className='text-gray-600'>
-												Time: {reservation.start_time} -{' '}
-												{reservation.end_time}
+												Time: {reservation.start_time} - {reservation.end_time}
 											</p>
 											<p className='text-gray-600'>
 												Coach: {reservation.coach.name}
@@ -300,6 +308,26 @@ export default function Dashboard() {
 											</p>
 											<p className='text-gray-600 mb-2'>
 												Attendance: {reservation.count}
+											</p>
+											<p className='text-gray-600 mb-2'>
+												Additions:
+												{reservation.additions.length > 0 ? (
+													<ul>
+														{reservation.additions.map((addition, index) => (
+															<li key={index}>
+																<ul>
+																	{addition.items.map(item => (
+																		<li key={item.id}>
+																			{item.name} - {item.price} credits
+																		</li>
+																	))}
+																</ul>
+															</li>
+														))}
+													</ul>
+												) : (
+													'No additions'
+												)}
 											</p>
 											<AddToCalendarButton
 												name={
@@ -335,6 +363,6 @@ export default function Dashboard() {
 					</div>
 				</div>
 			</div>
-		</div >
+		</div>
 	)
 }

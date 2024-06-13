@@ -142,6 +142,7 @@ export const fetchReservationsGroup = async userId => {
             end_time,
             date,
             count,
+            additions,
             activity:activities (
                 id,
                 name,
@@ -189,7 +190,8 @@ export const cancelReservation = async (
 
 		if (reservationError || !reservationData) {
 			throw new Error(
-				`Error fetching reservation: ${reservationError?.message || 'Reservation not found'
+				`Error fetching reservation: ${
+					reservationError?.message || 'Reservation not found'
 				}`
 			)
 		}
@@ -206,7 +208,8 @@ export const cancelReservation = async (
 
 		if (activityError || !activityData) {
 			throw new Error(
-				`Error fetching activity credits: ${activityError?.message || 'Activity not found'
+				`Error fetching activity credits: ${
+					activityError?.message || 'Activity not found'
 				}`
 			)
 		}
@@ -339,14 +342,15 @@ export const cancelReservationGroup = async (
 		const { data: reservationData, error: reservationError } = await supabase
 			.from('group_time_slots')
 			.select(
-				'activity_id, user_id, booked, coach_id, date, start_time, end_time'
+				'activity_id, user_id, booked, coach_id, date, start_time, end_time, additions'
 			)
 			.eq('id', reservationId)
 			.single()
 
 		if (reservationError || !reservationData) {
 			throw new Error(
-				`Error fetching reservation: ${reservationError?.message || 'Reservation not found'
+				`Error fetching reservation: ${
+					reservationError?.message || 'Reservation not found'
 				}`
 			)
 		}
@@ -363,12 +367,30 @@ export const cancelReservationGroup = async (
 
 		if (activityError || !activityData) {
 			throw new Error(
-				`Error fetching activity credits: ${activityError?.message || 'Activity not found'
+				`Error fetching activity credits: ${
+					activityError?.message || 'Activity not found'
 				}`
 			)
 		}
 
 		let totalRefund = activityData.credits
+
+		// Calculate total additions refund
+		const userAdditions = reservationData.additions.filter(
+			addition => addition.user_id === userId
+		)
+		const additionsTotalPrice = userAdditions.reduce(
+			(total, addition) =>
+				total +
+				addition.items.reduce((itemTotal, item) => itemTotal + item.price, 0),
+			0
+		)
+		totalRefund += additionsTotalPrice
+
+		// Remove user's additions from the additions array
+		const updatedAdditions = reservationData.additions.filter(
+			addition => addition.user_id !== userId
+		)
 
 		// Remove user from the user_id array
 		const updatedUserIds = reservationData.user_id.filter(id => id !== userId)
@@ -380,7 +402,8 @@ export const cancelReservationGroup = async (
 			.update({
 				user_id: updatedUserIds,
 				count: newCount,
-				booked: isBooked
+				booked: isBooked,
+				additions: updatedAdditions
 			})
 			.eq('id', reservationId)
 
@@ -804,7 +827,7 @@ export const bookTimeSlotGroup = async ({
 	endTime,
 	userId
 }) => {
-	const supabase = await supabaseClient();
+	const supabase = await supabaseClient()
 
 	// Check if the time slot is already booked
 	const { data: existingSlot, error: existingSlotError } = await supabase
@@ -815,22 +838,26 @@ export const bookTimeSlotGroup = async ({
 		.eq('date', date)
 		.eq('start_time', startTime)
 		.eq('end_time', endTime)
-		.single();
+		.single()
 
 	if (existingSlotError && existingSlotError.code !== 'PGRST116') {
 		console.error(
 			'Error checking group time slot availability:',
 			existingSlotError.message
-		);
-		return { error: existingSlotError.message };
+		)
+		return { error: existingSlotError.message }
 	}
 
 	if (existingSlot && existingSlot.booked) {
-		return { error: 'Time slot is already booked.' };
+		return { error: 'Time slot is already booked.' }
 	}
 
-	if (existingSlot && existingSlot.user_id && existingSlot.user_id.includes(userId)) {
-		return { error: 'You are already enrolled in this class.' };
+	if (
+		existingSlot &&
+		existingSlot.user_id &&
+		existingSlot.user_id.includes(userId)
+	) {
+		return { error: 'You are already enrolled in this class.' }
 	}
 
 	// Fetch user's current credits
@@ -838,11 +865,11 @@ export const bookTimeSlotGroup = async ({
 		.from('users')
 		.select('*')
 		.eq('user_id', userId)
-		.single();
+		.single()
 
 	if (userError || !userData) {
-		console.error('Error fetching user credits:', userError?.message);
-		return { error: userError?.message || 'User not found.' };
+		console.error('Error fetching user credits:', userError?.message)
+		return { error: userError?.message || 'User not found.' }
 	}
 
 	// Fetch activity details including capacity and credits required
@@ -850,26 +877,26 @@ export const bookTimeSlotGroup = async ({
 		.from('activities')
 		.select('*')
 		.eq('id', activityId)
-		.single();
+		.single()
 
 	if (activityError || !activityData) {
-		console.error('Error fetching activity details:', activityError?.message);
-		return { error: activityError?.message || 'Activity not found.' };
+		console.error('Error fetching activity details:', activityError?.message)
+		return { error: activityError?.message || 'Activity not found.' }
 	}
 
 	if (userData.wallet >= activityData.credits) {
-		let newCount = 1;
-		let user_id = [userId];
-		let isBooked = false;
-		let slotId;
+		let newCount = 1
+		let user_id = [userId]
+		let isBooked = false
+		let slotId
 
 		if (existingSlot) {
-			newCount = existingSlot.count + 1;
+			newCount = existingSlot.count + 1
 			user_id = existingSlot.user_id
 				? [...existingSlot.user_id, userId]
-				: [userId];
-			isBooked = newCount === activityData.capacity;
-			slotId = existingSlot.id;
+				: [userId]
+			isBooked = newCount === activityData.capacity
+			slotId = existingSlot.id
 		}
 
 		const upsertData = {
@@ -881,22 +908,22 @@ export const bookTimeSlotGroup = async ({
 			user_id,
 			count: newCount,
 			booked: isBooked
-		};
+		}
 
-		let timeSlotData, timeSlotError;
+		let timeSlotData, timeSlotError
 
 		if (slotId) {
 			// Update existing slot
-			({ data: timeSlotData, error: timeSlotError } = await supabase
+			;({ data: timeSlotData, error: timeSlotError } = await supabase
 				.from('group_time_slots')
 				.update(upsertData)
-				.eq('id', slotId));
+				.eq('id', slotId))
 		} else {
 			// Insert new slot
-			({ data: timeSlotData, error: timeSlotError } = await supabase
+			;({ data: timeSlotData, error: timeSlotError } = await supabase
 				.from('group_time_slots')
 				.insert(upsertData)
-				.single());
+				.single())
 
 			// Ensure no duplicates by deleting any older entries
 			await supabase
@@ -907,35 +934,35 @@ export const bookTimeSlotGroup = async ({
 				.eq('date', date)
 				.eq('start_time', startTime)
 				.eq('end_time', endTime)
-				.neq('id');
+				.neq('id')
 		}
 
 		if (timeSlotError) {
-			console.error('Error booking group time slot:', timeSlotError.message);
-			return { error: timeSlotError.message };
+			console.error('Error booking group time slot:', timeSlotError.message)
+			return { error: timeSlotError.message }
 		}
 
 		// Deduct credits from user's account
-		const newWalletBalance = userData.wallet - activityData.credits;
+		const newWalletBalance = userData.wallet - activityData.credits
 		const { error: updateError } = await supabase
 			.from('users')
 			.update({ wallet: newWalletBalance })
-			.eq('user_id', userId);
+			.eq('user_id', userId)
 
 		if (updateError) {
-			console.error('Error updating user credits:', updateError.message);
-			return { error: updateError.message };
+			console.error('Error updating user credits:', updateError.message)
+			return { error: updateError.message }
 		}
 
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
 			.select('name')
 			.eq('id', coachId)
-			.single();
+			.single()
 
 		if (coachError || !coachData) {
-			console.error('Error fetching coach data:', coachError?.message);
-			return { error: coachError?.message || 'Coach not found.' };
+			console.error('Error fetching coach data:', coachError?.message)
+			return { error: coachError?.message || 'Coach not found.' }
 		}
 
 		// Prepare email data
@@ -949,7 +976,7 @@ export const bookTimeSlotGroup = async ({
 			end_time: endTime,
 			coach_name: coachData.name,
 			user_wallet: newWalletBalance
-		};
+		}
 
 		// Send email notification to admin
 		try {
@@ -959,16 +986,16 @@ export const bookTimeSlotGroup = async ({
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(emailData)
-			});
+			})
 
-			const resultAdmin = await responseAdmin.json();
+			const resultAdmin = await responseAdmin.json()
 			if (responseAdmin.ok) {
-				console.log('Admin email sent successfully');
+				console.log('Admin email sent successfully')
 			} else {
-				console.error(`Failed to send admin email: ${resultAdmin.error}`);
+				console.error(`Failed to send admin email: ${resultAdmin.error}`)
 			}
 		} catch (error) {
-			console.error('Error sending admin email:', error);
+			console.error('Error sending admin email:', error)
 		}
 
 		// Send email notification to user
@@ -979,27 +1006,26 @@ export const bookTimeSlotGroup = async ({
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(emailData)
-			});
+			})
 
-			const resultUser = await responseUser.json();
+			const resultUser = await responseUser.json()
 			if (responseUser.ok) {
-				console.log('User email sent successfully');
+				console.log('User email sent successfully')
 			} else {
-				console.error(`Failed to send user email: ${resultUser.error}`);
+				console.error(`Failed to send user email: ${resultUser.error}`)
 			}
 		} catch (error) {
-			console.error('Error sending user email:', error);
+			console.error('Error sending user email:', error)
 		}
 
 		return {
 			data: timeSlotData,
 			message: 'Session booked and credits deducted.'
-		};
+		}
 	} else {
-		return { error: 'Not enough credits to book the session.' };
+		return { error: 'Not enough credits to book the session.' }
 	}
-};
-
+}
 
 export const fetchMarket = async () => {
 	const supabase = await supabaseClient()
@@ -1091,5 +1117,101 @@ export const payForItems = async ({
 	return {
 		data: { ...timeSlotData, additions: newAdditions },
 		message: 'Items added to time slot and credits deducted.'
+	}
+}
+
+export const payForGroupItems = async ({
+	userId,
+	activityId,
+	coachId,
+	date,
+	startTime,
+	selectedItems
+}) => {
+	const supabase = await supabaseClient()
+
+	// Fetch user's current credits
+	const { data: userData, error: userError } = await supabase
+		.from('users')
+		.select('*')
+		.eq('user_id', userId)
+		.single()
+
+	if (userError || !userData) {
+		console.error('Error fetching user credits:', userError?.message)
+		return { error: userError?.message || 'User not found.' }
+	}
+
+	// Calculate total price of selected items
+	const totalPrice = selectedItems.reduce(
+		(total, item) => total + item.price,
+		0
+	)
+
+	// Check if the user has enough credits
+	if (userData.wallet < totalPrice) {
+		return { error: 'Not enough credits to pay for the items.' }
+	}
+
+	// Fetch the group time slot ID based on activity, coach, date, and start time
+	const { data: timeSlotData, error: timeSlotError } = await supabase
+		.from('group_time_slots')
+		.select('*')
+		.match({
+			activity_id: activityId,
+			coach_id: coachId,
+			date: date,
+			start_time: startTime
+		})
+		.single()
+
+	if (timeSlotError || !timeSlotData) {
+		console.error(
+			'Error fetching group time slot data:',
+			timeSlotError?.message
+		)
+		return { error: timeSlotError?.message || 'Group time slot not found.' }
+	}
+
+	// Deduct credits from user's account
+	const newWalletBalance = userData.wallet - totalPrice
+	const { error: updateError } = await supabase
+		.from('users')
+		.update({ wallet: newWalletBalance })
+		.eq('user_id', userId)
+
+	if (updateError) {
+		console.error('Error updating user credits:', updateError.message)
+		return { error: updateError.message }
+	}
+
+	// Create a new addition entry
+	const newAddition = {
+		user_id: userId,
+		items: selectedItems.map(item => ({
+			id: item.id,
+			name: item.name,
+			price: item.price
+		}))
+	}
+
+	// Add the new addition entry to the additions array in the group time slot
+	const newAdditions = [...(timeSlotData.additions || []), newAddition]
+	const { error: additionsError } = await supabase
+		.from('group_time_slots')
+		.update({ additions: newAdditions })
+		.eq('id', timeSlotData.id)
+
+	if (additionsError) {
+		console.error(
+			'Error updating group time slot additions:',
+			additionsError.message
+		)
+		return { error: additionsError.message }
+	}
+
+	return {
+		data: { ...timeSlotData, additions: newAdditions },
+		message: 'Items added to group time slot and credits deducted.'
 	}
 }

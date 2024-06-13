@@ -12,7 +12,8 @@ import {
 	payForItems,
 	fetchAllActivitiesGroup,
 	fetchFilteredUnbookedTimeSlotsGroup,
-	bookTimeSlotGroup
+	bookTimeSlotGroup,
+	payForGroupItems
 } from '../../../../utils/user-requests'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -253,37 +254,48 @@ export default function Example() {
 		}
 	}
 
-	const handlePay = async () => {
-		if (!user) {
-			console.error('User is not signed in')
-			return
-		}
-		const response = await payForItems({
-			userId: user.id,
-			activityId: selectedActivity, // This should be the selected activity ID
-			coachId: selectedCoach, // This should be the selected coach ID
-			date: formatDate(selectedDate), // This should be the selected date
-			startTime: selectedTime.split(' - ')[0], // This should be the start time of the selected slot
-			selectedItems
-		})
-
-		if (response.error) {
-			toast.error(response.error) // Display error toast
-		} else {
-			setSelectedItems([])
-			refreshWalletBalance() // Clear selected items after payment
-			setTotalPrice(0) // Reset total price after payment
-			setModalIsOpen(false)
-			setSelectedActivity(null)
-			setSelectedCoach(null)
-			setSelectedDate(null)
-			setSelectedTime('')
-			setAvailableTimes([])
-			setHighlightDates([])
-			toast.success('Items Added Successfully') // Display success toast
-			// Close the modal after payment
-		}
+const handlePay = async () => {
+	if (!user) {
+		console.error('User is not signed in')
+		return
 	}
+	const response = isPrivateTraining
+		? await payForItems({
+				userId: user.id,
+				activityId: selectedActivity, // This should be the selected activity ID
+				coachId: selectedCoach, // This should be the selected coach ID
+				date: formatDate(selectedDate), // This should be the selected date
+				startTime: selectedTime.split(' - ')[0], // This should be the start time of the selected slot
+				selectedItems
+		  })
+		: await payForGroupItems({
+				userId: user.id,
+				activityId: selectedActivity, // This should be the selected activity ID
+				coachId: selectedCoach, // This should be the selected coach ID
+				date: formatDate(selectedDate), // This should be the selected date
+				startTime: selectedTime.split(' - ')[0], // This should be the start time of the selected slot
+				selectedItems
+		  })
+
+	if (response.error) {
+		toast.error(response.error) // Display error toast
+	} else {
+		setSelectedItems([])
+		refreshWalletBalance() // Clear selected items after payment
+		setTotalPrice(0) // Reset total price after payment
+		setModalIsOpen(false)
+		setSelectedActivity(null)
+		setSelectedCoach(null)
+		setSelectedDate(null)
+		setSelectedTime('')
+		setAvailableTimes([])
+		setGroupAvailableTimes([])
+		setHighlightDates([])
+		toast.success('Items Added Successfully') // Display success toast
+		// Close the modal after payment
+	}
+}
+
 
 	const getCapacity = () => {
 		if (selectedActivity === null) {
@@ -570,8 +582,11 @@ export default function Example() {
 															: 'hover'
 													}`}
 													onClick={() => setSelectedTime(time)}>
-													{time} 
-													<p className='text-gray-400 mt-2 text-xs'> Capacity: {reservationCount}/{getCapacity()}</p>
+													{time}
+													<p className='text-gray-400 mt-2 text-xs'>
+														{' '}
+														Capacity: {reservationCount}/{getCapacity()}
+													</p>
 												</button>
 											))}
 										</div>
