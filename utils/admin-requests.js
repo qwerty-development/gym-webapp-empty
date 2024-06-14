@@ -1,5 +1,4 @@
 import { supabaseClient } from './supabaseClient'
-
 // Functions to manage coaches
 
 export const addActivity = async activity => {
