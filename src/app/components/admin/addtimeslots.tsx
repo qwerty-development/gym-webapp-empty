@@ -15,6 +15,7 @@ import DatePanel from 'react-multi-date-picker/plugins/date_panel'
 import Icon from 'react-multi-date-picker/components/icon'
 import Toolbar from 'react-multi-date-picker/plugins/toolbar'
 import toast from 'react-hot-toast'
+import { set } from 'date-fns'
 
 type OptionType = {
 	label: string
@@ -29,6 +30,7 @@ export default function AddTimeSlotComponent() {
 	const [selectedActivity, setSelectedActivity] = useState<OptionType | null>(
 		null
 	)
+  const [buttonLoading, setButtonLoading] = useState(false)
 	const [selectedGroupActivity, setSelectedGroupActivity] =
 		useState<OptionType | null>(null)
 	const [selectedDates, setSelectedDates] = useState<Date[]>([new Date()])
@@ -76,6 +78,7 @@ export default function AddTimeSlotComponent() {
 	}
 
 	const handleAddTimeSlot = async () => {
+    setButtonLoading(true)
 		if (
 			!selectedCoach ||
 			!selectedActivity ||
@@ -84,6 +87,7 @@ export default function AddTimeSlotComponent() {
 			!endTime
 		) {
 			alert('Please fill in all fields')
+      setButtonLoading(false)
 			return
 		}
 
@@ -105,9 +109,11 @@ export default function AddTimeSlotComponent() {
 		}
 
 		toast.success('Time slots added successfully')
+    setButtonLoading(false)
 	}
 
 	const handleAddGroupTimeSlot = async () => {
+    setButtonLoading(true)
 		if (
 			!selectedCoach ||
 			!selectedGroupActivity ||
@@ -116,6 +122,7 @@ export default function AddTimeSlotComponent() {
 			!endTime
 		) {
 			alert('Please fill in all fields')
+      setButtonLoading(false)
 			return
 		}
 
@@ -140,6 +147,7 @@ export default function AddTimeSlotComponent() {
 		}
 
 		toast.success('Group time slots added successfully')
+    setButtonLoading(false)
 	}
 
 	return (

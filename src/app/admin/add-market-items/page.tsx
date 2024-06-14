@@ -22,6 +22,7 @@ export default function MarketManagement() {
 	const [editingItem, setEditingItem] = useState<number | null>(null)
 	const [editName, setEditName] = useState<string>('')
 	const [editPrice, setEditPrice] = useState<string>('')
+	const [buttonLoading, setButtonLoading] = useState(false)
 
 	const fetchMarketItems = async () => {
 		const data = await fetchMarket()
@@ -38,6 +39,7 @@ export default function MarketManagement() {
 			toast.error('Please enter valid name and price.')
 			return
 		}
+		setButtonLoading(true)
 		const { error, message } = await addMarketItem(newItemName, price)
 		if (error) {
 			toast.error(error)
@@ -47,9 +49,11 @@ export default function MarketManagement() {
 			setNewItemPrice('')
 			fetchMarketItems()
 		}
+		setButtonLoading(false)
 	}
 
 	const handleDeleteItem = async (id: number) => {
+		setButtonLoading(true)
 		const { error, message } = await deleteMarketItem(id)
 		if (error) {
 			toast.error(error)
@@ -57,6 +61,7 @@ export default function MarketManagement() {
 			toast.success('Item deleted successfully!')
 			fetchMarketItems()
 		}
+		setButtonLoading(false)
 	}
 
 	const handleModifyItem = async (id: number) => {
@@ -65,6 +70,7 @@ export default function MarketManagement() {
 			toast.error('Please enter valid name and price.')
 			return
 		}
+		setButtonLoading(true)
 		const { error, message } = await modifyMarketItem(id, editName, price)
 		if (error) {
 			toast.error(error)
@@ -75,6 +81,7 @@ export default function MarketManagement() {
 			setEditPrice('')
 			fetchMarketItems()
 		}
+		setButtonLoading(false)
 	}
 
 	return (
@@ -105,6 +112,7 @@ export default function MarketManagement() {
 						/>
 						<button
 							onClick={handleAddItem}
+							disabled={buttonLoading}
 							className='bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-700'>
 							Add Item
 						</button>
@@ -137,11 +145,13 @@ export default function MarketManagement() {
 									<div className='flex space-x-2'>
 										<button
 											onClick={() => handleModifyItem(item.id)}
+											disabled={buttonLoading}
 											className='bg-green-500 text-white p-2 rounded-lg hover:bg-green-700'>
 											Save
 										</button>
 										<button
 											onClick={() => setEditingItem(null)}
+											disabled={buttonLoading}
 											className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-700'>
 											Cancel
 										</button>
@@ -160,12 +170,14 @@ export default function MarketManagement() {
 												setEditName(item.name)
 												setEditPrice(item.price.toString())
 											}}
-											className='bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600'>
+											className='bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600'
+											disabled={buttonLoading}>
 											Modify
 										</button>
 										<button
 											onClick={() => handleDeleteItem(item.id)}
-											className='bg-red-500 text-white  p-2 rounded-lg hover:bg-red-600'>
+											className='bg-red-500 text-white  p-2 rounded-lg hover:bg-red-600'
+											disabled={buttonLoading}>
 											Delete
 										</button>
 									</div>

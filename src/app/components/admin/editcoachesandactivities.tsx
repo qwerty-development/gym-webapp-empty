@@ -59,6 +59,7 @@ const CoachesandActivitiesAdminPage = () => {
 	) // State for updated coach picture
 	const [newCoachPicture, setNewCoachPicture] = useState<File | null>(null)
 	const [isPrivateTraining, setIsPrivateTraining] = useState<boolean>(true) // State for toggle under activities
+	const [buttonLoading, setButtonLoading] = useState(false)
 
 	useEffect(() => {
 		const loadInitialData = async () => {
@@ -79,6 +80,7 @@ const CoachesandActivitiesAdminPage = () => {
 	// Coach handlers
 	// Adjusted handleAddCoach to pass the file parameter
 	const handleAddCoach = async () => {
+		setButtonLoading(true)
 		if (newCoachName.trim()) {
 			await addCoach({ name: newCoachName }, newCoachPicture)
 			setNewCoachName('')
@@ -88,9 +90,12 @@ const CoachesandActivitiesAdminPage = () => {
 		} else {
 			toast.error('Please provide a valid name for the coach')
 		}
+
+		setButtonLoading(false)
 	}
 
 	const handleSubmitUpdate = async () => {
+		setButtonLoading(true)
 		if (updatedCoachName.trim() !== '') {
 			await updateCoach(
 				updateCoachId!,
@@ -103,16 +108,21 @@ const CoachesandActivitiesAdminPage = () => {
 		} else {
 			toast.error('Please provide a valid name for the coach')
 		}
+		setButtonLoading(false)
 	}
 
 	const handleDeleteCoach = async (coachId: number) => {
+		setButtonLoading(true)
 		const success = await deleteCoach(coachId)
 		if (success) setCoaches(coaches.filter(coach => coach.id !== coachId))
 		fetchCoaches().then(setCoaches)
+		refreshData()
+		setButtonLoading(false)
 	}
 
 	// Activity handlers
 	const handleAddActivity = async () => {
+		setButtonLoading(true)
 		const activity = await addActivity({
 			name: newActivityName,
 			credits: parseInt(newActivityCredits, 10),
@@ -124,13 +134,18 @@ const CoachesandActivitiesAdminPage = () => {
 		setNewActivityCredits('')
 		setNewActivityCapacity('')
 		fetchActivities().then(setActivities)
+		refreshData()
+		setButtonLoading(false)
 	}
 
 	const handleDeleteActivity = async (activityId: number) => {
+		setButtonLoading(true)
 		const success = await deleteActivity(activityId)
 		if (success)
 			setActivities(activities.filter(activity => activity.id !== activityId))
 		fetchActivities().then(setActivities)
+		refreshData()
+		setButtonLoading(false)
 	}
 
 	const handleCoachSelection = (
@@ -142,8 +157,11 @@ const CoachesandActivitiesAdminPage = () => {
 	}
 
 	const handleUpdateActivity = async (activityId: number) => {
+		setButtonLoading(true)
 		const newName = prompt('Enter new name for activity (leave empty to skip):')
-		const creditsInput = prompt('Enter new credits for activity (leave empty to skip):')
+		const creditsInput = prompt(
+			'Enter new credits for activity (leave empty to skip):'
+		)
 		const capacityInput = prompt('Enter new capacity (leave empty to skip):')
 
 		const updatedActivity = { id: activityId } as any
@@ -190,10 +208,9 @@ const CoachesandActivitiesAdminPage = () => {
 		} catch (error) {
 			console.error('Error updating activity:', error)
 		}
+		refreshData()
+		setButtonLoading(false)
 	}
-
-
-
 
 	const [file, setFile] = useState<File | null>(null)
 
@@ -242,6 +259,7 @@ const CoachesandActivitiesAdminPage = () => {
 						<input type='file' onChange={handleFileChange} />
 						<button
 							onClick={handleAddCoach}
+							disabled={buttonLoading}
 							className='bg-blue-500 text-white px-4 py-2 rounded-md '>
 							Add Coach
 						</button>
@@ -268,11 +286,13 @@ const CoachesandActivitiesAdminPage = () => {
 									</div>
 									<div className='flex'>
 										<button
+											disabled={buttonLoading}
 											onClick={() => handleToggleForm(coach.id)}
 											className='bg-yellow-500 text-white px-3 py-1 rounded-md mr-2'>
 											Update
 										</button>
 										<button
+											disabled={buttonLoading}
 											onClick={() => handleDeleteCoach(coach.id)}
 											className='bg-red-500 text-white px-3 py-1 rounded-md'>
 											Delete
@@ -294,6 +314,7 @@ const CoachesandActivitiesAdminPage = () => {
 											onChange={handleFileChange}
 										/>
 										<button
+											disabled={buttonLoading}
 											onClick={handleSubmitUpdate}
 											className='bg-blue-500 text-white items-center px-4 py-2 rounded-md mt-4'>
 											Update
@@ -313,14 +334,18 @@ const CoachesandActivitiesAdminPage = () => {
 					<h1 className='text-3xl font-bold'>Activities</h1>
 					<div className='flex m-6 justify-center'>
 						<button
-							className={`px-4 py-2 mr-2 rounded ${isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
-								}`}
+							disabled={buttonLoading}
+							className={`px-4 py-2 mr-2 rounded ${
+								isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+							}`}
 							onClick={handleToggle}>
 							Private Training
 						</button>
 						<button
-							className={`px-4 py-2 rounded ${!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
-								}`}
+							disabled={buttonLoading}
+							className={`px-4 py-2 rounded ${
+								!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+							}`}
 							onClick={handleToggle}>
 							Public Training
 						</button>
@@ -355,6 +380,7 @@ const CoachesandActivitiesAdminPage = () => {
 								))}
 							</select>
 							<button
+								disabled={buttonLoading}
 								onClick={handleAddActivity}
 								className='bg-blue-500 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
 								Add Activity
@@ -383,11 +409,13 @@ const CoachesandActivitiesAdminPage = () => {
 										</p>
 										<div className='mt-5'>
 											<button
+												disabled={buttonLoading}
 												onClick={() => handleUpdateActivity(activity.id)}
 												className='bg-yellow-500 text-white px-3 py-1 rounded-md mr-2'>
 												Update
 											</button>
 											<button
+												disabled={buttonLoading}
 												onClick={() => handleDeleteActivity(activity.id)}
 												className='bg-red-500 text-white px-3 py-1 rounded-md ml-2'>
 												Delete
@@ -435,11 +463,13 @@ const CoachesandActivitiesAdminPage = () => {
 								))}
 							</select>
 							<button
+								disabled={buttonLoading}
 								onClick={handleAddActivity}
 								className='bg-blue-500 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
 								Add Activity
 							</button>
-						</div>						<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-12 lg:grid-cols-4 gap-4'>
+						</div>{' '}
+						<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-12 lg:grid-cols-4 gap-4'>
 							{groupactivities.map(activity => (
 								<div
 									key={activity.id}
@@ -455,16 +485,16 @@ const CoachesandActivitiesAdminPage = () => {
 										{coaches.find(coach => coach.id === activity.coach_id)
 											?.name || 'None'}
 									</p>
-									<p className='text-gray-500'>
-										Capacity: {activity.capacity}
-									</p>
+									<p className='text-gray-500'>Capacity: {activity.capacity}</p>
 									<div className='mt-5'>
 										<button
+											disabled={buttonLoading}
 											onClick={() => handleUpdateActivity(activity.id)}
 											className='bg-yellow-500 text-white px-3 py-1 rounded-md mr-2'>
 											Update
 										</button>
 										<button
+											disabled={buttonLoading}
 											onClick={() => handleDeleteActivity(activity.id)}
 											className='bg-red-500 text-white px-3 py-1 rounded-md ml-2'>
 											Delete
@@ -473,7 +503,6 @@ const CoachesandActivitiesAdminPage = () => {
 								</div>
 							))}
 						</div>
-
 					</>
 				)}
 			</section>

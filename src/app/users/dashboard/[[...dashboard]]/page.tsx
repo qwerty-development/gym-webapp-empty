@@ -146,13 +146,15 @@ export default function Dashboard() {
 	const [buttonLoading, setButtonLoading] = useState(false)
 
 	const handleCancel = async (reservationId: number) => {
+		setButtonLoading(true)
 		if (user) {
 			const confirmed = await showConfirmationToast(
 				'Are you sure you want to cancel this reservation?'
 			)
-			if (!confirmed) return
-
-			setButtonLoading(true)
+			if (!confirmed) {
+				setButtonLoading(false)
+				return
+			}
 
 			const cancelled = await cancelReservation(
 				reservationId,
@@ -171,13 +173,15 @@ export default function Dashboard() {
 	}
 
 	const handleCancelGroup = async (reservationId: number) => {
+		setButtonLoading(true)
 		if (user) {
 			const confirmed = await showConfirmationToast(
 				'Are you sure you want to cancel this group reservation?'
 			)
-			if (!confirmed) return
-
-			setButtonLoading(true)
+			if (!confirmed) {
+				setButtonLoading(false)
+				return
+			}
 
 			const cancelled = await cancelReservationGroup(
 				reservationId,
@@ -277,7 +281,7 @@ export default function Dashboard() {
 														onClick={() => handleCancel(reservation.id)}
 														className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'
 														disabled={buttonLoading}>
-															Cancel
+														Cancel
 													</button>
 												</div>
 											))}
@@ -359,7 +363,7 @@ export default function Dashboard() {
 												onClick={() => handleCancelGroup(reservation.id)}
 												className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'
 												disabled={buttonLoading}>
-													Cancel
+												Cancel
 											</button>
 										</div>
 									))}
