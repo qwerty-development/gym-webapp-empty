@@ -24,9 +24,7 @@ import DirectionsBikeIcon from '@mui/icons-material/DirectionsBike'
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
 import HealingIcon from '@mui/icons-material/Healing'
 import { RotateLoader } from 'react-spinners'
-import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import ReactModal from 'react-modal'
 import Modal from 'react-modal'
 
 // Set the app element for accessibility
