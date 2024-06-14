@@ -1,14 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/alt-text */
 'use client'
-import { useState } from 'react'
-import { Dialog } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+
 import { SignedIn, SignedOut } from '@clerk/clerk-react'
 import { UserButton, useUser } from '@clerk/nextjs'
 
 export default function Example() {
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 	const { isLoaded, isSignedIn, user } = useUser()
 
 	return (
