@@ -15,7 +15,6 @@ import DatePanel from 'react-multi-date-picker/plugins/date_panel'
 import Icon from 'react-multi-date-picker/components/icon'
 import Toolbar from 'react-multi-date-picker/plugins/toolbar'
 import toast from 'react-hot-toast'
-import { set } from 'date-fns'
 
 type OptionType = {
 	label: string

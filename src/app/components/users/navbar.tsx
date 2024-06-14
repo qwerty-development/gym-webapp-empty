@@ -3,15 +3,14 @@ import { Disclosure } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { UserButton } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
-import { useAuth } from '@clerk/nextjs'
 import { useUser } from '@clerk/nextjs'
-import { getWalletBalance } from '../../../../utils/user-requests'
+
 import { useWallet } from './WalletContext'
 import Image from 'next/image'
 export default function NavbarComponent() {
 	const { walletBalance } = useWallet()
 	const [currentPage, setCurrentPage] = useState('')
-	const { userId, getToken, isSignedIn } = useAuth()
+
 	const user = useUser()
 	useEffect(() => {
 		setCurrentPage(window.location.pathname) // Set the current page when component mounts
