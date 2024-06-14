@@ -58,16 +58,22 @@ export default function ViewReservationsComponent() {
 	const [privateSession, setPrivateSession] = useState<any[]>([])
 	const [publicSession, setPublicSession] = useState<any[]>([])
 
+	useEffect(() => {
+		fetchData()
+	}, [])
+
 	const fetchData = async () => {
 		const privateSession = await fetchTimeSlots()
 		setPrivateSession(privateSession)
+
 		const publicSession = await fetchGroupTimeSlots()
 		setPublicSession(publicSession)
 
-		const data = isPrivateTraining ? privateSession : publicSession
-		if (Array.isArray(data)) {
-			setReservations(data)
-			setFilteredReservations(data)
+		// Set the initial data based on the isPrivateTraining state
+		const initialData = isPrivateTraining ? privateSession : publicSession
+		if (Array.isArray(initialData)) {
+			setReservations(initialData)
+			setFilteredReservations(initialData)
 		}
 	}
 
@@ -88,7 +94,7 @@ export default function ViewReservationsComponent() {
 		// Fetch existing group time slot data
 		const { data: existingSlot, error: existingSlotError } = await supabase
 			.from('group_time_slots')
-			.select('user_id, count, booked')
+			.select('user_id, count, booked, additions')
 			.eq('id', timeSlotId)
 			.single()
 
@@ -104,18 +110,36 @@ export default function ViewReservationsComponent() {
 			return
 		}
 
+		// Calculate total additions refund for the user
+		const userAdditions = existingSlot.additions.find(
+			(addition: any) => addition.user_id === userId
+		)
+		const additionsTotalPrice = userAdditions
+			? userAdditions.items.reduce(
+					(total: any, item: any) => total + item.price,
+					0
+			  )
+			: 0
+		const totalRefund = credits + additionsTotalPrice
+
+		// Remove user's additions from the additions array
+		const updatedAdditions = existingSlot.additions.filter(
+			(addition: any) => addition.user_id !== userId
+		)
+
 		// Remove the user from the group_time_slots
 		const updatedUserIds = existingSlot.user_id.filter(
 			(id: any) => id !== userId
 		)
-		const updatedCount = existingSlot.count - 1
+		const updatedCount = updatedUserIds.length
 
 		const { data, error } = await supabase
 			.from('group_time_slots')
 			.update({
 				user_id: updatedUserIds,
 				count: updatedCount,
-				booked: false
+				booked: false,
+				additions: updatedAdditions
 			})
 			.eq('id', timeSlotId)
 
@@ -125,13 +149,15 @@ export default function ViewReservationsComponent() {
 		}
 
 		// Refund the credits to the user
-		await updateUserCreditsCancellation(userId, credits)
+		await updateUserCreditsCancellation(userId, totalRefund)
 
 		fetchData()
 	}
 
 	useEffect(() => {
-		fetchData()
+		const data = isPrivateTraining ? privateSession : publicSession
+		setReservations(data)
+		setFilteredReservations(data)
 	}, [isPrivateTraining])
 
 	useEffect(() => {
@@ -158,42 +184,42 @@ export default function ViewReservationsComponent() {
 		return data.filter(reservation => {
 			const activityMatch = filter.activity
 				? reservation.activity?.name
-					.toLowerCase()
-					.includes(filter.activity.toLowerCase())
+						.toLowerCase()
+						.includes(filter.activity.toLowerCase())
 				: true
 			const coachMatch = filter.coach
 				? reservation.coach?.name
-					.toLowerCase()
-					.includes(filter.coach.toLowerCase())
+						.toLowerCase()
+						.includes(filter.coach.toLowerCase())
 				: true
 			const userMatch = filter.user
 				? reservation.user?.first_name
-					.toLowerCase()
-					.includes(filter.user.toLowerCase()) ||
-				reservation.user?.last_name
-					.toLowerCase()
-					.includes(filter.user.toLowerCase())
+						.toLowerCase()
+						.includes(filter.user.toLowerCase()) ||
+				  reservation.user?.last_name
+						.toLowerCase()
+						.includes(filter.user.toLowerCase())
 				: true
 			const searchTermMatch = searchTerm
 				? reservation.activity?.name
-					.toLowerCase()
-					.includes(searchTerm.toLowerCase()) ||
-				reservation.coach?.name
-					.toLowerCase()
-					.includes(searchTerm.toLowerCase()) ||
-				reservation.user?.first_name
-					.toLowerCase()
-					.includes(searchTerm.toLowerCase()) ||
-				reservation.user?.last_name
-					.toLowerCase()
-					.includes(searchTerm.toLowerCase())
+						.toLowerCase()
+						.includes(searchTerm.toLowerCase()) ||
+				  reservation.coach?.name
+						.toLowerCase()
+						.includes(searchTerm.toLowerCase()) ||
+				  reservation.user?.first_name
+						.toLowerCase()
+						.includes(searchTerm.toLowerCase()) ||
+				  reservation.user?.last_name
+						.toLowerCase()
+						.includes(searchTerm.toLowerCase())
 				: true
 			const bookedMatch =
 				bookedFilter === 'all'
 					? true
 					: bookedFilter === 'booked'
-						? reservation.booked === true
-						: reservation.booked === false
+					? reservation.booked === true
+					: reservation.booked === false
 			const dateMatch = filter.date ? reservation.date === filter.date : true
 			const startTimeMatch = filter.startTime
 				? reservation.start_time >= filter.startTime
@@ -344,15 +370,17 @@ export default function ViewReservationsComponent() {
 				<div className='mt-12'>
 					<center>
 						<button
-							className={`px-4 py-2 mr-2 rounded ${isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
-								}`}
+							className={`px-4 py-2 mr-2 rounded ${
+								isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+							}`}
 							onClick={() => setIsPrivateTraining(true)}>
 							Private Sessions
 						</button>
 
 						<button
-							className={`px-4 py-2 rounded ${!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
-								}`}
+							className={`px-4 py-2 rounded ${
+								!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+							}`}
 							onClick={() => setIsPrivateTraining(false)}>
 							Public Sessions
 						</button>
@@ -520,10 +548,10 @@ export default function ViewReservationsComponent() {
 										{reservation.user && isPrivateTraining
 											? `${reservation.user.first_name} ${reservation.user.last_name}`
 											: reservation.users && reservation.users.length > 0
-												? reservation.users.map((user: any, userIndex: any) => (
+											? reservation.users.map((user: any, userIndex: any) => (
 													<div
 														key={userIndex}
-														className='flex items-center border justify-between'>
+														className='flex items-center border p-2 justify-between'>
 														{user
 															? `${user.first_name} ${user.last_name}`
 															: 'N/A'}
@@ -535,12 +563,12 @@ export default function ViewReservationsComponent() {
 																	reservation.activity?.credits
 																)
 															}
-															className='ml-2 bg-red-500 mt-3 hover:bg-red-700 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center'>
+															className='ml-2 bg-red-500 hover:bg-red-700 text-white font-bold rounded-full w-6 h-6 flex items-center justify-center'>
 															✖
 														</button>
 													</div>
-												))
-												: 'N/A'}
+											  ))
+											: 'N/A'}
 									</td>
 									<td className='px-4 py-2'>
 										{reservation.booked ? 'Yes' : 'No'}
