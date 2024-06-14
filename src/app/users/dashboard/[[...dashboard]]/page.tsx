@@ -9,8 +9,6 @@ import {
 	cancelReservation,
 	cancelReservationGroup,
 	fetchAllActivities,
-	fetchAllActivitiesGroup,
-	fetchMarket
 } from '../../../../../utils/user-requests'
 import { AddToCalendarButton } from 'add-to-calendar-button-react'
 import { RingLoader } from 'react-spinners'
@@ -67,7 +65,6 @@ export default function Dashboard() {
 	const [activities, setActivities] = useState<Activity[]>([])
 	const [isLoading, setIsLoading] = useState<boolean>(true) // State to track loading status
 	const { refreshWalletBalance } = useWallet()
-	const [market, setMarket] = useState<any[]>([])
 
 	useEffect(() => {
 		const fetchData = async () => {

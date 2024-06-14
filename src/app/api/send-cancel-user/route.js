@@ -9,8 +9,7 @@ export async function POST(request) {
 		activity_date,
 		start_time,
 		end_time,
-		coach_name,
-		user_wallet
+		coach_name
 	} = await request.json()
 
 	const transporter = nodemailer.createTransport({
@@ -21,11 +20,11 @@ export async function POST(request) {
 		}
 	})
 
-const mailOptions = {
-  from: 'noreply@notqwerty.com',
-  to: user_email, // Replace with your admin email
-  subject: 'Cancelled Booking Receipt',
-  html: `
+	const mailOptions = {
+		from: 'noreply@notqwerty.com',
+		to: user_email, // Replace with your admin email
+		subject: 'Cancelled Booking Receipt',
+		html: `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -122,8 +121,7 @@ const mailOptions = {
     </body>
     </html>
   `
-};
-
+	}
 
 	try {
 		await transporter.sendMail(mailOptions)
