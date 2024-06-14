@@ -1,3 +1,4 @@
+'use server'
 import { supabaseClient } from './supabaseClient'
 
 // Functions to manage coaches

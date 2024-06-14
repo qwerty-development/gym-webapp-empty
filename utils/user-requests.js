@@ -1,4 +1,4 @@
-// utils/requests.js
+'use server'
 import { supabaseClient } from './supabaseClient'
 
 // Function to fetch wallet balance for a user from Supabase
