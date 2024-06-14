@@ -12,7 +12,10 @@ import {
 	fetchFilteredUnbookedTimeSlots,
 	fetchFilteredUnbookedTimeSlotsGroup,
 	fetchAllActivities,
-	fetchAllActivitiesGroup
+	fetchAllActivitiesGroup,
+	fetchMarket,
+	payForGroupItems,
+	payForItems
 } from '../../../../utils/user-requests'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -24,13 +27,22 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
 import HealingIcon from '@mui/icons-material/Healing'
 import Select from 'react-select'
 import toast from 'react-hot-toast'
+import Modal from 'react-modal'
 
 export default function BookForClient() {
+	useEffect(() => {
+		Modal.setAppElement('#__next')
+	}, [])
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 	const [selectedTime, setSelectedTime] = useState<string>('')
 	const [selectedActivity, setSelectedActivity] = useState<number | null>(null)
 	const [selectedCoach, setSelectedCoach] = useState<number | null>(null)
 	const [selectedUser, setSelectedUser] = useState<string | null>(null)
+	const [market, setMarket] = useState<any[]>([])
+	const [selectedItems, setSelectedItems] = useState<any[]>([])
+	const [totalPrice, setTotalPrice] = useState<number>(0)
+	const [modalIsOpen, setModalIsOpen] = useState<boolean>(false)
+
 	const [activities, setActivities] = useState<
 		{ id: number; name: string; credits?: number }[]
 	>([])
@@ -67,6 +79,70 @@ export default function BookForClient() {
 		4: <DirectionsRunIcon />,
 		10: <FitnessCenterIcon />,
 		11: <HealingIcon />
+	}
+
+	useEffect(() => {
+		const fetchMarketItems = async () => {
+			const marketData = await fetchMarket()
+			setMarket(marketData)
+		}
+		fetchMarketItems()
+	}, [])
+
+	const handleItemSelect = (item: any) => {
+		const alreadySelected = selectedItems.find(
+			selectedItem => selectedItem.id === item.id
+		)
+		let newSelectedItems
+		if (alreadySelected) {
+			newSelectedItems = selectedItems.filter(
+				selectedItem => selectedItem.id !== item.id
+			)
+		} else {
+			newSelectedItems = [...selectedItems, item]
+		}
+		setSelectedItems(newSelectedItems)
+
+		const newTotalPrice = newSelectedItems.reduce(
+			(total, currentItem) => total + currentItem.price,
+			0
+		)
+		setTotalPrice(newTotalPrice)
+	}
+
+	const handlePay = async () => {
+		setLoading(true)
+		const response = isPrivateTraining
+			? await payForItems({
+					userId: selectedUser,
+					activityId: selectedActivity,
+					coachId: selectedCoach,
+					date: formatDate(selectedDate),
+					startTime: selectedTime.split(' - ')[0],
+					selectedItems
+			  })
+			: await payForGroupItems({
+					userId: selectedUser,
+					activityId: selectedActivity,
+					coachId: selectedCoach,
+					date: formatDate(selectedDate),
+					startTime: selectedTime.split(' - ')[0],
+					selectedItems
+			  })
+
+		setLoading(false)
+		if (response.error) {
+			toast.error(response.error)
+		} else {
+			toast.success('Items Added Successfully')
+			setSelectedItems([])
+			setTotalPrice(0)
+			setModalIsOpen(false)
+		}
+	}
+
+	const openMarketModal = () => {
+		setModalIsOpen(true)
 	}
 
 	useEffect(() => {
@@ -247,7 +323,7 @@ export default function BookForClient() {
 			  ].join('-')
 			: ''
 	return (
-		<div>
+		<div id='__next'>
 			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
 				<div className='flex justify-center items-center py-4'>
 					<div className='flex items-center'>
@@ -362,8 +438,8 @@ export default function BookForClient() {
 							<div className='mt-12 text-center'>
 								<p className='text-xl font-semibold'>
 									Booking{' '}
-									{activities.find(a => a.id === selectedActivity)?.name} with{' '}
-									{coaches.find(c => c.id === selectedCoach)?.name} on{' '}
+									{activities.find(a => a.id === selectedActivity)?.name} with
+									{coaches.find(c => c.id === selectedCoach)?.name} on
 									{selectedDate?.toLocaleDateString()} at {selectedTime}.
 								</p>
 								<button
@@ -371,7 +447,14 @@ export default function BookForClient() {
 									onClick={handleBookSession}
 									disabled={loading}
 									className='rounded-md mb-12 bg-green-600 disabled:bg-green-300 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
-									{loading ? 'Processing...' : 'Confirm Booking'}
+									Confirm Booking
+								</button>
+								<button
+									type='button'
+									onClick={openMarketModal}
+									disabled={loading}
+									className='rounded-md mb-12 ml-5 bg-blue-600 disabled:bg-blue-300 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 mt-4'>
+									Add Items
 								</button>
 							</div>
 						)}
@@ -459,8 +542,8 @@ export default function BookForClient() {
 							<div className='mt-12 text-center'>
 								<p className='text-xl font-semibold'>
 									Booking{' '}
-									{activitiesGroup.find(a => a.id === selectedActivity)?.name}{' '}
-									with {coaches.find(c => c.id === selectedCoach)?.name} on{' '}
+									{activities.find(a => a.id === selectedActivity)?.name} with
+									{coaches.find(c => c.id === selectedCoach)?.name} on
 									{selectedDate?.toLocaleDateString()} at {selectedTime}.
 								</p>
 								<button
@@ -468,13 +551,71 @@ export default function BookForClient() {
 									onClick={handleBookSession}
 									disabled={loading}
 									className='rounded-md mb-12 bg-green-600 disabled:bg-green-300 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
-									{loading ? 'Processing...' : 'Confirm Booking'}
+									Confirm Booking
+								</button>
+								<button
+									type='button'
+									onClick={openMarketModal}
+									disabled={loading}
+									className='rounded-md mb-12 ml-5 bg-blue-600 disabled:bg-blue-300 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 mt-4'>
+									Add Items
 								</button>
 							</div>
 						)}
 					</>
 				)}
 			</div>
+			<Modal
+				isOpen={modalIsOpen}
+				onRequestClose={() => setModalIsOpen(false)}
+				contentLabel='Market Items'
+				className='modal'
+				overlayClassName='overlay'>
+				<h2 className='text-2xl font-bold mb-4 text-black'>
+					Add to your Session
+				</h2>
+				<div className='grid lg:grid-cols-3 gap-4'>
+					{market.map(item => (
+						<div key={item.id} className='border p-4 rounded-lg'>
+							<div className='flex justify-between items-center text-black'>
+								<span>{item.name}</span>
+								<span>${item.price}</span>
+							</div>
+							<button
+								className={`mt-2 w-full py-2 ${
+									selectedItems.find(
+										selectedItem => selectedItem.id === item.id
+									)
+										? 'bg-red-500 text-white'
+										: 'bg-green-500 text-white'
+								}`}
+								onClick={() => handleItemSelect(item)}>
+								{selectedItems.find(selectedItem => selectedItem.id === item.id)
+									? 'Remove'
+									: 'Add'}
+							</button>
+						</div>
+					))}
+				</div>
+				<div className='mt-4'>
+					<p className='text-xl font-semibold text-black'>
+						Total Price: ${totalPrice}
+					</p>
+					<div>
+						<button
+							className='mt-4 bg-blue-500 disabled:bg-blue-300 text-white py-2 px-4 rounded mx-5'
+							onClick={handlePay}
+							disabled={loading}>
+							Pay
+						</button>
+						<button
+							className='mt-4 bg-red-500 text-white py-2 px-4 rounded'
+							onClick={() => setModalIsOpen(false)}>
+							Close
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	)
 }

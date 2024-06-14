@@ -358,6 +358,7 @@ export default function Dashboard() {
 												styleDark='--btn-background:#fff #; --btn-text: #000;'
 												size='5'
 												inline='true'
+												disabled={buttonLoading}
 											/>
 											<button
 												onClick={() => handleCancelGroup(reservation.id)}
