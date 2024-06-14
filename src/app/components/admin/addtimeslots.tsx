@@ -30,7 +30,7 @@ export default function AddTimeSlotComponent() {
 	const [selectedActivity, setSelectedActivity] = useState<OptionType | null>(
 		null
 	)
-  const [buttonLoading, setButtonLoading] = useState(false)
+	const [buttonLoading, setButtonLoading] = useState(false)
 	const [selectedGroupActivity, setSelectedGroupActivity] =
 		useState<OptionType | null>(null)
 	const [selectedDates, setSelectedDates] = useState<Date[]>([new Date()])
@@ -78,7 +78,7 @@ export default function AddTimeSlotComponent() {
 	}
 
 	const handleAddTimeSlot = async () => {
-    setButtonLoading(true)
+		setButtonLoading(true)
 		if (
 			!selectedCoach ||
 			!selectedActivity ||
@@ -87,7 +87,7 @@ export default function AddTimeSlotComponent() {
 			!endTime
 		) {
 			alert('Please fill in all fields')
-      setButtonLoading(false)
+			setButtonLoading(false)
 			return
 		}
 
@@ -98,7 +98,8 @@ export default function AddTimeSlotComponent() {
 				date: date.toISOString().substring(0, 10),
 				start_time: startTime,
 				end_time: endTime,
-				booked: false
+				booked: false,
+				additions: []
 			}
 
 			const result = await addTimeSlot(newTimeSlot)
@@ -109,11 +110,11 @@ export default function AddTimeSlotComponent() {
 		}
 
 		toast.success('Time slots added successfully')
-    setButtonLoading(false)
+		setButtonLoading(false)
 	}
 
 	const handleAddGroupTimeSlot = async () => {
-    setButtonLoading(true)
+		setButtonLoading(true)
 		if (
 			!selectedCoach ||
 			!selectedGroupActivity ||
@@ -122,7 +123,7 @@ export default function AddTimeSlotComponent() {
 			!endTime
 		) {
 			alert('Please fill in all fields')
-      setButtonLoading(false)
+			setButtonLoading(false)
 			return
 		}
 
@@ -147,7 +148,7 @@ export default function AddTimeSlotComponent() {
 		}
 
 		toast.success('Group time slots added successfully')
-    setButtonLoading(false)
+		setButtonLoading(false)
 	}
 
 	return (

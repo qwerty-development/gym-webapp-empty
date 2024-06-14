@@ -198,6 +198,16 @@ export default function BookForClient() {
 		}
 	}
 
+	const getCapacity = () => {
+		if (selectedActivity === null) {
+			return 'No activity selected'
+		}
+		const activity = activitiesGroup.find(
+			activity => activity.id === selectedActivity
+		)
+		return activity ? `${activity.capacity}` : ''
+	}
+
 	useEffect(() => {
 		const fetchUsersData = async () => {
 			const usersData = await fetchUsers(searchQuery)
@@ -205,6 +215,28 @@ export default function BookForClient() {
 		}
 		fetchUsersData()
 	}, [searchQuery])
+
+	const getSelectedReservationCount = async () => {
+		if (selectedActivity && selectedCoach && selectedDate) {
+			const data = await fetchFilteredUnbookedTimeSlotsGroup({
+				activityId: selectedActivity,
+				coachId: selectedCoach,
+				date: formatDate(selectedDate)
+			})
+			return data ? data.reduce((total, slot) => total + slot.count, 0) : 0
+		}
+		return 0
+	}
+	const [reservationCount, setReservationCount] = useState<number>(0)
+
+	useEffect(() => {
+		const fetchReservationCount = async () => {
+			const count = await getSelectedReservationCount()
+			setReservationCount(count)
+		}
+
+		fetchReservationCount()
+	}, [selectedActivity, selectedCoach, selectedDate, highlightDates])
 
 	const formatDate = (date: Date | null): string =>
 		date
@@ -409,11 +441,14 @@ export default function BookForClient() {
 												key={time}
 												className={`p-4 mt-6 rounded-lg text-lg font-semibold mb-2 ${
 													selectedTime === time
-														? 'bg-green-200  dark:bg-green-700'
+														? 'bg-green-200 dark:bg-green-700'
 														: 'hover:bg-gray-100'
 												}`}
 												onClick={() => setSelectedTime(time)}>
 												{time}
+												<p className='text-gray-400 mt-2 text-xs'>
+													Capacity: {reservationCount}/{getCapacity()}
+												</p>
 											</button>
 										))}
 									</div>
