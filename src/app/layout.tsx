@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { ClerkProvider } from '@clerk/nextjs'
+import { ClerkProvider, authMiddleware } from '@clerk/nextjs'
 import './globals.css'
 import { WalletProvider } from './components/users/WalletContext'
 import { Toaster } from 'react-hot-toast'
