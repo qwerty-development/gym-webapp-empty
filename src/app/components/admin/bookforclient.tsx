@@ -370,7 +370,7 @@ export default function BookForClient() {
 									type='button'
 									onClick={handleBookSession}
 									disabled={loading}
-									className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
+									className='rounded-md mb-12 bg-green-600 disabled:bg-green-300 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
 									{loading ? 'Processing...' : 'Confirm Booking'}
 								</button>
 							</div>
@@ -467,7 +467,7 @@ export default function BookForClient() {
 									type='button'
 									onClick={handleBookSession}
 									disabled={loading}
-									className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
+									className='rounded-md mb-12 bg-green-600 disabled:bg-green-300 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
 									{loading ? 'Processing...' : 'Confirm Booking'}
 								</button>
 							</div>

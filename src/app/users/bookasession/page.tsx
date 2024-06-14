@@ -606,7 +606,7 @@ export default function Example() {
 										type='button'
 										onClick={handleBookSession}
 										disabled={loading}
-										className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
+										className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 disabled:bg-green-300 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
 										{loading ? 'Processing...' : 'Confirm Booking'}
 									</button>
 								</div>
@@ -660,7 +660,7 @@ export default function Example() {
 							type='button'
 							onClick={handleBookSession}
 							disabled={loading}
-							className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
+							className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 disabled:bg-green-300 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
 							{loading ? 'Processing...' : 'Confirm Booking'}
 						</button>
 					</div>
@@ -706,13 +706,13 @@ export default function Example() {
 					</p>
 					<div>
 						<button
-							className='mt-4 bg-blue-500 text-white py-2 px-4 rounded mx-5'
+							className='mt-4 bg-blue-500 disabled:bg-blue-300 text-white py-2 px-4 rounded mx-5'
 							onClick={handlePay}
 							disabled={loading}>
 							{loading ? 'Processing...' : 'Pay'}
 						</button>
 						<button
-							className='mt-4 bg-red-500 text-white py-2 px-4 rounded'
+							className='mt-4 bg-red-500  text-white py-2 px-4 rounded'
 							onClick={handleCloseModal}>
 							Close
 						</button>

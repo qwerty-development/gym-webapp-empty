@@ -260,7 +260,7 @@ const CoachesandActivitiesAdminPage = () => {
 						<button
 							onClick={handleAddCoach}
 							disabled={buttonLoading}
-							className='bg-blue-500 text-white px-4 py-2 rounded-md '>
+							className='bg-blue-500 disabled:bg-blue-300 text-white px-4 py-2 rounded-md '>
 							Add Coach
 						</button>
 					</div>
@@ -288,13 +288,13 @@ const CoachesandActivitiesAdminPage = () => {
 										<button
 											disabled={buttonLoading}
 											onClick={() => handleToggleForm(coach.id)}
-											className='bg-yellow-500 text-white px-3 py-1 rounded-md mr-2'>
+											className='bg-yellow-500 disabled:bg-yellow-300 text-white px-3 py-1 rounded-md mr-2'>
 											Update
 										</button>
 										<button
 											disabled={buttonLoading}
 											onClick={() => handleDeleteCoach(coach.id)}
-											className='bg-red-500 text-white px-3 py-1 rounded-md'>
+											className='bg-red-500 disabled:bg-red-300 text-white px-3 py-1 rounded-md'>
 											Delete
 										</button>
 									</div>
@@ -316,7 +316,7 @@ const CoachesandActivitiesAdminPage = () => {
 										<button
 											disabled={buttonLoading}
 											onClick={handleSubmitUpdate}
-											className='bg-blue-500 text-white items-center px-4 py-2 rounded-md mt-4'>
+											className='bg-blue-500 disabled:bg-blue-300 text-white items-center px-4 py-2 rounded-md mt-4'>
 											Update
 										</button>
 									</div>
@@ -336,7 +336,7 @@ const CoachesandActivitiesAdminPage = () => {
 						<button
 							disabled={buttonLoading}
 							className={`px-4 py-2 mr-2 rounded ${
-								isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+								isPrivateTraining ? 'bg-green-500  text-white' : 'bg-gray-200 '
 							}`}
 							onClick={handleToggle}>
 							Private Training
@@ -382,7 +382,7 @@ const CoachesandActivitiesAdminPage = () => {
 							<button
 								disabled={buttonLoading}
 								onClick={handleAddActivity}
-								className='bg-blue-500 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
+								className='bg-blue-500 disabled:bg-blue-300 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
 								Add Activity
 							</button>
 						</div>
@@ -411,13 +411,13 @@ const CoachesandActivitiesAdminPage = () => {
 											<button
 												disabled={buttonLoading}
 												onClick={() => handleUpdateActivity(activity.id)}
-												className='bg-yellow-500 text-white px-3 py-1 rounded-md mr-2'>
+												className='bg-yellow-500 disabled:bg-yellow-300 text-white px-3 py-1 rounded-md mr-2'>
 												Update
 											</button>
 											<button
 												disabled={buttonLoading}
 												onClick={() => handleDeleteActivity(activity.id)}
-												className='bg-red-500 text-white px-3 py-1 rounded-md ml-2'>
+												className='bg-red-500 disabled:bg-red-300 text-white px-3 py-1 rounded-md ml-2'>
 												Delete
 											</button>
 										</div>
@@ -465,7 +465,7 @@ const CoachesandActivitiesAdminPage = () => {
 							<button
 								disabled={buttonLoading}
 								onClick={handleAddActivity}
-								className='bg-blue-500 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
+								className='bg-blue-500 disabled:bg-blue-300 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
 								Add Activity
 							</button>
 						</div>{' '}
@@ -490,13 +490,13 @@ const CoachesandActivitiesAdminPage = () => {
 										<button
 											disabled={buttonLoading}
 											onClick={() => handleUpdateActivity(activity.id)}
-											className='bg-yellow-500 text-white px-3 py-1 rounded-md mr-2'>
+											className='bg-yellow-500 disabled:bg-yellow-300 text-white px-3 py-1 rounded-md mr-2'>
 											Update
 										</button>
 										<button
 											disabled={buttonLoading}
 											onClick={() => handleDeleteActivity(activity.id)}
-											className='bg-red-500 text-white px-3 py-1 rounded-md ml-2'>
+											className='bg-red-500 disabled:bg-red-300 text-white px-3 py-1 rounded-md ml-2'>
 											Delete
 										</button>
 									</div>

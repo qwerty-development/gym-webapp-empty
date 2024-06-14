@@ -279,7 +279,7 @@ export default function Dashboard() {
 													/>
 													<button
 														onClick={() => handleCancel(reservation.id)}
-														className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'
+														className='bg-red-500 disabled:bg-red-300 text-white font-bold py-2 px-4 rounded mt-4'
 														disabled={buttonLoading}>
 														Cancel
 													</button>
@@ -361,7 +361,7 @@ export default function Dashboard() {
 											/>
 											<button
 												onClick={() => handleCancelGroup(reservation.id)}
-												className='bg-red-500 text-white font-bold py-2 px-4 rounded mt-4'
+												className='bg-red-500 disabled:bg-red-300 text-white font-bold py-2 px-4 rounded mt-4'
 												disabled={buttonLoading}>
 												Cancel
 											</button>
