@@ -40,7 +40,7 @@ export default function MarketManagement() {
 			return
 		}
 		setButtonLoading(true)
-		const { error } = await addMarketItem(newItemName, price)
+		const { error, message } = await addMarketItem(newItemName, price)
 		if (error) {
 			toast.error(error)
 		} else {
@@ -54,7 +54,7 @@ export default function MarketManagement() {
 
 	const handleDeleteItem = async (id: number) => {
 		setButtonLoading(true)
-		const { error } = await deleteMarketItem(id)
+		const { error, message } = await deleteMarketItem(id)
 		if (error) {
 			toast.error(error)
 		} else {
@@ -71,7 +71,7 @@ export default function MarketManagement() {
 			return
 		}
 		setButtonLoading(true)
-		const { error } = await modifyMarketItem(id, editName, price)
+		const { error, message } = await modifyMarketItem(id, editName, price)
 		if (error) {
 			toast.error(error)
 		} else {

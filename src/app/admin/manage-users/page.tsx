@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation'
 import { checkRoleAdmin } from '../../../../utils/roles'
 import { SearchUsers } from './_search-users'
 import { clerkClient } from '@clerk/nextjs'
