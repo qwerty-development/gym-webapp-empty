@@ -13,7 +13,8 @@ import {
 	fetchAllActivitiesGroup,
 	fetchFilteredUnbookedTimeSlotsGroup,
 	bookTimeSlotGroup,
-	payForGroupItems
+	payForGroupItems,
+	fetchCoachesGroup
 } from '../../../../utils/user-requests'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -129,7 +130,10 @@ export default function Example() {
 		const fetchCoachesData = async () => {
 			if (selectedActivity) {
 				setCoachesLoading(true) // Set loading to true while fetching
-				const coachesData = await fetchCoaches(selectedActivity)
+
+				const coachesData = isPrivateTraining
+					? await fetchCoaches(selectedActivity)
+					: await fetchCoachesGroup(selectedActivity)
 				setCoaches(coachesData)
 				setSelectedCoach(null) // Reset selectedCoach
 				setSelectedDate(null) // Reset selectedDate
