@@ -114,9 +114,15 @@ const CoachesandActivitiesAdminPage = () => {
 	const handleDeleteCoach = async (coachId: number) => {
 		setButtonLoading(true)
 		const success = await deleteCoach(coachId)
-		if (success) setCoaches(coaches.filter(coach => coach.id !== coachId))
-		fetchCoaches().then(setCoaches)
-		refreshData()
+		if (success) {
+			setCoaches(coaches.filter(coach => coach.id !== coachId))
+			refreshData()
+			toast.success('Coach deleted successfully')
+		} else {
+			toast.error(
+				'Error deleting coach check activities and time slots related'
+			)
+		}
 		setButtonLoading(false)
 	}
 
@@ -141,10 +147,13 @@ const CoachesandActivitiesAdminPage = () => {
 	const handleDeleteActivity = async (activityId: number) => {
 		setButtonLoading(true)
 		const success = await deleteActivity(activityId)
-		if (success)
+		if (success) {
 			setActivities(activities.filter(activity => activity.id !== activityId))
-		fetchActivities().then(setActivities)
-		refreshData()
+			refreshData()
+			toast.success('Activity deleted successfully')
+		} else {
+			toast.error('Error deleting activity check time slots first')
+		}
 		setButtonLoading(false)
 	}
 
@@ -395,7 +404,7 @@ const CoachesandActivitiesAdminPage = () => {
 								{activities.map(activity => (
 									<div
 										key={activity.id}
-										className='bg-gray-100 rounded-md shadow p-4 relative'>
+										className='bg-gray-100 rounded-md shadow p-4 relative flex flex-col justify-between'>
 										<h3 className='text-lg text-black font-semibold mb-2'>
 											{activity.name}
 										</h3>
@@ -473,7 +482,7 @@ const CoachesandActivitiesAdminPage = () => {
 							{groupactivities.map(activity => (
 								<div
 									key={activity.id}
-									className='bg-gray-100 rounded-md shadow p-4 relative'>
+									className='bg-gray-100 rounded-md shadow p-4 relative flex flex-col justify-between'>
 									<h3 className='text-lg text-black font-semibold mb-2'>
 										{activity.name}
 									</h3>
