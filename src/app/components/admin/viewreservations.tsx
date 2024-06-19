@@ -552,7 +552,7 @@ export default function ViewReservationsComponent() {
 											? reservation.users.map((user: any, userIndex: any) => (
 													<div
 														key={userIndex}
-														className='flex items-center border p-2 justify-between'>
+														className='flex items-center border rounded-2xl p-2 justify-between'>
 														{user
 															? `${user.first_name} ${user.last_name}`
 															: 'N/A'}
