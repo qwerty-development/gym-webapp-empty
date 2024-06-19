@@ -172,6 +172,7 @@ export default function Example() {
 							const datesForSelectedCoach = data
 								.filter(slot => slot.coach_id === selectedCoach)
 								.map(slot => new Date(slot.date))
+								.filter((date: Date) => date >= new Date())
 							setHighlightDates(datesForSelectedCoach)
 						}
 						if (selectedDate) {
@@ -200,6 +201,7 @@ export default function Example() {
 							const datesForSelectedCoach = data
 								.filter(slot => slot.coach_id === selectedCoach)
 								.map(slot => new Date(slot.date))
+								.filter((date: Date) => date >= new Date())
 							setHighlightDates(datesForSelectedCoach)
 						}
 						if (selectedDate) {

@@ -208,6 +208,8 @@ export default function BookForClient() {
 							.map(
 								(slot: { date: string | number | Date }) => new Date(slot.date)
 							)
+							.filter((date: Date) => date >= new Date())
+
 						setHighlightDates(datesForSelectedCoach)
 					}
 					if (selectedDate) {

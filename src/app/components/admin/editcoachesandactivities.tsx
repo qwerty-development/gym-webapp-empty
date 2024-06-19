@@ -243,6 +243,7 @@ const CoachesandActivitiesAdminPage = () => {
 		} else {
 			setShowUpdateForm(true)
 			setUpdateCoachId(id)
+			setUpdatedCoachName(coaches.find(coach => coach.id === id)?.name || '')
 		}
 	}
 
