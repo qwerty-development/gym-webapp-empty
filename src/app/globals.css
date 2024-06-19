@@ -51,6 +51,14 @@ body {
 	width: 100% !important; /* Make the datepicker itself take up full width */
 }
 
+.cl-internal-b3fm6y {
+	display: none;
+}
+
+.cl-userButtonPopoverFooter {
+	display: none;
+}
+
 .react-datepicker__month-container {
 	width: 100% !important; /* Ensure the month container takes up full width */
 }
