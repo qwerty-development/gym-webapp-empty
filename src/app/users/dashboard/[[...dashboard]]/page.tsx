@@ -9,24 +9,29 @@ import {
 	cancelReservation,
 	cancelReservationGroup,
 	fetchAllActivities,
-	fetchAllActivitiesGroup,
-	fetchMarket
+	fetchMarket,
+	payForItems,
+	payForGroupItems
 } from '../../../../../utils/user-requests'
 import { AddToCalendarButton } from 'add-to-calendar-button-react'
 import { RingLoader } from 'react-spinners'
 import { useWallet } from '@/app/components/users/WalletContext'
 import toast from 'react-hot-toast'
 import { showConfirmationToast } from '@/app/components/users/ConfirmationToast'
+import Modal from 'react-modal'
 
 type Reservation = {
 	id: number
 	date: string
 	start_time: string
 	end_time: string
+	count?: number
 	coach: {
+		id?: number
 		name: string
 	}
 	activity: {
+		id?: number
 		name: string
 		credits: number
 	}
@@ -39,9 +44,11 @@ type GroupReservation = {
 	start_time: string
 	end_time: string
 	coach: {
+		id?: string
 		name: string
 	}
 	activity: {
+		id?: string
 		name: string
 		credits: number
 	}
@@ -59,6 +66,13 @@ type Activity = {
 }
 
 export default function Dashboard() {
+	const [modalIsOpen, setModalIsOpen] = useState<boolean>(false)
+	const [selectedReservation, setSelectedReservation] = useState<
+		Reservation | GroupReservation | null
+	>(null)
+	const [selectedItems, setSelectedItems] = useState<any[]>([])
+	const [totalPrice, setTotalPrice] = useState<number>(0)
+
 	const { isLoaded, isSignedIn, user } = useUser()
 	const [reservations, setReservations] = useState<Reservation[]>([])
 	const [groupReservations, setGroupReservations] = useState<
@@ -68,6 +82,13 @@ export default function Dashboard() {
 	const [isLoading, setIsLoading] = useState<boolean>(true) // State to track loading status
 	const { refreshWalletBalance } = useWallet()
 	const [market, setMarket] = useState<any[]>([])
+	useEffect(() => {
+		const fetchMarketItems = async () => {
+			const marketData = await fetchMarket()
+			setMarket(marketData)
+		}
+		fetchMarketItems()
+	}, [])
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -93,10 +114,11 @@ export default function Dashboard() {
 								.slice(0, 2)
 								.join(':'),
 							end_time: reservation.end_time.split(':').slice(0, 2).join(':'),
-							coach: { name: reservation.coach.name },
+							coach: { name: reservation.coach.name, id: reservation.coach.id },
 							activity: {
 								name: reservation.activity.name,
-								credits: reservation.activity.credits
+								credits: reservation.activity.credits,
+								id: reservation.activity.id
 							},
 							additions: reservation.additions
 						})
@@ -116,10 +138,11 @@ export default function Dashboard() {
 								.slice(0, 2)
 								.join(':'),
 							end_time: reservation.end_time.split(':').slice(0, 2).join(':'),
-							coach: { name: reservation.coach.name },
+							coach: { name: reservation.coach.name, id: reservation.coach.id },
 							activity: {
 								name: reservation.activity.name,
-								credits: reservation.activity.credits
+								credits: reservation.activity.credits,
+								id: reservation.activity.id
 							},
 							count: reservation.count,
 							additions: reservation.additions
@@ -144,6 +167,110 @@ export default function Dashboard() {
 	}, [isLoaded, isSignedIn, user])
 
 	const [buttonLoading, setButtonLoading] = useState(false)
+	const handleItemSelect = (item: any) => {
+		const alreadySelected = selectedItems.find(
+			selectedItem => selectedItem.id === item.id
+		)
+		let newSelectedItems
+		if (alreadySelected) {
+			newSelectedItems = selectedItems.filter(
+				selectedItem => selectedItem.id !== item.id
+			)
+		} else {
+			newSelectedItems = [...selectedItems, item]
+		}
+		setSelectedItems(newSelectedItems)
+
+		const newTotalPrice = newSelectedItems.reduce(
+			(total, currentItem) => total + currentItem.price,
+			0
+		)
+		setTotalPrice(newTotalPrice)
+	}
+
+	const handlePay = async () => {
+		setButtonLoading(true)
+		console.log(selectedReservation)
+		const response = selectedReservation?.count
+			? await payForGroupItems({
+					userId: user?.id,
+					activityId: selectedReservation?.activity.id,
+					coachId: selectedReservation?.coach.id,
+					date: selectedReservation?.date,
+					startTime: selectedReservation?.start_time,
+					selectedItems
+			  })
+			: await payForItems({
+					userId: user?.id,
+					activityId: selectedReservation?.activity.id,
+					coachId: selectedReservation?.coach.id,
+					date: selectedReservation?.date,
+					startTime: selectedReservation?.start_time,
+					selectedItems
+			  })
+
+		setButtonLoading(false)
+		if (response.error) {
+			toast.error(response.error)
+		} else {
+			toast.success('Items Added Successfully')
+			setSelectedItems([])
+			setTotalPrice(0)
+			setModalIsOpen(false)
+			refreshWalletBalance()
+			const fetchedReservations = await fetchReservations(user?.id)
+			if (fetchedReservations) {
+				const transformedReservations = fetchedReservations.map(
+					(reservation: any) => ({
+						id: reservation.id,
+						date: reservation.date,
+						start_time: reservation.start_time.split(':').slice(0, 2).join(':'),
+						end_time: reservation.end_time.split(':').slice(0, 2).join(':'),
+						coach: { name: reservation.coach.name, id: reservation.coach.id },
+						activity: {
+							name: reservation.activity.name,
+							credits: reservation.activity.credits,
+							id: reservation.activity.id
+						},
+						additions: reservation.additions
+					})
+				)
+
+				setReservations(transformedReservations)
+			}
+
+			const fetchedGroupReservations = await fetchReservationsGroup(user?.id)
+			if (fetchedGroupReservations) {
+				const transformedGroupReservations = fetchedGroupReservations.map(
+					(reservation: any) => ({
+						id: reservation.id,
+						date: reservation.date,
+						start_time: reservation.start_time.split(':').slice(0, 2).join(':'),
+						end_time: reservation.end_time.split(':').slice(0, 2).join(':'),
+						coach: { name: reservation.coach.name, id: reservation.coach.id },
+						activity: {
+							name: reservation.activity.name,
+							credits: reservation.activity.credits,
+							id: reservation.activity.id
+						},
+						count: reservation.count,
+						additions: reservation.additions
+							? reservation.additions.filter(
+									(addition: any) => addition.user_id === user?.id
+							  )
+							: []
+					})
+				)
+
+				setGroupReservations(transformedGroupReservations)
+			}
+		}
+	}
+
+	const openMarketModal = (reservation: Reservation | GroupReservation) => {
+		setSelectedReservation(reservation)
+		setModalIsOpen(true)
+	}
 
 	const handleCancel = async (reservationId: number) => {
 		setButtonLoading(true)
@@ -283,6 +410,12 @@ export default function Dashboard() {
 														disabled={buttonLoading}>
 														Cancel
 													</button>
+													<button
+														onClick={() => openMarketModal(reservation)}
+														className='bg-blue-500 disabled:bg-blue-300 text-white font-bold py-2 px-4 rounded mt-4'
+														disabled={buttonLoading}>
+														Add Items
+													</button>
 												</div>
 											))}
 										</div>
@@ -366,6 +499,12 @@ export default function Dashboard() {
 												disabled={buttonLoading}>
 												Cancel
 											</button>
+											<button
+												onClick={() => openMarketModal(reservation)}
+												className='bg-blue-500 disabled:bg-blue-300 text-white font-bold py-2 px-4 rounded mt-4'
+												disabled={buttonLoading}>
+												Add Items
+											</button>
 										</div>
 									))}
 								</div>
@@ -378,6 +517,57 @@ export default function Dashboard() {
 					</div>
 				</div>
 			</div>
+			<Modal
+				isOpen={modalIsOpen}
+				onRequestClose={() => setModalIsOpen(false)}
+				contentLabel='Market Items'
+				className='modal'
+				overlayClassName='overlay'>
+				<h2 className='text-2xl font-bold mb-4 text-black'>
+					Add to your Session
+				</h2>
+				<div className='grid lg:grid-cols-3 gap-4'>
+					{market.map(item => (
+						<div key={item.id} className='border p-4 rounded-lg'>
+							<div className='flex justify-between items-center text-black'>
+								<span>{item.name}</span>
+								<span>${item.price}</span>
+							</div>
+							<button
+								className={`mt-2 w-full py-2 ${
+									selectedItems.find(
+										selectedItem => selectedItem.id === item.id
+									)
+										? 'bg-red-500 text-white'
+										: 'bg-green-500 text-white'
+								}`}
+								onClick={() => handleItemSelect(item)}>
+								{selectedItems.find(selectedItem => selectedItem.id === item.id)
+									? 'Remove'
+									: 'Add'}
+							</button>
+						</div>
+					))}
+				</div>
+				<div className='mt-4'>
+					<p className='text-xl font-semibold text-black'>
+						Total Price: ${totalPrice}
+					</p>
+					<div>
+						<button
+							className='mt-4 bg-blue-500 disabled:bg-blue-300 text-white py-2 px-4 rounded mx-5'
+							onClick={handlePay}
+							disabled={buttonLoading}>
+							Pay
+						</button>
+						<button
+							className='mt-4 bg-red-500 text-white py-2 px-4 rounded'
+							onClick={() => setModalIsOpen(false)}>
+							Close
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	)
 }
