@@ -298,7 +298,7 @@ export const fetchTimeSlots = async () => {
 	return transformedData
 }
 
-export const cancelGroupBooking = async (timeSlotId, creditsToAdd) => {
+export const cancelGroupBooking = async timeSlotId => {
 	const supabase = await supabaseClient()
 
 	// Fetch existing group time slot data
@@ -341,15 +341,46 @@ export const cancelGroupBooking = async (timeSlotId, creditsToAdd) => {
 
 	// Refund credits to each user in the user_id array including additions
 	for (const userId of existingSlot.user_id) {
+		const { data: userData, error: userError } = await supabase
+			.from('users')
+			.select('wallet, isFree')
+			.eq('user_id', userId)
+			.single()
+
+		if (userError || !userData) {
+			console.error(
+				`Error fetching user data for user ${userId}:`,
+				userError?.message || 'User not found'
+			)
+			continue
+		}
+
+		let totalRefund = 0
+		if (!userData.isFree) {
+			totalRefund += activityCredits
+		}
+
 		const userAdditions = existingSlot.additions.find(
 			addition => addition.user_id === userId
 		)
 		const additionsTotalPrice = userAdditions
 			? userAdditions.items.reduce((total, item) => total + item.price, 0)
 			: 0
-		const totalRefund = activityCredits + additionsTotalPrice
+		totalRefund += additionsTotalPrice
 
-		await updateUserCreditsCancellation(userId, totalRefund)
+		const newWalletBalance = userData.wallet + totalRefund
+
+		const { error: walletUpdateError } = await supabase
+			.from('users')
+			.update({ wallet: newWalletBalance })
+			.eq('user_id', userId)
+
+		if (walletUpdateError) {
+			console.error(
+				`Error updating wallet for user ${userId}:`,
+				walletUpdateError.message
+			)
+		}
 	}
 
 	// Update the group time slot to clear users and reset count
@@ -632,28 +663,35 @@ export const bookTimeSlotForClient = async ({
 		}
 	}
 
-	// Check if the user has enough credits
+	// Fetch user data
 	const { data: userData, error: userError } = await supabase
 		.from('users')
-		.select('wallet, first_name, last_name, email')
+		.select('wallet, first_name, last_name, email, isFree')
 		.eq('user_id', userId)
 		.single()
 
-	if (userError || !userData || userData.wallet < activityData.credits) {
-		return { error: 'Not enough credits or user not found' }
+	if (userError || !userData) {
+		return { error: 'User not found' }
 	}
 
-	// Deduct credits from user's wallet
-	const newWalletBalance = userData.wallet - activityData.credits
-	const { error: updateWalletError } = await supabase
-		.from('users')
-		.update({ wallet: newWalletBalance })
-		.eq('user_id', userId)
+	// Check if the user is free or has enough credits
+	let newWalletBalance = userData.wallet
+	if (!userData.isFree) {
+		if (userData.wallet < activityData.credits) {
+			return { error: 'Not enough credits' }
+		}
+		// Deduct credits from user's wallet
+		newWalletBalance -= activityData.credits
+		const { error: updateWalletError } = await supabase
+			.from('users')
+			.update({ wallet: newWalletBalance })
+			.eq('user_id', userId)
 
-	if (updateWalletError) {
-		console.error('Error updating user wallet:', updateWalletError.message)
-		return {
-			error: 'Failed to update user wallet: ' + updateWalletError.message
+		if (updateWalletError) {
+			console.error('Error updating user wallet:', updateWalletError.message)
+			return {
+				error: 'Failed to update user wallet: ' + updateWalletError.message
+			}
 		}
 	}
 
@@ -691,7 +729,7 @@ export const bookTimeSlotForClient = async ({
 		user_name: userData.first_name + ' ' + userData.last_name,
 		user_email: userData.email,
 		activity_name: activityData.name,
-		activity_price: activityData.credits,
+		activity_price: userData.isFree ? 0 : activityData.credits,
 		activity_date: date,
 		start_time: startTime,
 		end_time: endTime,
@@ -721,7 +759,7 @@ export const bookTimeSlotForClient = async ({
 
 	return {
 		success: true,
-		message: 'Session booked successfully, credits deducted.',
+		message: 'Session booked successfully, credits deducted if applicable.',
 		timeSlot: bookingData
 	}
 }
@@ -752,15 +790,36 @@ export const bookTimeSlotForClientGroup = async ({
 		}
 	}
 
-	// Check if the user has enough credits
+	// Fetch user data
 	const { data: userData, error: userError } = await supabase
 		.from('users')
-		.select('wallet, first_name, last_name, email')
+		.select('wallet, first_name, last_name, email, isFree')
 		.eq('user_id', userId)
 		.single()
 
-	if (userError || !userData || userData.wallet < activityData.credits) {
-		return { error: 'Not enough credits or user not found' }
+	if (userError || !userData) {
+		return { error: 'User not found' }
+	}
+
+	// Check if the user is free or has enough credits
+	let newWalletBalance = userData.wallet
+	if (!userData.isFree) {
+		if (userData.wallet < activityData.credits) {
+			return { error: 'Not enough credits' }
+		}
+		// Deduct credits from user's wallet
+		newWalletBalance -= activityData.credits
+		const { error: updateWalletError } = await supabase
+			.from('users')
+			.update({ wallet: newWalletBalance })
+			.eq('user_id', userId)
+
+		if (updateWalletError) {
+			console.error('Error updating user wallet:', updateWalletError.message)
+			return {
+				error: 'Failed to update user wallet: ' + updateWalletError.message
+			}
+		}
 	}
 
 	// Check if the time slot is already booked
@@ -792,20 +851,6 @@ export const bookTimeSlotForClientGroup = async ({
 		existingSlot.user_id.includes(userId)
 	) {
 		return { error: 'You are already enrolled in this class.' }
-	}
-
-	// Deduct credits from user's wallet
-	const newWalletBalance = userData.wallet - activityData.credits
-	const { error: updateWalletError } = await supabase
-		.from('users')
-		.update({ wallet: newWalletBalance })
-		.eq('user_id', userId)
-
-	if (updateWalletError) {
-		console.error('Error updating user wallet:', updateWalletError.message)
-		return {
-			error: 'Failed to update user wallet: ' + updateWalletError.message
-		}
 	}
 
 	// Proceed with booking the time slot
@@ -883,7 +928,7 @@ export const bookTimeSlotForClientGroup = async ({
 		user_name: userData.first_name + ' ' + userData.last_name,
 		user_email: userData.email,
 		activity_name: activityData.name,
-		activity_price: activityData.credits,
+		activity_price: userData.isFree ? 0 : activityData.credits,
 		activity_date: date,
 		start_time: startTime,
 		end_time: endTime,
@@ -913,7 +958,8 @@ export const bookTimeSlotForClientGroup = async ({
 
 	return {
 		success: true,
-		message: 'Group session booked successfully, credits deducted.',
+		message:
+			'Group session booked successfully, credits deducted if applicable.',
 		timeSlot: timeSlotData
 	}
 }

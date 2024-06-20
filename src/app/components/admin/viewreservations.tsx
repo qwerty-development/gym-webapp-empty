@@ -350,10 +350,7 @@ export default function ViewReservationsComponent() {
 					console.error('Failed to cancel booking:', error)
 				}
 			} else {
-				const { success, error } = await cancelGroupBooking(
-					reservation.id,
-					reservation.activity?.credits
-				)
+				const { success, error } = await cancelGroupBooking(reservation.id)
 				if (success) {
 					console.log('Group booking cancelled successfully.')
 					fetchData()
