@@ -110,21 +110,42 @@ export default function ViewReservationsComponent() {
 			return
 		}
 
+		// Fetch user data
+		const { data: userData, error: userError } = await supabase
+			.from('users')
+			.select('wallet, isFree')
+			.eq('user_id', userId)
+			.single()
+
+		if (userError || !userData) {
+			console.error(
+				`Error fetching user data for user ${userId}:`,
+				userError?.message || 'User not found'
+			)
+			return
+		}
+
 		// Calculate total additions refund for the user
 		const userAdditions = existingSlot.additions.find(
-			(addition: any) => addition.user_id === userId
+			(addition: { user_id: any }) => addition.user_id === userId
 		)
 		const additionsTotalPrice = userAdditions
 			? userAdditions.items.reduce(
-					(total: any, item: any) => total + item.price,
+					(total: any, item: { price: any }) => total + item.price,
 					0
 			  )
 			: 0
-		const totalRefund = credits + additionsTotalPrice
+
+		let totalRefund = 0
+		if (!userData.isFree) {
+			totalRefund += credits + additionsTotalPrice
+		} else {
+			totalRefund += additionsTotalPrice
+		}
 
 		// Remove user's additions from the additions array
 		const updatedAdditions = existingSlot.additions.filter(
-			(addition: any) => addition.user_id !== userId
+			(addition: { user_id: any }) => addition.user_id !== userId
 		)
 
 		// Remove the user from the group_time_slots
@@ -148,8 +169,12 @@ export default function ViewReservationsComponent() {
 			return
 		}
 
-		// Refund the credits to the user
-		await updateUserCreditsCancellation(userId, totalRefund)
+		// Refund the credits to the user if not free
+		if (!userData.isFree) {
+			await updateUserCreditsCancellation(userId, totalRefund)
+		} else if (additionsTotalPrice > 0) {
+			await updateUserCreditsCancellation(userId, additionsTotalPrice)
+		}
 
 		fetchData()
 	}
@@ -331,8 +356,26 @@ export default function ViewReservationsComponent() {
 					(total, item) => total + item.price,
 					0
 				)
-				const totalRefund =
-					(reservation.activity?.credits || 0) + additionsTotalPrice
+
+				// Fetch user data
+				const { data: userData, error: userError } = await supabase
+					.from('users')
+					.select('isFree')
+					.eq('user_id', reservation.user?.user_id)
+					.single()
+
+				if (userError || !userData) {
+					console.error(
+						`Error fetching user data for user ${reservation.user?.user_id}:`,
+						userError?.message || 'User not found'
+					)
+					return
+				}
+
+				let totalRefund = additionsTotalPrice
+				if (!userData.isFree) {
+					totalRefund += reservation.activity?.credits || 0
+				}
 
 				const updatedSlot = {
 					...reservation,
