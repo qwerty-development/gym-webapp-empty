@@ -594,6 +594,16 @@ export const updateUserCredits = async (userId, wallet) => {
 	return { data, error } // Return an object containing both data and error
 }
 
+export const updateUserisFree = async (userId, isFree) => {
+	const supabase = await supabaseClient()
+	const { data, error } = await supabase
+		.from('users')
+		.update({ isFree })
+		.eq('id', userId)
+
+	return { data, error } // Return an object containing both data and error
+}
+
 // admin-requests.js
 
 export const bookTimeSlotForClient = async ({

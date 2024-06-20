@@ -1,6 +1,10 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { fetchUsers, updateUserCredits } from '../../../../utils/admin-requests'
+import {
+	fetchUsers,
+	updateUserCredits,
+	updateUserisFree
+} from '../../../../utils/admin-requests'
 import toast from 'react-hot-toast'
 
 // Assuming this is the structure of your user data
@@ -9,7 +13,8 @@ interface User {
 	username: string
 	first_name: string
 	last_name: string
-	wallet?: number // Make sure credits property is defined
+	wallet?: number
+	isFree?: boolean
 }
 
 const ModifyCreditsComponent = () => {
@@ -33,6 +38,31 @@ const ModifyCreditsComponent = () => {
 
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(e.target.value)
+	}
+
+	const handleToggleFree = async (userId: number, currentIsFree: boolean) => {
+		setIsUpdating(true)
+		try {
+			const { error } = await updateUserisFree(userId, !currentIsFree)
+			if (!error) {
+				setUsers(prevUsers =>
+					prevUsers.map(user => {
+						if (user.id === userId) {
+							return { ...user, isFree: !currentIsFree }
+						}
+						return user
+					})
+				)
+				toast.success('User free status updated successfully')
+			} else {
+				toast.error('Failed to update user free status.')
+			}
+		} catch (error) {
+			console.error('Update failed:', error)
+			toast.error('Failed to update user free status.')
+		} finally {
+			setIsUpdating(false)
+		}
 	}
 
 	const handleUpdateCredits = async () => {
@@ -65,7 +95,7 @@ const ModifyCreditsComponent = () => {
 					}
 				} else {
 					console.error('User not found:', selectedUserId)
-          toast.error('User not found. Please try again.')
+					toast.error('User not found. Please try again.')
 				}
 			} catch (error) {
 				console.error('Update failed:', error)
@@ -93,20 +123,23 @@ const ModifyCreditsComponent = () => {
 				<table className='w-full text-sm text-left text-gray-500 dark:text-gray-400'>
 					<thead className='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400'>
 						<tr>
-							<th scope='col' className='py-3 px-6'>
+							<th scope='col' className='py-3 px-6 text-left'>
 								Username
 							</th>
-							<th scope='col' className='py-3 px-6'>
+							<th scope='col' className='py-3 px-6 text-left'>
 								First Name
 							</th>
-							<th scope='col' className='py-3 px-6'>
+							<th scope='col' className='py-3 px-6 text-left'>
 								Last Name
 							</th>
-							<th scope='col' className='py-3 px-6'>
+							<th scope='col' className='py-3 px-6 text-left'>
 								Wallet
 							</th>
-							<th scope='col' className='py-3 px-6'>
-								Actions
+							<th scope='col' className='py-3 px-6 text-center'>
+								is Free
+							</th>
+							<th scope='col' className='py-3 px-6 text-right'>
+								Add or Remove Credits
 							</th>
 						</tr>
 					</thead>
@@ -119,6 +152,15 @@ const ModifyCreditsComponent = () => {
 								<td className='py-4 px-6'>{user.first_name}</td>
 								<td className='py-4 px-6'>{user.last_name}</td>
 								<td className='py-4 px-6'>{user.wallet}</td>
+								<td className='py-4 px-6 text-center'>
+									<input
+										type='checkbox'
+										checked={user.isFree || false}
+										onChange={() =>
+											handleToggleFree(user.id, user.isFree || false)
+										}
+									/>
+								</td>
 								<td className='py-4 px-6 text-right'>
 									{selectedUserId === user.id ? (
 										<div className='flex items-center justify-end space-x-2'>
