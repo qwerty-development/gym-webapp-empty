@@ -340,7 +340,9 @@ export const cancelGroupBooking = async timeSlotId => {
 	const activityCredits = activityData.credits
 
 	// Refund credits to each user in the user_id array including additions
-	for (const userId of existingSlot.user_id) {
+	for (const userAddition of existingSlot.additions) {
+		const { user_id: userId, items } = userAddition
+
 		const { data: userData, error: userError } = await supabase
 			.from('users')
 			.select('wallet, isFree')
@@ -360,12 +362,10 @@ export const cancelGroupBooking = async timeSlotId => {
 			totalRefund += activityCredits
 		}
 
-		const userAdditions = existingSlot.additions.find(
-			addition => addition.user_id === userId
+		const additionsTotalPrice = items.reduce(
+			(total, item) => total + item.price,
+			0
 		)
-		const additionsTotalPrice = userAdditions
-			? userAdditions.items.reduce((total, item) => total + item.price, 0)
-			: 0
 		totalRefund += additionsTotalPrice
 
 		const newWalletBalance = userData.wallet + totalRefund
@@ -524,7 +524,8 @@ export const updateTimeSlot = async timeSlot => {
 		.from('time_slots')
 		.update({
 			booked: timeSlot.booked,
-			user_id: timeSlot.user_id // Ensure you update only necessary fields
+			user_id: timeSlot.user_id,
+			additions: timeSlot.additions // Ensure you update only necessary fields
 		})
 		.eq('id', timeSlot.id)
 

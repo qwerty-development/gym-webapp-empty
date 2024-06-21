@@ -126,15 +126,18 @@ export default function ViewReservationsComponent() {
 		}
 
 		// Calculate total additions refund for the user
-		const userAdditions = existingSlot.additions.find(
+		const userAdditions = existingSlot.additions.filter(
 			(addition: { user_id: any }) => addition.user_id === userId
 		)
-		const additionsTotalPrice = userAdditions
-			? userAdditions.items.reduce(
-					(total: any, item: { price: any }) => total + item.price,
+		const additionsTotalPrice = userAdditions.reduce(
+			(total: any, addition: { items: any[] }) =>
+				total +
+				addition.items.reduce(
+					(itemTotal: any, item: { price: any }) => itemTotal + item.price,
 					0
-			  )
-			: 0
+				),
+			0
+		)
 
 		let totalRefund = 0
 		if (!userData.isFree) {
@@ -169,11 +172,9 @@ export default function ViewReservationsComponent() {
 			return
 		}
 
-		// Refund the credits to the user if not free
-		if (!userData.isFree) {
+		// Refund the credits to the user
+		if (totalRefund > 0) {
 			await updateUserCreditsCancellation(userId, totalRefund)
-		} else if (additionsTotalPrice > 0) {
-			await updateUserCreditsCancellation(userId, additionsTotalPrice)
 		}
 
 		fetchData()

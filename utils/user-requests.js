@@ -211,22 +211,21 @@ export const cancelReservation = async (
 		// Initialize total refund amount
 		let totalRefund = 0
 
+		const { data: activityData, error: activityError } = await supabase
+			.from('activities')
+			.select('credits, name')
+			.eq('id', reservationData.activity_id)
+			.single()
+
+		if (activityError || !activityData) {
+			throw new Error(
+				`Error fetching activity credits: ${
+					activityError?.message || 'Activity not found'
+				}`
+			)
+		}
 		// If user is not free, fetch the activity credits and add to total refund
 		if (!userData.isFree) {
-			const { data: activityData, error: activityError } = await supabase
-				.from('activities')
-				.select('credits, name')
-				.eq('id', reservationData.activity_id)
-				.single()
-
-			if (activityError || !activityData) {
-				throw new Error(
-					`Error fetching activity credits: ${
-						activityError?.message || 'Activity not found'
-					}`
-				)
-			}
-
 			totalRefund += activityData.credits
 		}
 
@@ -385,23 +384,22 @@ export const cancelReservationGroup = async (
 
 		// Initialize total refund amount
 		let totalRefund = 0
+		const { data: activityData, error: activityError } = await supabase
+			.from('activities')
+			.select('credits, name')
+			.eq('id', reservationData.activity_id)
+			.single()
+
+		if (activityError || !activityData) {
+			throw new Error(
+				`Error fetching activity credits: ${
+					activityError?.message || 'Activity not found'
+				}`
+			)
+		}
 
 		// If user is not free, fetch the activity credits and add to total refund
 		if (!userData.isFree) {
-			const { data: activityData, error: activityError } = await supabase
-				.from('activities')
-				.select('credits, name')
-				.eq('id', reservationData.activity_id)
-				.single()
-
-			if (activityError || !activityData) {
-				throw new Error(
-					`Error fetching activity credits: ${
-						activityError?.message || 'Activity not found'
-					}`
-				)
-			}
-
 			totalRefund += activityData.credits
 		}
 
