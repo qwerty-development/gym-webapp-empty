@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+import Modal from 'react-modal'
 import {
 	fetchUsers,
 	updateUserCredits,
@@ -24,8 +25,12 @@ const ModifyCreditsComponent = () => {
 	const [newCredits, setNewCredits] = useState('')
 	const [isUpdating, setIsUpdating] = useState(false)
 	const [sortOption, setSortOption] = useState('alphabetical')
+	const [modalIsOpen, setModalIsOpen] = useState(false)
+	const [isLoading, setIsLoading] = useState(false)
+	const [sale, setSale] = useState(0)
 
 	useEffect(() => {
+		setIsLoading(true)
 		fetchUsers(searchQuery)
 			.then(data => {
 				if (data) {
@@ -46,6 +51,9 @@ const ModifyCreditsComponent = () => {
 			})
 			.catch(error => {
 				console.error('Error fetching users:', error)
+			})
+			.finally(() => {
+				setIsLoading(false)
 			})
 	}, [searchQuery, sortOption])
 
@@ -86,7 +94,8 @@ const ModifyCreditsComponent = () => {
 		if (selectedUserId !== null && newCredits) {
 			setIsUpdating(true)
 			try {
-				const creditChange = parseInt(newCredits, 10)
+				let creditChange = parseInt(newCredits, 10)
+				creditChange = creditChange * (1 + sale / 100)
 				const currentUser = users.find(user => user.id === selectedUserId)
 				if (currentUser) {
 					const updatedCredits = (currentUser.wallet || 0) + creditChange
@@ -118,24 +127,33 @@ const ModifyCreditsComponent = () => {
 				setIsUpdating(false)
 				setSelectedUserId(null)
 				setNewCredits('')
+				setModalIsOpen(false)
 			}
 		}
 	}
 
+	const openModal = (userId: number) => {
+		setSelectedUserId(userId)
+		setModalIsOpen(true)
+	}
+
 	return (
 		<div className='container mx-auto px-4 py-6'>
-			<div className='mb-4 flex flex-col lg:flex-row justify-between gap-5'>
+			<div className='mb-4 flex flex-col lg:flex-row gap-5'>
 				<input
 					type='text'
 					placeholder='Search by username, first name, or last name'
 					value={searchQuery}
 					onChange={handleSearchChange}
+					disabled={isUpdating || isLoading}
 					className='w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 				/>
+
 				<select
 					value={sortOption}
 					onChange={handleSortChange}
-					className='w-fit p-2 border text-gray-400 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'>
+					disabled={isUpdating || isLoading}
+					className='w-fit p-2 text-gray-400 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'>
 					<option value='alphabetical'>Sort Alphabetically</option>
 					<option value='newest'>Sort by Newest</option>
 				</select>
@@ -177,6 +195,7 @@ const ModifyCreditsComponent = () => {
 								<td className='py-4 px-6 text-center'>
 									<input
 										type='checkbox'
+										disabled={isUpdating || isLoading}
 										checked={user.isFree || false}
 										onChange={() =>
 											handleToggleFree(user.id, user.isFree || false)
@@ -184,34 +203,66 @@ const ModifyCreditsComponent = () => {
 									/>
 								</td>
 								<td className='py-4 px-6 text-right'>
-									{selectedUserId === user.id ? (
-										<div className='flex items-center justify-end space-x-2'>
-											<input
-												type='number'
-												placeholder='New Credits'
-												value={newCredits}
-												onChange={e => setNewCredits(e.target.value)}
-												className='p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-											/>
-											<button
-												onClick={handleUpdateCredits}
-												className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'>
-												Update
-											</button>
-										</div>
-									) : (
-										<button
-											onClick={() => setSelectedUserId(user.id)}
-											className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'>
-											+ or -
-										</button>
-									)}
+									<button
+										onClick={() => openModal(user.id)}
+										disabled={isUpdating || isLoading}
+										className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'>
+										Modify
+									</button>
 								</td>
 							</tr>
 						))}
 					</tbody>
 				</table>
 			</div>
+
+			<Modal
+				isOpen={modalIsOpen}
+				onRequestClose={() => setModalIsOpen(false)}
+				contentLabel='Update Credits'
+				className='modal'
+				overlayClassName='overlay'>
+				<h2 className='text-2xl font-bold mb-4 text-black'>Update Credits</h2>
+				<div className='flex flex-col items-center'>
+					<input
+						type='number'
+						placeholder='New Credits'
+						value={newCredits}
+						disabled={isUpdating || isLoading}
+						onChange={e => setNewCredits(e.target.value)}
+						className='p-2 border text-gray-400 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 '
+					/>
+					<div className='flex flex-row justify-center items-center gap-1'>
+						<label className='text-gray-400' htmlFor='sales'>
+							Sale %
+						</label>
+						<input
+							id='sales'
+							type='number'
+							placeholder='Sale %'
+							value={sale}
+							min={0}
+							max={100}
+							disabled={isUpdating || isLoading}
+							onChange={e => setSale(parseInt(e.target.value))}
+							className='p-2 border text-gray-400 border-gray-300 mt-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4'
+						/>
+					</div>
+					<div className='flex flex-row justify-between gap-5'>
+						<button
+							onClick={handleUpdateCredits}
+							disabled={isUpdating || isLoading}
+							className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 '>
+							Update
+						</button>
+						<button
+							onClick={() => setModalIsOpen(false)}
+							className='px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2'>
+							Close
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	)
 }

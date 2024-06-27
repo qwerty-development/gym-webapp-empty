@@ -81,7 +81,7 @@ export async function POST(request) {
               <div class="content">
                   <p><strong>Name:</strong> ${user_name}</p>
                   <p><strong>Wallet:</strong> ${user_wallet}</p>
-                  <p><strong>Credits Added:</strong> ${creditsAdded}</p>
+                  <p><strong>New Credits:</strong> ${creditsAdded}</p>
                   <p>Thank you for refilling your credits. If you have any questions, feel free to contact our support.</p>
               </div>
               <div class="footer">
