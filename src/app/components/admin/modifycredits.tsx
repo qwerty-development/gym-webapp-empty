@@ -7,12 +7,12 @@ import {
 } from '../../../../utils/admin-requests'
 import toast from 'react-hot-toast'
 
-// Assuming this is the structure of your user data
 interface User {
 	id: number
 	username: string
 	first_name: string
 	last_name: string
+	created_at: string
 	wallet?: number
 	isFree?: boolean
 }
@@ -23,21 +23,38 @@ const ModifyCreditsComponent = () => {
 	const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
 	const [newCredits, setNewCredits] = useState('')
 	const [isUpdating, setIsUpdating] = useState(false)
+	const [sortOption, setSortOption] = useState('alphabetical')
 
 	useEffect(() => {
 		fetchUsers(searchQuery)
 			.then(data => {
 				if (data) {
-					setUsers(data as User[])
+					let sortedUsers = data as User[]
+					if (sortOption === 'alphabetical') {
+						sortedUsers = sortedUsers.sort((a, b) =>
+							a.first_name.localeCompare(b.first_name)
+						)
+					} else if (sortOption === 'newest') {
+						sortedUsers = sortedUsers.sort(
+							(a, b) =>
+								new Date(b.created_at).getTime() -
+								new Date(a.created_at).getTime()
+						)
+					}
+					setUsers(sortedUsers)
 				}
 			})
 			.catch(error => {
 				console.error('Error fetching users:', error)
 			})
-	}, [searchQuery])
+	}, [searchQuery, sortOption])
 
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(e.target.value)
+	}
+
+	const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setSortOption(e.target.value)
 	}
 
 	const handleToggleFree = async (userId: number, currentIsFree: boolean) => {
@@ -69,17 +86,15 @@ const ModifyCreditsComponent = () => {
 		if (selectedUserId !== null && newCredits) {
 			setIsUpdating(true)
 			try {
-				const creditChange = parseInt(newCredits, 10) // Parse the input to get the change in credits
-				const currentUser = users.find(user => user.id === selectedUserId) // Find the current user details
+				const creditChange = parseInt(newCredits, 10)
+				const currentUser = users.find(user => user.id === selectedUserId)
 				if (currentUser) {
-					const updatedCredits = (currentUser.wallet || 0) + creditChange // Calculate new credits total
-					// Attempt to update user credits
+					const updatedCredits = (currentUser.wallet || 0) + creditChange
 					const { error } = await updateUserCredits(
 						selectedUserId,
 						updatedCredits
 					)
 					if (!error) {
-						// Update the credits in the users state
 						setUsers(prevUsers =>
 							prevUsers.map(user => {
 								if (user.id === selectedUserId) {
@@ -88,7 +103,6 @@ const ModifyCreditsComponent = () => {
 								return user
 							})
 						)
-
 						toast.success('User credits updated successfully')
 					} else {
 						toast.error('Failed to update user credits.')
@@ -110,7 +124,7 @@ const ModifyCreditsComponent = () => {
 
 	return (
 		<div className='container mx-auto px-4 py-6'>
-			<div className='mb-4'>
+			<div className='mb-4 flex flex-row justify-between gap-5'>
 				<input
 					type='text'
 					placeholder='Search by username, first name, or last name'
@@ -118,7 +132,15 @@ const ModifyCreditsComponent = () => {
 					onChange={handleSearchChange}
 					className='w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
 				/>
+				<select
+					value={sortOption}
+					onChange={handleSortChange}
+					className='w-full p-2 border text-gray-400 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'>
+					<option value='alphabetical'>Sort Alphabetically</option>
+					<option value='newest'>Sort by Newest</option>
+				</select>
 			</div>
+
 			<div className='overflow-x-auto relative shadow-md sm:rounded-lg'>
 				<table className='w-full text-sm text-left text-gray-500 dark:text-gray-400'>
 					<thead className='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400'>
