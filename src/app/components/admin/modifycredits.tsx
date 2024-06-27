@@ -124,7 +124,7 @@ const ModifyCreditsComponent = () => {
 
 	return (
 		<div className='container mx-auto px-4 py-6'>
-			<div className='mb-4 flex flex-row justify-between gap-5'>
+			<div className='mb-4 flex flex-col lg:flex-row justify-between gap-5'>
 				<input
 					type='text'
 					placeholder='Search by username, first name, or last name'
@@ -135,7 +135,7 @@ const ModifyCreditsComponent = () => {
 				<select
 					value={sortOption}
 					onChange={handleSortChange}
-					className='w-full p-2 border text-gray-400 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'>
+					className='w-fit p-2 border text-gray-400 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'>
 					<option value='alphabetical'>Sort Alphabetically</option>
 					<option value='newest'>Sort by Newest</option>
 				</select>
