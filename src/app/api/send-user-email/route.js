@@ -125,8 +125,7 @@ export async function POST(request) {
 		  </body>
 		  </html>
 		`
-	};
-
+	}
 
 	try {
 		await transporter.sendMail(mailOptions)

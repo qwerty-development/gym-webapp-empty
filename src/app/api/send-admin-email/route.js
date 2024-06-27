@@ -24,7 +24,7 @@ export async function POST(request) {
 
 	const mailOptions = {
 		from: 'noreply@notqwerty.com',
-		to: 'asif.k.alam@net.usek.edu.lb', // Replace with your admin email
+		to: 'saiid.saliba@gmail.com', // Replace with your admin email
 		subject: 'New Booking',
 		html: `
 		  <!DOCTYPE html>
@@ -126,8 +126,7 @@ export async function POST(request) {
 		  </body>
 		  </html>
 		`
-	};
-
+	}
 
 	try {
 		await transporter.sendMail(mailOptions)
