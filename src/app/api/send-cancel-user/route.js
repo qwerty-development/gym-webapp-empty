@@ -21,11 +21,11 @@ export async function POST(request) {
 		}
 	})
 
-const mailOptions = {
-  from: 'noreply@notqwerty.com',
-  to: user_email, // Replace with your admin email
-  subject: 'Cancelled Booking Receipt',
-  html: `
+	const mailOptions = {
+		from: 'noreply@notqwerty.com',
+		to: user_email, // Replace with your admin email
+		subject: 'Cancelled Booking Receipt',
+		html: `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -122,8 +122,7 @@ const mailOptions = {
     </body>
     </html>
   `
-};
-
+	}
 
 	try {
 		await transporter.sendMail(mailOptions)

@@ -616,14 +616,63 @@ export const fetchUsers = async searchQuery => {
 	return data
 }
 
+// src/app/api/update-user-credits/route.js
+
 export const updateUserCredits = async (userId, wallet) => {
 	const supabase = await supabaseClient()
+
+	// Fetch user details
+	const { data: userData, error: userError } = await supabase
+		.from('users')
+		.select('wallet, first_name, last_name, email')
+		.eq('id', userId)
+		.single()
+
+	if (userError || !userData) {
+		console.error('Error fetching user data:', userError?.message)
+		return { error: 'User not found' }
+	}
+
+	// Update user's wallet
 	const { data, error } = await supabase
 		.from('users')
 		.update({ wallet })
 		.eq('id', userId)
 
-	return { data, error } // Return an object containing both data and error
+	if (error) {
+		console.error('Error updating user wallet:', error.message)
+		return { error: 'Failed to update user wallet: ' + error.message }
+	}
+
+	// Prepare email data
+	const emailData = {
+		user_name: userData.first_name + ' ' + userData.last_name,
+		user_email: userData.email,
+		user_wallet: wallet,
+		creditsAdded: wallet - userData.wallet // Assuming creditsAdded is the difference
+	}
+
+	// Send email notification to user
+	try {
+		const responseUser = await fetch('/api/send-refill-email', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		const resultUser = await responseUser.json()
+		if (responseUser.ok) {
+			console.log('User email sent successfully')
+		} else {
+			console.error(`Failed to send user email: ${resultUser.error}`)
+		}
+	} catch (error) {
+		console.error('Error sending user email:', error)
+	}
+
+	return { data, error }
 }
 
 export const updateUserisFree = async (userId, isFree) => {
