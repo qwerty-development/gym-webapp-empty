@@ -2,12 +2,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseClient } from '../../../../utils/supabaseClient'
 
-export const config = {
-	api: {
-		bodyParser: false // Disable body parsing, we will handle it manually
-	}
-}
-
 export async function POST(request) {
 	const supabase = supabaseClient()
 
