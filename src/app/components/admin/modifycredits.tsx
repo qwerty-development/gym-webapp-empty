@@ -21,6 +21,7 @@ interface User {
 const ModifyCreditsComponent = () => {
 	const [users, setUsers] = useState<User[]>([])
 	const [searchQuery, setSearchQuery] = useState('')
+	const [searchTrigger, setSearchTrigger] = useState(0)
 	const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
 	const [newCredits, setNewCredits] = useState('')
 	const [isUpdating, setIsUpdating] = useState(false)
@@ -55,11 +56,7 @@ const ModifyCreditsComponent = () => {
 			.finally(() => {
 				setIsLoading(false)
 			})
-	}, [searchQuery, sortOption])
-
-	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setSearchQuery(e.target.value)
-	}
+	}, [searchTrigger, sortOption])
 
 	const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		setSortOption(e.target.value)
@@ -136,18 +133,39 @@ const ModifyCreditsComponent = () => {
 		setSelectedUserId(userId)
 		setModalIsOpen(true)
 	}
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchQuery(e.target.value)
+	}
 
+	const handleSearch = () => {
+		setSearchTrigger(prev => prev + 1) // Increment to trigger useEffect
+	}
+
+	const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter') {
+			handleSearch()
+		}
+	}
 	return (
 		<div className='container mx-auto px-4 py-6'>
 			<div className='mb-4 flex flex-col lg:flex-row gap-5'>
-				<input
-					type='text'
-					placeholder='Search by username, first name, or last name'
-					value={searchQuery}
-					onChange={handleSearchChange}
-					disabled={isUpdating || isLoading}
-					className='w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-				/>
+				<div className='flex-grow flex'>
+					<input
+						type='text'
+						placeholder='Search by username, first name, or last name'
+						value={searchQuery}
+						onChange={handleSearchChange}
+						onKeyPress={handleKeyPress}
+						disabled={isUpdating || isLoading}
+						className='w-full p-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none text-gray-500 focus:ring-2 focus:ring-blue-500'
+					/>
+					<button
+						onClick={handleSearch}
+						disabled={isUpdating || isLoading}
+						className='px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'>
+						Search
+					</button>
+				</div>
 
 				<select
 					value={sortOption}
