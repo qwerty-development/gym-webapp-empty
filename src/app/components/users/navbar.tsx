@@ -23,7 +23,7 @@ export default function NavbarComponent() {
 				<>
 					<div className='mx-auto max-w-7xl px-2 sm:px-6 lg:px-8'>
 						<div className='relative flex h-20  justify-between'>
-							<div className='absolute inset-y-0 text-white left-0 flex items-center sm:hidden'>
+							<div className='absolute inset-y-0 text-white right-0 flex items-center sm:hidden'>
 								<Disclosure.Button className='relative inline-flex items-center justify-center rounded-md p-2  '>
 									<span className='absolute -inset-0.5' />
 									<span className='sr-only'>Open main menu</span>
@@ -94,7 +94,7 @@ export default function NavbarComponent() {
 									)}
 								</div>
 							</div>
-							<div className='absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0'>
+							<div className='absolute inset-y-0 right-10 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0'>
 								{walletBalance !== null && (
 									<div className='text-white mr-4'>{walletBalance} credits</div>
 								)}

@@ -19,6 +19,8 @@ import { useWallet } from '@/app/components/users/WalletContext'
 import toast from 'react-hot-toast'
 import { showConfirmationToast } from '@/app/components/users/ConfirmationToast'
 import Modal from 'react-modal'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FaUser, FaCalendarAlt, FaUsers, FaBars } from 'react-icons/fa'
 
 type Reservation = {
 	id: number
@@ -62,7 +64,6 @@ type GroupReservation = {
 type Activity = {
 	id: number
 	name: string
-	// Add other necessary fields
 }
 
 export default function Dashboard() {
@@ -72,6 +73,8 @@ export default function Dashboard() {
 	>(null)
 	const [selectedItems, setSelectedItems] = useState<any[]>([])
 	const [totalPrice, setTotalPrice] = useState<number>(0)
+	const [activeTab, setActiveTab] = useState('individual')
+	const [sidebarOpen, setSidebarOpen] = useState(false)
 
 	const { isLoaded, isSignedIn, user } = useUser()
 	const [reservations, setReservations] = useState<Reservation[]>([])
@@ -331,156 +334,135 @@ export default function Dashboard() {
 	}
 
 	return (
-		<div>
+		<div className='min-h-screen bg-gray-700 text-white font-sans'>
 			<NavbarComponent />
-			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center'>
-				<div className='mx-auto text-xl italic max-w-3xl mt-5'>
-					Hello, {user.firstName} {user.lastName}! You are signed in as{' '}
-					{user.username}.
-				</div>
 
-				<div className='py-10'>
-					<header>
-						<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-							<h1 className='text-3xl font-bold leading-tight tracking-tight dark:text-indigo-300 text-gray-900'>
-								Your reservations
-							</h1>
-						</div>
-					</header>
-					<main className='bg-gray-100 mt-5 rounded-3xl py-8'>
-						{isLoading ? ( // Display loading icon if data is being fetched
-							<div className='flex justify-center items-center'>
-								<RingLoader color={'#367831'} size={100} />
-							</div>
-						) : (
-							<>
-								<div className='container mx-auto px-4 lg:px-8'>
-									<h2 className='text-2xl font-semibold text-gray-900'>
-										Individual Reservations
-									</h2>
-									{reservations.length > 0 ? (
-										<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-											{reservations.map(reservation => (
-												<div
-													key={reservation.id}
-													className='bg-white p-6 rounded-lg shadow-md'>
-													<h3 className='text-lg dark:text-black font-semibold mb-2'>
-														{reservation.activity.name}
-													</h3>
-													<p className='text-gray-600 mb-2'>
-														Date: {reservation.date}
-													</p>
-													<p className='text-gray-600 mb-2 '>
-														Time: {reservation.start_time} -{' '}
-														{reservation.end_time}
-													</p>
-													<p className='text-gray-600 mb-2'>
-														Coach: {reservation.coach.name}
-													</p>
-													<p className='text-gray-600 mb-2'>
-														Cost: {reservation.activity.credits} credits
-													</p>
-													<p className='text-gray-600 mb-2'>
-														Additions:{' '}
-														{reservation.additions
-															? reservation.additions.join(', ')
-															: 'No additions'}
-													</p>
+			<button
+				className='md:hidden fixed top-8 left-2 text-white'
+				onClick={() => setSidebarOpen(!sidebarOpen)}>
+				<FaBars size={18} />
+			</button>
 
-													<AddToCalendarButton
-														name={
-															reservation.activity.name +
-															' with ' +
-															reservation.coach.name
-														}
-														startDate={reservation.date}
-														startTime={reservation.start_time}
-														endTime={reservation.end_time}
-														options={['Apple', 'Google']}
-														timeZone='Asia/Beirut'
-														buttonStyle='default'
-														styleLight='--btn-background: #5c6dc2; --btn-text: #fff;'
-														styleDark='--btn-background:#fff #; --btn-text: #000;'
-														size='5'
-														inline='true'
-													/>
-													<button
-														onClick={() => handleCancel(reservation.id)}
-														className='bg-red-500 disabled:bg-red-300 text-white font-bold py-2 px-4 rounded mt-4'
-														disabled={buttonLoading}>
-														Cancel
-													</button>
-													<button
-														onClick={() => openMarketModal(reservation)}
-														className='bg-blue-500 disabled:bg-blue-300 text-white font-bold py-2 px-4 rounded mt-4'
-														disabled={buttonLoading}>
-														Add Items
-													</button>
-												</div>
-											))}
-										</div>
-									) : (
-										<p className='text-xl text-gray-600'>
-											NO UPCOMING RESERVATIONS
-										</p>
-									)}
-								</div>
-							</>
-						)}
-					</main>
-					<div className='bg-gray-100 mt-5 rounded-3xl py-8'>
-						<div className='container  mx-auto px-4 lg:px-8'>
-							<h2 className='text-2xl font-semibold text-gray-900'>
-								Group Reservations
+			{/* Sidebar */}
+			<div
+				className={`fixed left-0 top-0 h-full w-64 bg-gray-800 p-4 transform transition-transform duration-300 ease-in-out z-40 ${
+					sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+				} md:translate-x-0`}>
+				<h2 className='text-2xl font-bold mb-4 mt-16 md:mt-4'>Menu</h2>
+				<ul>
+					<li className='mb-10'>
+						<button
+							onClick={() => {
+								setActiveTab('individual')
+								setSidebarOpen(false)
+							}}
+							className='flex items-center  hover:text-gray-400'>
+							<FaCalendarAlt size={35} className='mr-2' /> Individual
+							Reservations
+						</button>
+					</li>
+					<li className='mb-2'>
+						<button
+							onClick={() => {
+								setActiveTab('group')
+								setSidebarOpen(false)
+							}}
+							className='flex items-center  hover:text-gray-400'>
+							<FaUsers size={35} className='mr-2' /> Group Reservations
+						</button>
+					</li>
+				</ul>
+			</div>
+
+			<div className='md:ml-64 p-4 md:p-8'>
+				{/* User Profile Card */}
+				<motion.div
+					initial={{ opacity: 0, y: -50 }}
+					animate={{ opacity: 1, y: 0 }}
+					className='bg-gray-800 rounded-lg p-4 md:p-6 mb-6 md:mb-8'>
+					<div className='flex items-center'>
+						<FaUser className='text-3xl md:text-4xl mr-4' />
+						<div>
+							<h2 className='text-xl md:text-2xl font-bold'>
+								{user.firstName} {user.lastName}
 							</h2>
-							{groupReservations.length > 0 ? (
-								<div className='grid grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-4'>
-									{groupReservations.map(reservation => (
-										<div
-											key={reservation.id}
-											className='bg-white p-6 rounded-lg shadow-md'>
-											<h3 className='text-lg dark:text-black font-semibold mb-2'>
+							<p className='text-sm md:text-base text-gray-400'>
+								@{user.username}
+							</p>
+						</div>
+					</div>
+				</motion.div>
+
+				{/* Reservations */}
+				<AnimatePresence mode='wait'>
+					{isLoading ? (
+						<motion.div
+							key='loader'
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							className='flex justify-center items-center h-64'>
+							<RingLoader color={'#367831'} size={100} />
+						</motion.div>
+					) : (
+						<motion.div
+							key='content'
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}>
+							<h2 className='text-2xl md:text-3xl font-bold mb-4 md:mb-6'>
+								{activeTab === 'individual'
+									? 'Individual Reservations'
+									: 'Group Reservations'}
+							</h2>
+							<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
+								{(activeTab === 'individual'
+									? reservations
+									: groupReservations
+								).map(reservation => (
+									<motion.div
+										key={reservation.id}
+										className='bg-gray-800 rounded-lg shadow-lg overflow-hidden'
+										whileHover={{ scale: 1.03 }}
+										transition={{ duration: 0.2 }}>
+										<div className='p-4 md:p-6'>
+											<h3 className='text-lg md:text-xl font-semibold mb-2'>
 												{reservation.activity.name}
 											</h3>
-											<p className='text-gray-600'>Date: {reservation.date}</p>
-											<p className='text-gray-600'>
+											<p className='text-sm md:text-base text-gray-400 mb-1 md:mb-2'>
+												Date: {reservation.date}
+											</p>
+											<p className='text-sm md:text-base text-gray-400 mb-1 md:mb-2'>
 												Time: {reservation.start_time} - {reservation.end_time}
 											</p>
-											<p className='text-gray-600'>
+											<p className='text-sm md:text-base text-gray-400 mb-1 md:mb-2'>
 												Coach: {reservation.coach.name}
 											</p>
-											<p className='text-gray-600 mb-2'>
-												Cost: {reservation.activity.credits} credits
+											<p className='text-sm md:text-base text-gray-400 mb-2 md:mb-4'>
+												Credits: {reservation.activity.credits}
 											</p>
-											<p className='text-gray-600 mb-2'>
-												Attendance: {reservation.count}
-											</p>
-											<p className='text-gray-600 mb-2'>
-												Additions:
-												{reservation.additions.length > 0 ? (
-													<ul>
-														{reservation.additions.map((addition, index) => (
-															<li key={index}>
-																<ul>
-																	{addition.items.map(item => (
-																		<li key={item.id}>
-																			{item.name} - {item.price} credits
-																		</li>
-																	))}
-																</ul>
-															</li>
-														))}
-													</ul>
-												) : (
-													'No additions'
-												)}
+											{activeTab === 'group' && (
+												<p className='text-sm md:text-base text-gray-400 mb-1 md:mb-2'>
+													Attendance: {reservation.count}
+												</p>
+											)}
+											<p className='text-sm md:text-base text-gray-400 mb-2'>
+												Additions:{' '}
+												{reservation.additions &&
+												reservation.additions.length > 0
+													? reservation.additions
+															.map(addition =>
+																typeof addition === 'string'
+																	? addition
+																	: addition.items
+																			.map(item => item.name)
+																			.join(', ')
+															)
+															.join(', ')
+													: 'No additions'}
 											</p>
 											<AddToCalendarButton
-												name={
-													reservation.activity.name +
-													' with ' +
-													reservation.coach.name
-												}
+												name={`${reservation.activity.name} with ${reservation.coach.name}`}
 												startDate={reservation.date}
 												startTime={reservation.start_time}
 												endTime={reservation.end_time}
@@ -489,57 +471,67 @@ export default function Dashboard() {
 												buttonStyle='default'
 												styleLight='--btn-background: #5c6dc2; --btn-text: #fff;'
 												styleDark='--btn-background:#fff #; --btn-text: #000;'
-												size='5'
-												inline='true'
-												disabled={buttonLoading}
+												size='3'
+												inline
 											/>
-											<button
-												onClick={() => handleCancelGroup(reservation.id)}
-												className='bg-red-500 disabled:bg-red-300 text-white font-bold py-2 px-4 rounded mt-4'
-												disabled={buttonLoading}>
-												Cancel
-											</button>
-											<button
-												onClick={() => openMarketModal(reservation)}
-												className='bg-blue-500 disabled:bg-blue-300 text-white font-bold py-2 px-4 rounded mt-4'
-												disabled={buttonLoading}>
-												Add Items
-											</button>
+											<div className='flex flex-col md:flex-row justify-between mt-4'>
+												<button
+													onClick={() =>
+														activeTab === 'individual'
+															? handleCancel(reservation.id)
+															: handleCancelGroup(reservation.id)
+													}
+													className='bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200 mb-2 md:mb-0'
+													disabled={buttonLoading}>
+													Cancel
+												</button>
+												<button
+													onClick={() => openMarketModal(reservation)}
+													className='bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200'
+													disabled={buttonLoading}>
+													Add Items
+												</button>
+											</div>
 										</div>
-									))}
-								</div>
-							) : (
-								<p className='text-xl text-gray-600'>
-									NO UPCOMING GROUP RESERVATIONS
+									</motion.div>
+								))}
+							</div>
+							{(activeTab === 'individual' ? reservations : groupReservations)
+								.length === 0 && (
+								<p className='text-lg md:text-xl text-gray-400'>
+									No upcoming reservations
 								</p>
 							)}
-						</div>
-					</div>
-				</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</div>
+
+			{/* Market Modal */}
 			<Modal
 				isOpen={modalIsOpen}
+				style={{ content: { backgroundColor: '#d1ffbd' } }}
 				onRequestClose={() => setModalIsOpen(false)}
 				contentLabel='Market Items'
-				className='modal'
-				overlayClassName='overlay'>
-				<h2 className='text-2xl font-bold mb-4 text-black'>
+				className='modal bg-gray-700 p-4 md:p-8 rounded-lg w-11/12 md:max-w-4xl mx-auto mt-20 overflow-y-auto max-h-[90vh]'
+				overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center pt-10 md:pt-20'>
+				<h2 className='text-xl md:text-2xl font-bold mb-4 text-gray-500'>
 					Add to your Session
 				</h2>
-				<div className='grid lg:grid-cols-3 gap-4'>
+				<div className='grid grid-cols-1 md:grid-cols-2  lg:grid-cols-3 gap-4'>
 					{market.map(item => (
-						<div key={item.id} className='border p-4 rounded-lg'>
-							<div className='flex justify-between items-center text-black'>
-								<span>{item.name}</span>
-								<span>${item.price}</span>
+						<div key={item.id} className='bg-gray-600 p-4 rounded-lg'>
+							<div className='flex justify-between items-center text-white mb-2'>
+								<span className='text-sm md:text-base'>{item.name}</span>
+								<span className='text-sm md:text-base'>${item.price}</span>
 							</div>
 							<button
-								className={`mt-2 w-full py-2 ${
+								className={`w-full py-2 rounded transition duration-200 text-sm md:text-base ${
 									selectedItems.find(
 										selectedItem => selectedItem.id === item.id
 									)
-										? 'bg-red-500 text-white'
-										: 'bg-green-500 text-white'
+										? 'bg-red-600 hover:bg-red-700 text-white'
+										: 'bg-green-600 hover:bg-green-700 text-white'
 								}`}
 								onClick={() => handleItemSelect(item)}>
 								{selectedItems.find(selectedItem => selectedItem.id === item.id)
@@ -549,19 +541,19 @@ export default function Dashboard() {
 						</div>
 					))}
 				</div>
-				<div className='mt-4'>
-					<p className='text-xl font-semibold text-black'>
+				<div className='mt-6'>
+					<p className='text-lg md:text-xl font-semibold text-gray-500 mb-4'>
 						Total Price: ${totalPrice}
 					</p>
-					<div>
+					<div className='flex flex-col md:flex-row justify-end'>
 						<button
-							className='mt-4 bg-blue-500 disabled:bg-blue-300 text-white py-2 px-4 rounded mx-5'
+							className='bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded mb-2 md:mb-0 md:mr-4 transition duration-200 text-sm md:text-base'
 							onClick={handlePay}
 							disabled={buttonLoading}>
 							Pay
 						</button>
 						<button
-							className='mt-4 bg-red-500 text-white py-2 px-4 rounded'
+							className='bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded transition duration-200 text-sm md:text-base'
 							onClick={() => setModalIsOpen(false)}>
 							Close
 						</button>
