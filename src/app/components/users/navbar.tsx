@@ -1,140 +1,123 @@
 'use client'
-import { Disclosure } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import { UserButton } from '@clerk/nextjs'
+
 import { useState, useEffect } from 'react'
-import { useAuth } from '@clerk/nextjs'
+import { motion, AnimatePresence } from 'framer-motion'
+import { UserButton } from '@clerk/nextjs'
 import { useUser } from '@clerk/nextjs'
-import { getWalletBalance } from '../../../../utils/user-requests'
 import { useWallet } from './WalletContext'
 import Image from 'next/image'
+import { FaBars, FaTimes, FaUser, FaCalendarAlt, FaCog } from 'react-icons/fa'
+
 export default function NavbarComponent() {
 	const { walletBalance } = useWallet()
 	const [currentPage, setCurrentPage] = useState('')
-	const { userId, getToken, isSignedIn } = useAuth()
-	const user = useUser()
+	const { user } = useUser()
+	const [isMenuOpen, setIsMenuOpen] = useState(false)
+
 	useEffect(() => {
-		setCurrentPage(window.location.pathname) // Set the current page when component mounts
+		setCurrentPage(window.location.pathname)
 	}, [])
 
-	return (
-		<Disclosure as='nav' className='bg-black'>
-			{({ open }) => (
-				<>
-					<div className='mx-auto max-w-7xl px-2 sm:px-6 lg:px-8'>
-						<div className='relative flex h-20  justify-between'>
-							<div className='absolute inset-y-0 text-white right-0 flex items-center sm:hidden'>
-								<Disclosure.Button className='relative inline-flex items-center justify-center rounded-md p-2  '>
-									<span className='absolute -inset-0.5' />
-									<span className='sr-only'>Open main menu</span>
-									{open ? (
-										<XMarkIcon className='block h-6 w-6' aria-hidden='true' />
-									) : (
-										<Bars3Icon className='block h-6 w-6' aria-hidden='true' />
-									)}
-								</Disclosure.Button>
-							</div>
-							<div className='flex flex-1 items-center justify-center sm:items-stretch sm:justify-start'>
-								<div className='flex lg:hidden md:hidden items-center justify-center sm:items-stretch sm:justify-start flex-1'>
-									{' '}
-									{/* Centering logo horizontally */}
-									<a href='/' className='flex items-center'>
-										<Image
-											src='/images/logoinverted.png'
-											alt='Logo'
-											className='h-10 w-auto'
-											width={100}
-											height={100}
-										/>
-									</a>
-								</div>
+	const navItems = [
+		{ href: '/users/dashboard', label: 'Dashboard', icon: FaUser },
+		{
+			href: '/users/bookasession',
+			label: 'Book a session',
+			icon: FaCalendarAlt
+		},
+		...(user?.publicMetadata?.role === 'admin'
+			? [{ href: '/admin/manage-users', label: 'Admin', icon: FaCog }]
+			: [])
+	]
 
-								<div className='hidden sm:ml-6 sm:flex sm:space-x-8'>
-									<div className='flex items-center justify-center sm:items-stretch sm:justify-start flex-1'>
-										{' '}
-										{/* Centering logo horizontally */}
-										<a href='/' className='flex items-center'>
-											<Image
-												src='/images/logoinverted.png'
-												alt='Logo'
-												className='h-10 w-auto'
-												width={100}
-												height={100}
-											/>
-										</a>
-									</div>
-									<a
-										href='/users/dashboard'
-										className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${
-											currentPage === '/users/dashboard'
-												? 'text-white border-indigo-500'
-												: 'text-gray-500 border-transparent'
-										} `}>
-										Dashboard
-									</a>
-									<a
-										href='/users/bookasession'
-										className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${
-											currentPage === '/users/bookasession'
-												? 'text-white border-indigo-500'
-												: 'text-gray-500 border-transparent'
-										} `}>
-										Book a session
-									</a>
-									{user?.user?.publicMetadata?.role === 'admin' && (
-										<a
-											href='/admin/manage-users'
-											className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${
-												currentPage === '/admin/manage-users'
-													? 'text-white border-indigo-500'
-													: 'text-gray-500 border-transparent'
-											} `}>
-											Admin
-										</a>
-									)}
+	return (
+		<nav className='bg-gray-900 text-white'>
+			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+				<div className='flex items-center justify-between h-16'>
+					<div className='flex ml-36 lg:mx-0 items-center'>
+						<a href='/' className='flex-shrink-0'>
+							<Image
+								src='/images/logoinverted.png'
+								alt='Logo'
+								width={40}
+								height={40}
+								className='h-10 w-auto'
+							/>
+						</a>
+					</div>
+					<div className='hidden md:block'>
+						<div className='ml-10 flex items-baseline space-x-4'>
+							{navItems.map(item => (
+								<a
+									key={item.href}
+									href={item.href}
+									className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+										currentPage === item.href
+											? 'bg-gray-800 text-white'
+											: 'text-gray-300 hover:bg-gray-700 hover:text-white'
+									}`}>
+									<item.icon className='mr-2' />
+									{item.label}
+								</a>
+							))}
+						</div>
+					</div>
+					<div className='hidden md:block'>
+						<div className='ml-4 flex items-center md:ml-6'>
+							{walletBalance !== null && (
+								<div className='bg-gray-800 text-white px-3 py-1 rounded-full mr-4'>
+									{walletBalance} credits
 								</div>
+							)}
+							<UserButton afterSignOutUrl='/' />
+						</div>
+					</div>
+					<div className='md:hidden flex items-center'>
+						{walletBalance !== null && (
+							<div className='bg-gray-800 text-white px-3 py-1 rounded-full mr-4'>
+								{walletBalance} credits
 							</div>
-							<div className='absolute inset-y-0 right-10 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0'>
-								{walletBalance !== null && (
-									<div className='text-white mr-4'>{walletBalance} credits</div>
-								)}
+						)}
+						<button
+							onClick={() => setIsMenuOpen(!isMenuOpen)}
+							className='inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white'>
+							{isMenuOpen ? <FaTimes /> : <FaBars />}
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<AnimatePresence>
+				{isMenuOpen && (
+					<motion.div
+						initial={{ opacity: 0, height: 0 }}
+						animate={{ opacity: 1, height: 'auto' }}
+						exit={{ opacity: 0, height: 0 }}
+						className='md:hidden'>
+						<div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
+							{navItems.map(item => (
+								<a
+									key={item.href}
+									href={item.href}
+									className={`flex items-center px-3 py-2 rounded-md text-base font-medium ${
+										currentPage === item.href
+											? 'bg-gray-800 text-white'
+											: 'text-gray-300 hover:bg-gray-700 hover:text-white'
+									}`}
+									onClick={() => setIsMenuOpen(false)}>
+									<item.icon className='mr-2' />
+									{item.label}
+								</a>
+							))}
+						</div>
+						<div className='pt-4 pb-3 border-t border-gray-700'>
+							<div className='flex items-center px-5'>
 								<UserButton afterSignOutUrl='/' />
 							</div>
 						</div>
-					</div>
-					<Disclosure.Panel className='sm:hidden'>
-						<div className='space-y-1 pb-4 pt-2'>
-							<a
-								href='/users/dashboard'
-								className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${
-									currentPage === '/users/dashboard'
-										? 'text-white bg-indigo-500 border-indigo-500'
-										: 'text-gray-500 border-transparent'
-								} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}>
-								Dashboard
-							</a>
-							<a
-								href='/users/bookasession'
-								className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${
-									currentPage === '/users/bookasession'
-										? 'text-white bg-indigo-500 border-indigo-500'
-										: 'text-gray-500 border-transparent'
-								} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}>
-								Book a session
-							</a>
-							<a
-								href='/admin/manage-users'
-								className={`block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 ${
-									currentPage === '/admin/manage-users'
-										? 'text-white bg-indigo-500 border-indigo-500'
-										: 'text-gray-500 border-transparent'
-								} hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700`}>
-								Admin
-							</a>
-						</div>
-					</Disclosure.Panel>
-				</>
-			)}
-		</Disclosure>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</nav>
 	)
 }

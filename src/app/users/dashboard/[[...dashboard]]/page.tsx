@@ -338,7 +338,7 @@ export default function Dashboard() {
 			<NavbarComponent />
 
 			<button
-				className='md:hidden fixed top-8 left-2 text-white'
+				className='md:hidden fixed top-5 left-2 text-white'
 				onClick={() => setSidebarOpen(!sidebarOpen)}>
 				<FaBars size={18} />
 			</button>
