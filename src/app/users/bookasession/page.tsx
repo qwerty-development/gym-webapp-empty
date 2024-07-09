@@ -16,6 +16,7 @@ import {
 	payForGroupItems,
 	fetchCoachesGroup
 } from '../../../../utils/user-requests'
+import { AnimatePresence, motion } from 'framer-motion'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun'
@@ -29,10 +30,24 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import ReactModal from 'react-modal'
 import Modal from 'react-modal'
-
-// Set the app element for accessibility
+import {
+	FaRunning,
+	FaHeart,
+	FaBiking,
+	FaDumbbell,
+	FaFirstAid
+} from 'react-icons/fa'
+import { RiGroupLine, RiUserLine } from 'react-icons/ri'
+import Image from 'next/image'
 
 export default function Example() {
+	const activityIcons: Record<number, JSX.Element> = {
+		1: <FaHeart />,
+		2: <FaBiking />,
+		3: <FaRunning />,
+		10: <FaDumbbell />,
+		11: <FaFirstAid />
+	}
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 	const [selectedTime, setSelectedTime] = useState<string>('')
 	const [selectedActivity, setSelectedActivity] = useState<number | null>(null)
@@ -68,19 +83,6 @@ export default function Example() {
 	useEffect(() => {
 		Modal.setAppElement('#__next')
 	}, [])
-
-	interface activityIcons {
-		[key: number]: JSX.Element
-	}
-
-	const activityIcons: { [key: number]: JSX.Element } = {
-		1: <SelfImprovementIcon />,
-		2: <FavoriteIcon />,
-		3: <DirectionsBikeIcon />,
-		4: <DirectionsRunIcon />,
-		10: <FitnessCenterIcon />,
-		11: <HealingIcon />
-	}
 
 	const handleBookGroupSession = async () => {
 		if (!user) {
@@ -388,343 +390,280 @@ export default function Example() {
 	}, [selectedActivity, selectedCoach, selectedDate, highlightDates])
 
 	return (
-		<div id='__next'>
+		<div className='min-h-screen bg-gray-700' id='__next'>
 			<NavbarComponent />
-			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-				<div className='flex justify-center items-center py-4'>
-					<div className='flex items-center'>
-						<button
-							className={`px-4 py-2 mr-2 rounded ${
-								isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+			<motion.div
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: 0.5 }}
+				className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
+				<h1 className='text-4xl font-bold text-gray-300 mb-8'>
+					Book a Session
+				</h1>
+
+				<div className='bg-gray-800 rounded-lg shadow-lg p-6 mb-8'>
+					<div className='flex justify-center items-center space-x-4 mb-8'>
+						<motion.button
+							whileHover={{ scale: 1.05 }}
+							whileTap={{ scale: 0.95 }}
+							className={`px-6 py-3 rounded-full ${
+								isPrivateTraining
+									? 'bg-gray-600 text-white'
+									: 'bg-gray-200 text-gray-700'
 							}`}
 							onClick={handleToggle}>
+							<RiUserLine className='inline-block mr-2' />
 							Private Training
-						</button>
-						<button
-							className={`px-4 py-2 rounded ${
-								!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
+						</motion.button>
+						<motion.button
+							whileHover={{ scale: 1.05 }}
+							whileTap={{ scale: 0.95 }}
+							className={`px-6 py-3 rounded-full ${
+								!isPrivateTraining
+									? 'bg-gray-600 text-white'
+									: 'bg-gray-200 text-gray-700'
 							}`}
 							onClick={handleToggle}>
+							<RiGroupLine className='inline-block mr-2' />
 							Public Training
-						</button>
+						</motion.button>
 					</div>
+
+					<h2 className='text-2xl font-semibold text-gray-300 mb-4'>
+						Select an Activity
+					</h2>
+					{activitiesLoading ? (
+						<div className='flex items-center justify-center'>
+							<RotateLoader
+								color={'#1F2937'}
+								loading={activitiesLoading}
+								size={15}
+							/>
+						</div>
+					) : (
+						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+							<AnimatePresence>
+								{(isPrivateTraining ? activities : activitiesGroup).map(
+									activity => (
+										<motion.button
+											key={activity.id}
+											initial={{ opacity: 0, y: 20 }}
+											animate={{ opacity: 1, y: 0 }}
+											exit={{ opacity: 0, y: -20 }}
+											whileHover={{ scale: 1.05 }}
+											whileTap={{ scale: 0.95 }}
+											className={`flex items-center justify-center space-x-2 p-4 rounded-lg ${
+												selectedActivity === activity.id
+													? 'bg-gray-600 text-white'
+													: 'bg-gray-200 text-gray-700 hover:bg-gray-400'
+											}`}
+											onClick={() => setSelectedActivity(activity.id)}>
+											<span className='text-2xl'>
+												{activityIcons[activity.id]}
+											</span>
+											<span>{activity.name}</span>
+										</motion.button>
+									)
+								)}
+							</AnimatePresence>
+						</div>
+					)}
 				</div>
-				{isPrivateTraining ? (
-					// Private training content
-					<>
-						<h1 className='text-3xl font-bold my-4'>Select an activity</h1>
-						{activitiesLoading ? ( // Display loading indicator while fetching activities
+
+				{selectedActivity && (
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						className='bg-gray-800 rounded-lg shadow-lg p-6 mb-8'>
+						<h2 className='text-2xl font-semibold text-gray-300 mb-4'>
+							Select a Coach
+						</h2>
+						{coachesLoading ? (
 							<div className='flex items-center justify-center'>
 								<RotateLoader
-									color={'#367831'}
-									loading={activitiesLoading}
+									color={'#1F2937'}
+									loading={coachesLoading}
 									size={15}
 								/>
 							</div>
 						) : (
-							<div className='grid lg:grid-cols-3 -1 gap-4'>
-								{activities.length === 0 ? ( // Display sad emoji when no activities available
-									<p>No activities available 😞</p>
-								) : (
-									activities.map(activity => (
-										<button
-											key={activity.id}
-											className={`flex border p-4 rounded-lg ${
-												selectedActivity === activity.id
-													? 'bg-green-200 dark:bg-green-700'
-													: 'hover:bg-gray-100 dark:hover:bg-gray-900'
+							<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+								<AnimatePresence>
+									{coaches.map(coach => (
+										<motion.button
+											key={coach.id}
+											initial={{ opacity: 0, y: 20 }}
+											animate={{ opacity: 1, y: 0 }}
+											exit={{ opacity: 0, y: -20 }}
+											whileHover={{ scale: 1.05 }}
+											whileTap={{ scale: 0.95 }}
+											className={`p-4 rounded-lg ${
+												selectedCoach === coach.id
+													? 'bg-gray-600 text-white'
+													: 'bg-gray-200 text-gray-700 hover:bg-gray-400'
 											}`}
-											onClick={() => setSelectedActivity(activity.id)}>
-											<span className='items-left justify-start'>
-												{activityIcons[activity.id]}
-											</span>{' '}
-											{/* Display the corresponding icon */}
-											<span className='mx-auto'>{activity.name}</span>{' '}
-											{/* Display the activity name */}
-										</button>
-									))
-								)}
+											onClick={() => setSelectedCoach(coach.id)}>
+											<img
+												src={coach.profile_picture}
+												alt={`${coach.name}`}
+												className='w-24 h-24 rounded-full mx-auto mb-2 object-cover'
+											/>
+											<p className='text-lg font-semibold'>{coach.name}</p>
+										</motion.button>
+									))}
+								</AnimatePresence>
 							</div>
 						)}
+					</motion.div>
+				)}
 
-						{/* Coaches section with loading indicator and sad emoji */}
-						<div className='mt-12'>
-							<h2 className='text-3xl font-bold mb-4'>Select a Coach</h2>
-							{selectedActivity === null ? (
-								<p>Please choose an activity to be able to see the coaches</p>
-							) : coachesLoading ? (
-								<div className='flex items-center justify-center'>
-									<RotateLoader
-										color={'#367831'}
-										loading={coachesLoading}
-										size={15}
-									/>
-								</div>
-							) : (
-								<div className='grid lg:grid-cols-3 gap-4'>
-									{coaches.length === 0 ? (
-										<p>No coaches available for the chosen activity 😞</p>
-									) : (
-										coaches.map(coach => (
-											<button
-												key={coach.id}
-												className={`border p-4 rounded-lg ${
-													selectedCoach === coach.id
-														? 'bg-green-200  dark:bg-green-700'
-														: 'hover:bg-gray-100'
-												}`}
-												onClick={() => setSelectedCoach(coach.id)}>
-												<img
-													src={coach.profile_picture}
-													alt={`${coach.name}`}
-													className='w-16 h-16 rounded-full mx-auto mb-2'
-												/>
-												{coach.name}
-											</button>
-										))
-									)}
-								</div>
-							)}
-						</div>
-					</>
-				) : (
-					<>
-						<h1 className='text-3xl font-bold my-4'>Select an activity</h1>
-						{groupActivitiesLoading ? ( // Display loading indicator while fetching activities
-							<div className='flex items-center justify-center'>
-								<RotateLoader
-									color={'#367831'}
-									loading={groupActivitiesLoading}
-									size={15}
+				{selectedCoach && (
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						className='bg-gray-800 rounded-lg shadow-lg p-6'>
+						<div className='flex flex-col lg:flex-row lg:space-x-8'>
+							<div className='lg:w-1/2 mb-8 lg:mb-0'>
+								<h2 className='text-2xl font-semibold text-gray-300 mb-4'>
+									Select a Date
+								</h2>
+								<DatePicker
+									selected={selectedDate}
+									onChange={setSelectedDate}
+									inline
+									calendarClassName='rounded-lg shadow-lg'
+									minDate={new Date()}
+									highlightDates={highlightDates}
 								/>
 							</div>
-						) : (
-							<div className='grid lg:grid-cols-3 -1 gap-4'>
-								{activitiesGroup.length === 0 ? ( // Display sad emoji when no activities available
-									<p>No activities available 😞</p>
-								) : (
-									activitiesGroup.map(activity => (
-										<button
-											key={activity.id}
-											className={`flex border p-4 rounded-lg ${
-												selectedActivity === activity.id
-													? 'bg-green-200 dark:bg-green-700'
-													: 'hover:bg-gray-100 dark:hover:bg-gray-900'
-											}`}
-											onClick={() => setSelectedActivity(activity.id)}>
-											<span className='items-left justify-start'>
-												{activityIcons[activity.id]}
-											</span>{' '}
-											{/* Display the corresponding icon */}
-											<span className='mx-auto'>{activity.name}</span>{' '}
-											{/* Display the activity name */}
-										</button>
-									))
-								)}
-							</div>
-						)}
-
-						{/* Coaches section with loading indicator and sad emoji */}
-						<div className='mt-12'>
-							<h2 className='text-3xl font-bold mb-4'>Select a Coach</h2>
-							{selectedActivity === null ? (
-								<p>Please choose an activity to be able to see the coaches</p>
-							) : coachesLoading ? (
-								<div className='flex items-center justify-center'>
-									<RotateLoader
-										color={'#367831'}
-										loading={coachesLoading}
-										size={15}
-									/>
-								</div>
-							) : (
-								<div className='grid lg:grid-cols-3 gap-4'>
-									{coaches.length === 0 ? (
-										<p>No coaches available for the chosen activity 😞</p>
-									) : (
-										coaches.map(coach => (
-											<button
-												key={coach.id}
-												className={`border p-4 rounded-lg ${
-													selectedCoach === coach.id
-														? 'bg-green-200  dark:bg-green-700'
-														: 'hover:bg-gray-100'
-												}`}
-												onClick={() => setSelectedCoach(coach.id)}>
-												<img
-													src={coach.profile_picture}
-													alt={`${coach.name}`}
-													className='w-16 h-16 rounded-full mx-auto mb-2'
-												/>
-												{coach.name}
-											</button>
-										))
-									)}
-								</div>
-							)}
-						</div>
-						<div className='mx-auto max-w-7xl '>
-							<div className='mt-12 sm:flex'>
-								<div className='flex-grow'>
-									<h2 className='text-3xl mb-10 font-bold'>Select a Date</h2>
-									<DatePicker
-										selected={selectedDate}
-										onChange={setSelectedDate}
-										inline
-										calendarClassName='react-datepicker-popper'
-										minDate={new Date()}
-										highlightDates={highlightDates}
-									/>
-								</div>
-								{selectedDate && (
-									<div className='lg:ml-4 w-full md:w-1/3'>
-										<h2 className='text-3xl font-bold mb-4'>Available Times</h2>
-										<div className='flex flex-col'>
-											{groupAvailableTimes.map(time => (
-												<button
+							{selectedDate && (
+								<div className='lg:w-1/2'>
+									<h2 className='text-2xl  font-semibold text-gray-300 mb-4'>
+										Available Times
+									</h2>
+									<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+										<AnimatePresence>
+											{(isPrivateTraining
+												? availableTimes
+												: groupAvailableTimes
+											).map(time => (
+												<motion.button
 													key={time}
-													className={`p-4 mt-6 border rounded-lg text-lg font-semibold mb-2 ${
+													initial={{ opacity: 0, y: 20 }}
+													animate={{ opacity: 1, y: 0 }}
+													exit={{ opacity: 0, y: -20 }}
+													whileHover={{ scale: 1.05 }}
+													whileTap={{ scale: 0.95 }}
+													className={`p-4 rounded-lg text-lg font-semibold ${
 														selectedTime === time
-															? 'bg-green-200 dark'
-															: 'hover'
+															? 'bg-gray-600 text-white'
+															: 'bg-gray-200 text-gray-700 hover:bg-gray-400'
 													}`}
 													onClick={() => setSelectedTime(time)}>
 													{time}
-													<p className='text-gray-400 mt-2 text-xs'>
-														{' '}
-														Capacity: {reservationCount}/{getCapacity()}
-													</p>
-												</button>
+													{!isPrivateTraining && (
+														<p className='text-sm mt-2'>
+															Capacity: {reservationCount}/{getCapacity()}
+														</p>
+													)}
+												</motion.button>
 											))}
-										</div>
+										</AnimatePresence>
 									</div>
-								)}
-							</div>
-							{selectedTime && (
-								<div className='mt-12 text-center'>
-									<p className='text-xl font-semibold'>
-										Booking{' '}
-										{activitiesGroup.find(a => a.id === selectedActivity)?.name}{' '}
-										with {coaches.find(c => c.id === selectedCoach)?.name} on{' '}
-										{selectedDate?.toLocaleDateString()} at {selectedTime}.
-									</p>
-									<button
-										type='button'
-										onClick={handleBookSession}
-										disabled={loading}
-										className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 disabled:bg-green-300 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
-										{loading ? 'Processing...' : 'Confirm Booking'}
-									</button>
 								</div>
 							)}
 						</div>
-					</>
-				)}
-			</div>
-
-			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-				{isPrivateTraining && (
-					<div className='mt-12 sm:flex'>
-						<div className='flex-grow'>
-							<h2 className='text-3xl mb-10 font-bold'>Select a Date</h2>
-							<DatePicker
-								selected={selectedDate}
-								onChange={setSelectedDate}
-								inline
-								calendarClassName='react-datepicker-popper'
-								minDate={new Date()}
-								highlightDates={highlightDates}
-							/>
-						</div>
-						{selectedDate && (
-							<div className='lg:ml-4 w-full md:w-1/3'>
-								<h2 className='text-3xl font-bold mb-4'>Available Times</h2>
-								<div className='flex flex-col'>
-									{availableTimes.map(time => (
-										<button
-											key={time}
-											className={`p-4 mt-6 border rounded-lg text-lg font-semibold mb-2 ${
-												selectedTime === time ? 'bg-green-200 dark' : 'hover'
-											}`}
-											onClick={() => setSelectedTime(time)}>
-											{time}
-										</button>
-									))}
-								</div>
-							</div>
+						{selectedTime && (
+							<motion.div
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								className='mt-8 text-center'>
+								<p className='text-xl font-semibold text-gray-300 mb-4'>
+									Booking{' '}
+									{
+										(isPrivateTraining ? activities : activitiesGroup).find(
+											a => a.id === selectedActivity
+										)?.name
+									}{' '}
+									with {coaches.find(c => c.id === selectedCoach)?.name} on{' '}
+									{selectedDate?.toLocaleDateString()} at {selectedTime}.
+								</p>
+								<motion.button
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.95 }}
+									type='button'
+									onClick={handleBookSession}
+									disabled={loading}
+									className='rounded-full bg-gray-500 px-6 py-3 text-lg font-semibold text-white hover:bg-gray-700 disabled:bg-gray-400'>
+									{loading ? 'Processing...' : 'Confirm Booking'}
+								</motion.button>
+							</motion.div>
 						)}
-					</div>
+					</motion.div>
 				)}
-				{selectedTime && isPrivateTraining && (
-					<div className='mt-12 text-center'>
-						<p className='text-xl font-semibold'>
-							Booking {activities.find(a => a.id === selectedActivity)?.name}{' '}
-							with {coaches.find(c => c.id === selectedCoach)?.name} on{' '}
-							{selectedDate?.toLocaleDateString()} at {selectedTime}.
-						</p>
-						<button
-							type='button'
-							onClick={handleBookSession}
-							disabled={loading}
-							className='rounded-md mb-12 bg-green-600 px-3.5 py-2.5 disabled:bg-green-300 text-sm font-semibold text-white hover:bg-green-500 mt-4'>
-							{loading ? 'Processing...' : 'Confirm Booking'}
-						</button>
-					</div>
-				)}
-			</div>
 
-			{/* Modal for Market Items */}
-			<Modal
-				isOpen={modalIsOpen}
-				onRequestClose={() => setModalIsOpen(false)}
-				contentLabel='Market Items'
-				className='modal'
-				overlayClassName='overlay'>
-				<h2 className='text-2xl font-bold mb-4 text-black'>
-					Add to your Session
-				</h2>
-				<div className='grid lg:grid-cols-3 gap-4'>
-					{market.map(item => (
-						<div key={item.id} className='border p-4 rounded-lg'>
-							<div className='flex justify-between items-center text-black'>
-								<span>{item.name}</span>
-								<span>${item.price}</span>
-							</div>
-							<button
-								className={`mt-2 w-full py-2 ${
-									selectedItems.find(
+				<Modal
+					isOpen={modalIsOpen}
+					onRequestClose={() => setModalIsOpen(false)}
+					contentLabel='Market Items'
+					className='modal bg-white rounded-lg p-8 max-w-2xl mx-auto mt-20'
+					overlayClassName='overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
+					<h2 className='text-3xl font-bold mb-6 text-gray-800'>
+						Add to your Session
+					</h2>
+					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6'>
+						{market.map(item => (
+							<motion.div
+								key={item.id}
+								whileHover={{ scale: 1.05 }}
+								className='border border-gray-200 p-4 rounded-lg'>
+								<div className='flex justify-between items-center text-gray-800 mb-2'>
+									<span className='font-semibold'>{item.name}</span>
+									<span className='text-lg'>${item.price}</span>
+								</div>
+								<motion.button
+									whileTap={{ scale: 0.95 }}
+									className={`w-full py-2 rounded-full ${
+										selectedItems.find(
+											selectedItem => selectedItem.id === item.id
+										)
+											? 'bg-red-500 text-white'
+											: 'bg-green-500 text-white'
+									}`}
+									onClick={() => handleItemSelect(item)}>
+									{selectedItems.find(
 										selectedItem => selectedItem.id === item.id
 									)
-										? 'bg-red-500 text-white'
-										: 'bg-green-500 text-white'
-								}`}
-								onClick={() => handleItemSelect(item)}>
-								{selectedItems.find(selectedItem => selectedItem.id === item.id)
-									? 'Remove'
-									: 'Add'}
-							</button>
-						</div>
-					))}
-				</div>
-				<div className='mt-4'>
-					<p className='text-xl font-semibold text-black'>
-						Total Price: ${totalPrice}
-					</p>
-					<div>
-						<button
-							className='mt-4 bg-blue-500 disabled:bg-blue-300 text-white py-2 px-4 rounded mx-5'
-							onClick={handlePay}
-							disabled={loading}>
-							{loading ? 'Processing...' : 'Pay'}
-						</button>
-						<button
-							className='mt-4 bg-red-500  text-white py-2 px-4 rounded'
-							onClick={handleCloseModal}>
-							Close
-						</button>
+										? 'Remove'
+										: 'Add'}
+								</motion.button>
+							</motion.div>
+						))}
 					</div>
-				</div>
-			</Modal>
+					<div className='text-right'>
+						<p className='text-xl font-semibold text-gray-800 mb-4'>
+							Total Price: ${totalPrice}
+						</p>
+						<div className='space-x-4'>
+							<motion.button
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								className='bg-green-500 text-white py-2 px-6 rounded-full disabled:bg-gray-400'
+								onClick={handlePay}
+								disabled={loading}>
+								{loading ? 'Processing...' : 'Pay'}
+							</motion.button>
+							<motion.button
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								className='bg-red-500 text-white py-2 px-6 rounded-full'
+								onClick={handleCloseModal}>
+								Close
+							</motion.button>
+						</div>
+					</div>
+				</Modal>
+			</motion.div>
 		</div>
 	)
 }
