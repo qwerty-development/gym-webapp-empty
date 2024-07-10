@@ -399,7 +399,7 @@ export default function Example() {
 				animate={{ opacity: 1 }}
 				transition={{ duration: 0.5 }}
 				className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-				<h1 className='text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 mb-12 text-center'>
+				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 mb-8 sm:mb-12 text-center'>
 					Book Your Next Session
 				</h1>
 
@@ -408,7 +408,7 @@ export default function Example() {
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							className={`px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 ${
+							className={`px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
 								isPrivateTraining
 									? 'bg-green-500 text-white shadow-lg'
 									: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
@@ -420,7 +420,7 @@ export default function Example() {
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							className={`px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 ${
+							className={`px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
 								!isPrivateTraining
 									? 'bg-green-500 text-white shadow-lg'
 									: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
@@ -431,7 +431,7 @@ export default function Example() {
 						</motion.button>
 					</div>
 
-					<h2 className='text-3xl font-bold text-green-400 mb-6 text-center'>
+					<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center'>
 						Select Your Activity
 					</h2>
 					{activitiesLoading ? (
@@ -456,7 +456,7 @@ export default function Example() {
 											boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
 										}}
 										whileTap={{ scale: 0.95 }}
-										className={`flex flex-col items-center justify-center p-8 rounded-2xl transition-all duration-300 ${
+										className={`flex flex-col items-center justify-center p-4 sm:p-8 rounded-2xl transition-all duration-300  ${
 											selectedActivity === activity.id
 												? 'bg-green-500 text-white'
 												: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
@@ -480,7 +480,7 @@ export default function Example() {
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						className='bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12'>
-						<h2 className='text-3xl font-bold text-green-400 mb-6 text-center'>
+						<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center'>
 							Choose Your Coach
 						</h2>
 						{coachesLoading ? (
@@ -505,7 +505,7 @@ export default function Example() {
 												boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
 											}}
 											whileTap={{ scale: 0.95 }}
-											className={`p-6 rounded-2xl transition-all duration-300 ${
+											className={`p-3 sm:p-6 rounded-2xl transition-all duration-300 ${
 												selectedCoach === coach.id
 													? 'bg-green-500 text-white'
 													: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
@@ -514,9 +514,11 @@ export default function Example() {
 											<img
 												src={coach.profile_picture}
 												alt={`${coach.name}`}
-												className='w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-green-400'
+												className='w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 object-cover border-4 border-green-400'
 											/>
-											<p className='text-xl font-semibold'>{coach.name}</p>
+											<p className='text-lg sm:text-xl font-semibold'>
+												{coach.name}
+											</p>
 										</motion.button>
 									))}
 								</AnimatePresence>
@@ -532,7 +534,7 @@ export default function Example() {
 						className='bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8'>
 						<div className='flex flex-col lg:flex-row lg:space-x-12'>
 							<div className='lg:w-1/2 mb-8 lg:mb-0'>
-								<h2 className='text-3xl font-bold text-green-400 mb-6 text-center lg:text-left'>
+								<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center lg:text-left'>
 									Select a Date
 								</h2>
 								<DatePicker
@@ -551,7 +553,7 @@ export default function Example() {
 							</div>
 							{selectedDate && (
 								<div className='lg:w-1/2'>
-									<h2 className='text-3xl font-bold text-green-400 mb-6 text-center lg:text-left'>
+									<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center lg:text-left'>
 										Available Times
 									</h2>
 									<div className='grid grid-cols-2 gap-4'>
@@ -570,7 +572,7 @@ export default function Example() {
 														boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
 													}}
 													whileTap={{ scale: 0.95 }}
-													className={`p-4 rounded-xl text-lg font-semibold transition-all duration-300 ${
+													className={`p-3 sm:p-4 rounded-xl text-base sm:text-lg font-semibold transition-all duration-300 ${
 														selectedTime === time
 															? 'bg-green-500 text-white'
 															: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
@@ -594,7 +596,7 @@ export default function Example() {
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								className='mt-12 text-center'>
-								<p className='text-2xl font-semibold text-green-400 mb-6'>
+								<p className='text-xl sm:text-2xl font-semibold text-green-400 mb-4 sm:mb-6'>
 									Booking{' '}
 									{
 										(isPrivateTraining ? activities : activitiesGroup).find(
@@ -613,7 +615,7 @@ export default function Example() {
 									type='button'
 									onClick={handleBookSession}
 									disabled={loading}
-									className='rounded-full bg-green-500 px-10 py-4 text-xl font-bold text-white transition-all duration-300 hover:bg-green-600 disabled:opacity-50'>
+									className='rounded-full bg-green-500 px-8 sm:px-10 py-3 sm:py-4 text-lg sm:text-xl font-bold text-white transition-all duration-300 hover:bg-green-600 disabled:opacity-50'>
 									{loading ? 'Processing...' : 'Confirm Booking'}
 								</motion.button>
 							</motion.div>
@@ -633,7 +635,7 @@ export default function Example() {
 						}
 					}}
 					overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center'>
-					<h2 className='text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500'>
+					<h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500'>
 						Enhance Your Session
 					</h2>
 					<div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
@@ -672,7 +674,7 @@ export default function Example() {
 						))}
 					</div>
 					<div className='text-right'>
-						<p className='text-xl sm:text-2xl font-bold text-green-400 mb-4 sm:mb-6'>
+						<p className='text-lg sm:text-xl md:text-2xl font-bold text-green-400 mb-3 sm:mb-4 md:mb-6'>
 							Total Price: ${totalPrice}
 						</p>
 						<div className='flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-6'>
@@ -682,7 +684,7 @@ export default function Example() {
 									boxShadow: '0 0 30px rgba(74, 222, 128, 0.7)'
 								}}
 								whileTap={{ scale: 0.95 }}
-								className='bg-green-500 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-green-600 disabled:opacity-50'
+								className='bg-green-500 text-white py-2 sm:py-3 px-5 sm:px-6 md:px-8 rounded-full text-base sm:text-lg md:text-xl font-bold transition-all duration-300 hover:bg-green-600 disabled:opacity-50'
 								onClick={handlePay}
 								disabled={loading}>
 								{loading ? 'Processing...' : 'Complete Purchase'}
@@ -690,7 +692,7 @@ export default function Example() {
 							<motion.button
 								whileHover={{ scale: 1.05 }}
 								whileTap={{ scale: 0.95 }}
-								className='bg-red-500 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-red-600'
+								className='bg-red-500 text-white py-2 sm:py-3 px-5 sm:px-6 md:px-8 rounded-full text-base sm:text-lg md:text-xl font-bold transition-all duration-300 hover:bg-red-600'
 								onClick={handleCloseModal}>
 								Close
 							</motion.button>
