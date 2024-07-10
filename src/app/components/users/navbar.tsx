@@ -67,7 +67,7 @@ export default function NavbarComponent() {
 								className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
 									currentPage === item.href
 										? 'bg-green-500 text-white'
-										: 'text-gray-300 hover:bg-green-400 hover:text-white'
+										: 'text-gray-300 hover:bg-green-300 hover:text-white'
 								}`}>
 								<item.icon className='mr-2' />
 								{item.label}
@@ -107,7 +107,7 @@ export default function NavbarComponent() {
 									className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
 										currentPage === item.href
 											? 'bg-green-500 text-white'
-											: 'text-gray-300 hover:bg-green-400 hover:text-white'
+											: 'text-gray-300 hover:bg-green-300 hover:text-white'
 									}`}
 									onClick={() => setIsMenuOpen(false)}>
 									<item.icon className='mr-2' />

@@ -399,11 +399,11 @@ export default function Example() {
 				animate={{ opacity: 1 }}
 				transition={{ duration: 0.5 }}
 				className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-				<h1 className='text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-12 text-center'>
+				<h1 className='text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 mb-12 text-center'>
 					Book Your Next Session
 				</h1>
 
-				<div className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12'>
+				<div className='bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12'>
 					<div className='flex justify-center items-center space-x-4 mb-12'>
 						<motion.button
 							whileHover={{ scale: 1.05 }}
@@ -411,7 +411,7 @@ export default function Example() {
 							className={`px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 ${
 								isPrivateTraining
 									? 'bg-green-500 text-white shadow-lg'
-									: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
+									: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
 							}`}
 							onClick={() => handleToggle(true)}>
 							<RiUserLine className='inline-block mr-2' />
@@ -423,11 +423,11 @@ export default function Example() {
 							className={`px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 ${
 								!isPrivateTraining
 									? 'bg-green-500 text-white shadow-lg'
-									: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
+									: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
 							}`}
 							onClick={() => handleToggle(false)}>
 							<RiGroupLine className='inline-block mr-2' />
-							Public Training
+							Classes
 						</motion.button>
 					</div>
 
@@ -456,13 +456,13 @@ export default function Example() {
 											boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
 										}}
 										whileTap={{ scale: 0.95 }}
-										className={`flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 ${
+										className={`flex flex-col items-center justify-center p-8 rounded-2xl transition-all duration-300 ${
 											selectedActivity === activity.id
 												? 'bg-green-500 text-white'
-												: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
+												: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
 										}`}
 										onClick={() => setSelectedActivity(activity.id)}>
-										<span className='text-4xl mb-4'>
+										<span className='text-4xl '>
 											{activityIcons[activity.id]}
 										</span>
 										<span className='text-lg font-semibold'>
@@ -479,7 +479,7 @@ export default function Example() {
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
-						className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12'>
+						className='bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12'>
 						<h2 className='text-3xl font-bold text-green-400 mb-6 text-center'>
 							Choose Your Coach
 						</h2>
@@ -508,7 +508,7 @@ export default function Example() {
 											className={`p-6 rounded-2xl transition-all duration-300 ${
 												selectedCoach === coach.id
 													? 'bg-green-500 text-white'
-													: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
+													: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
 											}`}
 											onClick={() => setSelectedCoach(coach.id)}>
 											<img
@@ -529,7 +529,7 @@ export default function Example() {
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
-						className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8'>
+						className='bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8'>
 						<div className='flex flex-col lg:flex-row lg:space-x-12'>
 							<div className='lg:w-1/2 mb-8 lg:mb-0'>
 								<h2 className='text-3xl font-bold text-green-400 mb-6 text-center lg:text-left'>
@@ -541,7 +541,7 @@ export default function Example() {
 									inline
 									calendarClassName='rounded-xl shadow-lg bg-gray-700 border-none text-white'
 									dayClassName={date =>
-										'text-gray-300 hover:bg-green-400 hover:text-white rounded-full'
+										'text-gray-300 hover:bg-green-300 hover:text-white rounded-full'
 									}
 									monthClassName={() => 'text-green-400'}
 									weekDayClassName={() => 'text-blue-400'}
@@ -573,7 +573,7 @@ export default function Example() {
 													className={`p-4 rounded-xl text-lg font-semibold transition-all duration-300 ${
 														selectedTime === time
 															? 'bg-green-500 text-white'
-															: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
+															: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
 													}`}
 													onClick={() => setSelectedTime(time)}>
 													{time}

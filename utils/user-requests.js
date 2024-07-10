@@ -1120,6 +1120,10 @@ export const payForItems = async ({
 		0
 	)
 
+	if (totalPrice === 0) {
+		return { error: 'No items selected.' }
+	}
+
 	// Check if the user has enough credits
 	if (userData.wallet < totalPrice) {
 		return { error: 'Not enough credits to pay for the items.' }
@@ -1202,6 +1206,10 @@ export const payForGroupItems = async ({
 		(total, item) => total + item.price,
 		0
 	)
+
+	if (totalPrice === 0) {
+		return { error: 'No items selected.' }
+	}
 
 	// Check if the user has enough credits
 	if (userData.wallet < totalPrice) {
