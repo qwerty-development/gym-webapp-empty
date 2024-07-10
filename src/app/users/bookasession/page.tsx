@@ -390,26 +390,28 @@ export default function Example() {
 	}, [selectedActivity, selectedCoach, selectedDate, highlightDates])
 
 	return (
-		<div className='min-h-screen bg-gray-700' id='__next'>
+		<div
+			className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-800'
+			id='__next'>
 			<NavbarComponent />
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				transition={{ duration: 0.5 }}
 				className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-				<h1 className='text-4xl font-bold text-gray-300 mb-8'>
-					Book a Session
+				<h1 className='text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-12 text-center'>
+					Book Your Next Session
 				</h1>
 
-				<div className='bg-gray-800 rounded-lg shadow-lg p-6 mb-8'>
-					<div className='flex justify-center items-center space-x-4 mb-8'>
+				<div className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12'>
+					<div className='flex justify-center items-center space-x-4 mb-12'>
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							className={`px-6 py-3 rounded-full ${
+							className={`px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 ${
 								isPrivateTraining
-									? 'bg-gray-600 text-white'
-									: 'bg-gray-200 text-gray-700'
+									? 'bg-green-500 text-white shadow-lg'
+									: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
 							}`}
 							onClick={() => handleToggle(true)}>
 							<RiUserLine className='inline-block mr-2' />
@@ -418,10 +420,10 @@ export default function Example() {
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							className={`px-6 py-3 rounded-full ${
+							className={`px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 ${
 								!isPrivateTraining
-									? 'bg-gray-600 text-white'
-									: 'bg-gray-200 text-gray-700'
+									? 'bg-green-500 text-white shadow-lg'
+									: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
 							}`}
 							onClick={() => handleToggle(false)}>
 							<RiGroupLine className='inline-block mr-2' />
@@ -429,19 +431,19 @@ export default function Example() {
 						</motion.button>
 					</div>
 
-					<h2 className='text-2xl font-semibold text-gray-300 mb-4'>
-						Select an Activity
+					<h2 className='text-3xl font-bold text-green-400 mb-6 text-center'>
+						Select Your Activity
 					</h2>
 					{activitiesLoading ? (
 						<div className='flex items-center justify-center'>
 							<RotateLoader
-								color={'#1F2937'}
+								color={'#4ADE80'}
 								loading={activitiesLoading}
-								size={15}
+								size={20}
 							/>
 						</div>
 					) : (
-						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
 							{(isPrivateTraining ? activities : activitiesGroup).map(
 								activity => (
 									<motion.button
@@ -449,18 +451,23 @@ export default function Example() {
 										initial={{ opacity: 0, y: 20 }}
 										animate={{ opacity: 1, y: 0 }}
 										exit={{ opacity: 0, y: -20 }}
-										whileHover={{ scale: 1.05 }}
+										whileHover={{
+											scale: 1.05,
+											boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+										}}
 										whileTap={{ scale: 0.95 }}
-										className={`flex items-center justify-center space-x-2 p-4 rounded-lg ${
+										className={`flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 ${
 											selectedActivity === activity.id
-												? 'bg-gray-600 text-white'
-												: 'bg-gray-200 text-gray-700 hover:bg-gray-400'
+												? 'bg-green-500 text-white'
+												: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
 										}`}
 										onClick={() => setSelectedActivity(activity.id)}>
-										<span className='text-2xl'>
+										<span className='text-4xl mb-4'>
 											{activityIcons[activity.id]}
 										</span>
-										<span>{activity.name}</span>
+										<span className='text-lg font-semibold'>
+											{activity.name}
+										</span>
 									</motion.button>
 								)
 							)}
@@ -472,20 +479,20 @@ export default function Example() {
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
-						className='bg-gray-800 rounded-lg shadow-lg p-6 mb-8'>
-						<h2 className='text-2xl font-semibold text-gray-300 mb-4'>
-							Select a Coach
+						className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12'>
+						<h2 className='text-3xl font-bold text-green-400 mb-6 text-center'>
+							Choose Your Coach
 						</h2>
 						{coachesLoading ? (
 							<div className='flex items-center justify-center'>
 								<RotateLoader
-									color={'#1F2937'}
+									color={'#4ADE80'}
 									loading={coachesLoading}
-									size={15}
+									size={20}
 								/>
 							</div>
 						) : (
-							<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+							<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
 								<AnimatePresence>
 									{coaches.map(coach => (
 										<motion.button
@@ -493,20 +500,23 @@ export default function Example() {
 											initial={{ opacity: 0, y: 20 }}
 											animate={{ opacity: 1, y: 0 }}
 											exit={{ opacity: 0, y: -20 }}
-											whileHover={{ scale: 1.05 }}
+											whileHover={{
+												scale: 1.05,
+												boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+											}}
 											whileTap={{ scale: 0.95 }}
-											className={`p-4 rounded-lg ${
+											className={`p-6 rounded-2xl transition-all duration-300 ${
 												selectedCoach === coach.id
-													? 'bg-gray-600 text-white'
-													: 'bg-gray-200 text-gray-700 hover:bg-gray-400'
+													? 'bg-green-500 text-white'
+													: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
 											}`}
 											onClick={() => setSelectedCoach(coach.id)}>
 											<img
 												src={coach.profile_picture}
 												alt={`${coach.name}`}
-												className='w-24 h-24 rounded-full mx-auto mb-2 object-cover'
+												className='w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-green-400'
 											/>
-											<p className='text-lg font-semibold'>{coach.name}</p>
+											<p className='text-xl font-semibold'>{coach.name}</p>
 										</motion.button>
 									))}
 								</AnimatePresence>
@@ -519,27 +529,32 @@ export default function Example() {
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
-						className='bg-gray-800 rounded-lg shadow-lg p-6'>
-						<div className='flex flex-col lg:flex-row lg:space-x-8'>
+						className='bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8'>
+						<div className='flex flex-col lg:flex-row lg:space-x-12'>
 							<div className='lg:w-1/2 mb-8 lg:mb-0'>
-								<h2 className='text-2xl font-semibold text-gray-300 mb-4'>
+								<h2 className='text-3xl font-bold text-green-400 mb-6 text-center lg:text-left'>
 									Select a Date
 								</h2>
 								<DatePicker
 									selected={selectedDate}
 									onChange={setSelectedDate}
 									inline
-									calendarClassName='rounded-lg shadow-lg'
+									calendarClassName='rounded-xl shadow-lg bg-gray-700 border-none text-white'
+									dayClassName={date =>
+										'text-gray-300 hover:bg-green-400 hover:text-white rounded-full'
+									}
+									monthClassName={() => 'text-green-400'}
+									weekDayClassName={() => 'text-blue-400'}
 									minDate={new Date()}
 									highlightDates={highlightDates}
 								/>
 							</div>
 							{selectedDate && (
 								<div className='lg:w-1/2'>
-									<h2 className='text-2xl  font-semibold text-gray-300 mb-4'>
+									<h2 className='text-3xl font-bold text-green-400 mb-6 text-center lg:text-left'>
 										Available Times
 									</h2>
-									<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+									<div className='grid grid-cols-2 gap-4'>
 										<AnimatePresence>
 											{(isPrivateTraining
 												? availableTimes
@@ -550,12 +565,15 @@ export default function Example() {
 													initial={{ opacity: 0, y: 20 }}
 													animate={{ opacity: 1, y: 0 }}
 													exit={{ opacity: 0, y: -20 }}
-													whileHover={{ scale: 1.05 }}
+													whileHover={{
+														scale: 1.05,
+														boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+													}}
 													whileTap={{ scale: 0.95 }}
-													className={`p-4 rounded-lg text-lg font-semibold ${
+													className={`p-4 rounded-xl text-lg font-semibold transition-all duration-300 ${
 														selectedTime === time
-															? 'bg-gray-600 text-white'
-															: 'bg-gray-200 text-gray-700 hover:bg-gray-400'
+															? 'bg-green-500 text-white'
+															: 'bg-gray-700 text-gray-300 hover:bg-green-400 hover:text-white'
 													}`}
 													onClick={() => setSelectedTime(time)}>
 													{time}
@@ -575,8 +593,8 @@ export default function Example() {
 							<motion.div
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
-								className='mt-8 text-center'>
-								<p className='text-xl font-semibold text-gray-300 mb-4'>
+								className='mt-12 text-center'>
+								<p className='text-2xl font-semibold text-green-400 mb-6'>
 									Booking{' '}
 									{
 										(isPrivateTraining ? activities : activitiesGroup).find(
@@ -587,12 +605,15 @@ export default function Example() {
 									{selectedDate?.toLocaleDateString()} at {selectedTime}.
 								</p>
 								<motion.button
-									whileHover={{ scale: 1.05 }}
+									whileHover={{
+										scale: 1.05,
+										boxShadow: '0 0 30px rgba(74, 222, 128, 0.7)'
+									}}
 									whileTap={{ scale: 0.95 }}
 									type='button'
 									onClick={handleBookSession}
 									disabled={loading}
-									className='rounded-full bg-gray-500 px-6 py-3 text-lg font-semibold text-white hover:bg-gray-700 disabled:bg-gray-400'>
+									className='rounded-full bg-green-500 px-10 py-4 text-xl font-bold text-white transition-all duration-300 hover:bg-green-600 disabled:opacity-50'>
 									{loading ? 'Processing...' : 'Confirm Booking'}
 								</motion.button>
 							</motion.div>
@@ -604,59 +625,68 @@ export default function Example() {
 					isOpen={modalIsOpen}
 					onRequestClose={() => setModalIsOpen(false)}
 					contentLabel='Market Items'
-					className='modal bg-white rounded-lg p-8 max-w-2xl mx-auto mt-20'
-					overlayClassName='overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
-					<h2 className='text-3xl font-bold mb-6 text-gray-800'>
-						Add to your Session
+					className='modal bg-gray-800 bg-opacity-90 backdrop-filter backdrop-blur-lg rounded-3xl p-4 sm:p-6 md:p-8 mx-auto mt-10 sm:mt-20 w-11/12 max-w-5xl'
+					overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center'>
+					<h2 className='text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500'>
+						Enhance Your Session
 					</h2>
-					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6'>
+					<div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
 						{market.map(item => (
 							<motion.div
 								key={item.id}
-								whileHover={{ scale: 1.05 }}
-								className='border border-gray-200 p-4 rounded-lg'>
-								<div className='flex justify-between items-center text-gray-800 mb-2'>
-									<span className='font-semibold'>{item.name}</span>
-									<span className='text-lg'>${item.price}</span>
-								</div>
-								<motion.button
-									whileTap={{ scale: 0.95 }}
-									className={`w-full py-2 rounded-full ${
-										selectedItems.find(
+								className='bg-gray-700 rounded-xl p-4 sm:p-6 shadow-lg  hover:shadow-green-400 hover:shadow-lg transition-all duration-300  '>
+								<div className='flex flex-col h-full'>
+									<div className='flex justify-between items-center text-gray-300 mb-3 sm:mb-4'>
+										<span className='font-semibold text-sm sm:text-lg'>
+											{item.name}
+										</span>
+										<span className='text-lg sm:text-xl font-bold text-green-400'>
+											${item.price}
+										</span>
+									</div>
+									<motion.button
+										whileHover={{ scale: 1.05 }}
+										whileTap={{ scale: 0.95 }}
+										className={`mt-auto w-full py-2 sm:py-3 rounded-full text-white font-semibold text-sm sm:text-base transition-all duration-300 ${
+											selectedItems.find(
+												selectedItem => selectedItem.id === item.id
+											)
+												? 'bg-red-500 hover:bg-red-600'
+												: 'bg-green-500 hover:bg-green-600'
+										}`}
+										onClick={() => handleItemSelect(item)}>
+										{selectedItems.find(
 											selectedItem => selectedItem.id === item.id
 										)
-											? 'bg-red-500 text-white'
-											: 'bg-green-500 text-white'
-									}`}
-									onClick={() => handleItemSelect(item)}>
-									{selectedItems.find(
-										selectedItem => selectedItem.id === item.id
-									)
-										? 'Remove'
-										: 'Add'}
-								</motion.button>
+											? 'Remove'
+											: 'Add'}
+									</motion.button>
+								</div>
 							</motion.div>
 						))}
 					</div>
 					<div className='text-right'>
-						<p className='text-xl font-semibold text-gray-800 mb-4'>
+						<p className='text-xl sm:text-2xl font-bold text-green-400 mb-4 sm:mb-6'>
 							Total Price: ${totalPrice}
 						</p>
-						<div className='space-x-4'>
+						<div className='flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-6'>
 							<motion.button
-								whileHover={{ scale: 1.05 }}
+								whileHover={{
+									scale: 1.05,
+									boxShadow: '0 0 30px rgba(74, 222, 128, 0.7)'
+								}}
 								whileTap={{ scale: 0.95 }}
-								className='bg-green-500 text-white py-2 px-6 rounded-full disabled:bg-gray-400'
+								className='bg-green-500 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-green-600 disabled:opacity-50'
 								onClick={handlePay}
 								disabled={loading}>
-								{loading ? 'Processing...' : 'Pay'}
+								{loading ? 'Processing...' : 'Complete Purchase'}
 							</motion.button>
 							<motion.button
 								whileHover={{ scale: 1.05 }}
 								whileTap={{ scale: 0.95 }}
-								className='bg-red-500 text-white py-2 px-6 rounded-full'
+								className='bg-red-500 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-red-600'
 								onClick={handleCloseModal}>
-								Close
+								Cancel
 							</motion.button>
 						</div>
 					</div>
