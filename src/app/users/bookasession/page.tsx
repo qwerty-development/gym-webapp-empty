@@ -262,6 +262,16 @@ export default function Example() {
 		}
 	}
 
+	const handleActivitySelect = (activityId: any) => {
+		setSelectedActivity(activityId)
+		setSelectedCoach(null)
+		setSelectedDate(null)
+		setSelectedTime('')
+		setAvailableTimes([])
+		setGroupAvailableTimes([])
+		setHighlightDates([])
+	}
+
 	const handlePay = async () => {
 		setLoading(true)
 		if (!user) {
