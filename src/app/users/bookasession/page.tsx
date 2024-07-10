@@ -625,9 +625,15 @@ export default function Example() {
 					isOpen={modalIsOpen}
 					onRequestClose={() => setModalIsOpen(false)}
 					contentLabel='Market Items'
-					className='modal bg-gray-800 bg-opacity-90 backdrop-filter backdrop-blur-lg rounded-3xl p-4 sm:p-6 md:p-8 mx-auto mt-10 sm:mt-20 w-11/12 max-w-5xl'
+					className='modal rounded-3xl p-4 sm:p-6 md:p-8 mx-auto mt-10 sm:mt-20 w-11/12 md:max-w-4xl'
+					style={{
+						content: {
+							backgroundColor: 'rgba(31, 41, 55, 0.9)', // This is equivalent to bg-gray-800 with 90% opacity
+							backdropFilter: 'blur(16px)' // This adds the blur effect
+						}
+					}}
 					overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center'>
-					<h2 className='text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500'>
+					<h2 className='text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500'>
 						Enhance Your Session
 					</h2>
 					<div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
@@ -686,7 +692,7 @@ export default function Example() {
 								whileTap={{ scale: 0.95 }}
 								className='bg-red-500 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-red-600'
 								onClick={handleCloseModal}>
-								Cancel
+								Close
 							</motion.button>
 						</div>
 					</div>

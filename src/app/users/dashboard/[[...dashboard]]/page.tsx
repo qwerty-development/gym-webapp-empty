@@ -648,53 +648,77 @@ export default function Dashboard() {
 			{/* Market Modal */}
 			<Modal
 				isOpen={modalIsOpen}
-				style={{ content: { backgroundColor: '#1F2937' } }}
 				onRequestClose={() => setModalIsOpen(false)}
 				contentLabel='Market Items'
-				className='modal bg-gray-800 p-4 md:p-8 rounded-lg w-11/12 md:max-w-4xl mx-auto mt-20 overflow-y-auto max-h-[90vh]'
-				overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center pt-10 md:pt-20'>
-				<h2 className='text-xl md:text-2xl font-bold mb-4 text-white'>
-					Add to your Session
+				className='modal rounded-3xl p-4 sm:p-6 md:p-8 mx-auto mt-10 sm:mt-20 w-11/12 md:max-w-4xl'
+				style={{
+					content: {
+						backgroundColor: 'rgba(31, 41, 55, 0.9)',
+						backdropFilter: 'blur(16px)'
+					}
+				}}
+				overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center'>
+				<h2 className='text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500'>
+					Enhance Your Session
 				</h2>
-				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+				<div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
 					{market.map(item => (
-						<div key={item.id} className='bg-gray-700 p-4 rounded-lg'>
-							<div className='flex justify-between items-center text-white mb-2'>
-								<span className='text-sm md:text-base'>{item.name}</span>
-								<span className='text-sm md:text-base'>${item.price}</span>
-							</div>
-							<button
-								className={`w-full py-2 rounded transition duration-200 text-sm md:text-base ${
-									selectedItems.find(
+						<motion.div
+							key={item.id}
+							className='bg-gray-700 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-green-400 hover:shadow-lg transition-all duration-300'>
+							<div className='flex flex-col h-full'>
+								<div className='flex justify-between items-center text-gray-300 mb-3 sm:mb-4'>
+									<span className='font-semibold text-sm sm:text-lg'>
+										{item.name}
+									</span>
+									<span className='text-lg sm:text-xl font-bold text-green-400'>
+										${item.price}
+									</span>
+								</div>
+								<motion.button
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.95 }}
+									className={`mt-auto w-full py-2 sm:py-3 rounded-full text-white font-semibold text-sm sm:text-base transition-all duration-300 ${
+										selectedItems.find(
+											selectedItem => selectedItem.id === item.id
+										)
+											? 'bg-red-500 hover:bg-red-600'
+											: 'bg-green-500 hover:bg-green-600'
+									}`}
+									onClick={() => handleItemSelect(item)}>
+									{selectedItems.find(
 										selectedItem => selectedItem.id === item.id
 									)
-										? 'bg-red-600 hover:bg-red-700 text-white'
-										: 'bg-green-500 hover:bg-green-600 text-white'
-								}`}
-								onClick={() => handleItemSelect(item)}>
-								{selectedItems.find(selectedItem => selectedItem.id === item.id)
-									? 'Remove'
-									: 'Add'}
-							</button>
-						</div>
+										? 'Remove'
+										: 'Add'}
+								</motion.button>
+							</div>
+						</motion.div>
 					))}
 				</div>
-				<div className='mt-6'>
-					<p className='text-lg md:text-xl font-semibold text-white mb-4'>
+				<div className='text-right'>
+					<p className='text-xl sm:text-2xl font-bold text-green-400 mb-4 sm:mb-6'>
 						Total Price: ${totalPrice}
 					</p>
-					<div className='flex flex-col md:flex-row justify-end'>
-						<button
-							className='bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded mb-2 md:mb-0 md:mr-4 transition duration-200 text-sm md:text-base'
+					<div className='flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-6'>
+						<motion.button
+							whileHover={{
+								scale: 1.05,
+								boxShadow: '0 0 30px rgba(74, 222, 128, 0.7)'
+							}}
+							whileTap={{ scale: 0.95 }}
+							className='bg-green-500 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-green-600 disabled:opacity-50'
 							onClick={handlePay}
 							disabled={buttonLoading}>
-							Pay
-						</button>
-						<button
-							className='bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded transition duration-200 text-sm md:text-base'
+							{buttonLoading ? 'Processing...' : 'Complete Purchase'}
+						</motion.button>
+						<motion.button
+							whileHover={{ scale: 1.05 }}
+							whileTap={{ scale: 0.95 }}
+							className='bg-red-500 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-red-600'
 							onClick={() => setModalIsOpen(false)}>
 							Close
-						</button>
+						</motion.button>
 					</div>
 				</div>
 			</Modal>
