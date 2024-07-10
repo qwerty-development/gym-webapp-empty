@@ -41,6 +41,24 @@ body {
 	box-shadow: 0 0 2px #0074d9;
 }
 
+@keyframes highlightPulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+	}
+	70% {
+		box-shadow: 0 0 0 20px rgba(74, 222, 128, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+	}
+}
+
+.highlight-section {
+	animation: highlightPulse 2s ease-out;
+}
+.section {
+  scroll-margin-top: 100px;
+}
 .custom-calendar:focus {
 	outline: none;
 	border: 1px solid #0c8af8;

@@ -19,16 +19,8 @@ import {
 import { AnimatePresence, motion } from 'framer-motion'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import DirectionsRunIcon from '@mui/icons-material/DirectionsRun'
-import SelfImprovementIcon from '@mui/icons-material/SelfImprovement'
-import FavoriteIcon from '@mui/icons-material/Favorite'
-import DirectionsBikeIcon from '@mui/icons-material/DirectionsBike'
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
-import HealingIcon from '@mui/icons-material/Healing'
 import { RotateLoader } from 'react-spinners'
-import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import ReactModal from 'react-modal'
 import Modal from 'react-modal'
 import {
 	FaRunning,
@@ -38,7 +30,7 @@ import {
 	FaFirstAid
 } from 'react-icons/fa'
 import { RiGroupLine, RiUserLine } from 'react-icons/ri'
-import Image from 'next/image'
+
 
 const FadeInSection = ({ children, delay = 0 }: any) => (
 	<motion.div
@@ -329,14 +321,13 @@ export default function Example() {
 	const scrollToRef = (ref: any, offset = 100) => {
 		if (ref && ref.current) {
 			setTimeout(() => {
-				const yCoordinate =
-					ref.current.getBoundingClientRect().top + window.pageYOffset
-				const yOffset = -offset
-				window.scrollTo({
-					top: yCoordinate + yOffset,
-					behavior: 'smooth'
-				})
-			}, 100) // 100ms delay for smoother transition
+				smoothScroll(ref.current, 1000, offset)
+				ref.current.classList.add('highlight-section')
+				setTimeout(
+					() => ref.current.classList.remove('highlight-section'),
+					2000
+				)
+			}, 300) // 300ms delay before scrolling
 		}
 	}
 	const handlePay = async () => {
@@ -381,6 +372,35 @@ export default function Example() {
 			// Close the modal after payment
 			setLoading(false)
 		}
+	}
+
+	const smoothScroll = (target: any, duration = 500, offset = 100) => {
+		const targetPosition =
+			target.getBoundingClientRect().top + window.pageYOffset - offset
+		const startPosition = window.pageYOffset
+		let startTime: any = null
+
+		const animation = (currentTime: any) => {
+			if (startTime === null) startTime = currentTime
+			const timeElapsed = currentTime - startTime
+			const run = ease(
+				timeElapsed,
+				startPosition,
+				targetPosition - startPosition,
+				duration
+			)
+			window.scrollTo(0, run)
+			if (timeElapsed < duration) requestAnimationFrame(animation)
+		}
+
+		const ease = (t: any, b: any, c: any, d: any) => {
+			t /= d / 2
+			if (t < 1) return (c / 2) * t * t + b
+			t--
+			return (-c / 2) * (t * (t - 2) - 1) + b
+		}
+
+		requestAnimationFrame(animation)
 	}
 
 	const getCapacity = () => {
@@ -522,7 +542,7 @@ export default function Example() {
 				<FadeInSection>
 					<div
 						ref={activityRef}
-						className={`bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
+						className={`section bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
 							activeSection === 'activity' ? 'bg-green-100 bg-opacity-10' : ''
 						}`}>
 						<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center'>
@@ -575,7 +595,7 @@ export default function Example() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className={`bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
+							className={`section bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
 								activeSection === 'coach' ? 'bg-green-100 bg-opacity-10' : ''
 							}`}
 							ref={coachRef}>
@@ -632,7 +652,7 @@ export default function Example() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className={`bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
+							className={`section bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
 								activeSection === 'date' ? 'bg-green-100 bg-opacity-10' : ''
 							}`}
 							ref={dateRef}>
@@ -704,7 +724,7 @@ export default function Example() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className={`bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
+							className={`section bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
 								activeSection === 'confirm' ? 'bg-green-100 bg-opacity-10' : ''
 							}`}
 							ref={confirmRef}>
