@@ -22,6 +22,8 @@ import Modal from 'react-modal'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaUser, FaCalendarAlt, FaUsers, FaBars, FaClock } from 'react-icons/fa'
 import Link from 'next/link'
+import useConfirmationModal from '../../../../../utils/useConfirmationModel'
+import ConfirmationModal from '@/app/components/users/ConfirmationModal'
 
 type Reservation = {
 	id: number
@@ -68,6 +70,13 @@ type Activity = {
 }
 
 export default function Dashboard() {
+	const {
+		isOpen,
+		message,
+		showConfirmationModal,
+		handleConfirm,
+		handleCancels
+	} = useConfirmationModal()
 	const [modalIsOpen, setModalIsOpen] = useState<boolean>(false)
 	const [selectedReservation, setSelectedReservation] = useState<
 		Reservation | GroupReservation | null
@@ -279,7 +288,7 @@ export default function Dashboard() {
 	const handleCancel = async (reservationId: number) => {
 		setButtonLoading(true)
 		if (user) {
-			const confirmed = await showConfirmationToast(
+			const confirmed = await showConfirmationModal(
 				'Are you sure you want to cancel this reservation?'
 			)
 			if (!confirmed) {
@@ -306,7 +315,7 @@ export default function Dashboard() {
 	const handleCancelGroup = async (reservationId: number) => {
 		setButtonLoading(true)
 		if (user) {
-			const confirmed = await showConfirmationToast(
+			const confirmed = await showConfirmationModal(
 				'Are you sure you want to cancel this group reservation?'
 			)
 			if (!confirmed) {
@@ -349,6 +358,12 @@ export default function Dashboard() {
 	}).length
 	return (
 		<div className='min-h-screen bg-gray-700 text-white font-sans'>
+			<ConfirmationModal
+				isOpen={isOpen}
+				message={message}
+				onConfirm={handleConfirm}
+				onCancel={handleCancels}
+			/>
 			<NavbarComponent />
 
 			{/* Navigation Tabs */}
