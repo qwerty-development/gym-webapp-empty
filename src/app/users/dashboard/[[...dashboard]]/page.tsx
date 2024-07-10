@@ -377,7 +377,9 @@ export default function Dashboard() {
 
 			{/* Sidebar for larger screens */}
 			<div className='hidden md:block fixed left-0 top-0 h-full w-max bg-gray-800 z-30 transform transition-transform duration-300 ease-in-out '>
-				<h2 className='text-2xl font-bold mb-4 mt-16 md:mt-4 ml-1'>Menu</h2>
+				<h2 className='text-2xl font-bold mb-4 mt-16 md:mt-4 ml-1 text-green-500'>
+					Menu
+				</h2>
 				<ul>
 					<li
 						className={`mb-5 p-2 px-6 ${
@@ -455,8 +457,8 @@ export default function Dashboard() {
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
-							className='flex flex-col lg:flex-row gap-8 '>
-							<div className='lg:w-1/4 space-y-6 mt-[4.55rem] '>
+							className='flex flex-col  md:-mt-0 lg:flex-row gap-8 '>
+							<div className='lg:w-1/4 space-y-6 mt-0 md:mt-[4.57rem] '>
 								<motion.div
 									initial={{ opacity: 0, x: 20 }}
 									animate={{ opacity: 1, x: 0 }}
