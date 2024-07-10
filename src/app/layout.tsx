@@ -5,6 +5,8 @@ import './globals.css'
 import { WalletProvider } from './components/users/WalletContext'
 import { Toaster } from 'react-hot-toast'
 
+import { ConfirmationModalProvider } from './components/users/ConfirmationModalProvider'
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -44,8 +46,10 @@ export default function RootLayout({
 				</head>
 
 				<body className={inter.className}>
-					<Toaster position='top-center' />
-					<WalletProvider>{children}</WalletProvider>
+					<ConfirmationModalProvider>
+						<Toaster position='top-center' />
+						<WalletProvider>{children}</WalletProvider>
+					</ConfirmationModalProvider>
 				</body>
 			</html>
 		</ClerkProvider>
