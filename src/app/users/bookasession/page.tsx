@@ -362,8 +362,8 @@ export default function Example() {
 		setHighlightDates([])
 	}
 
-	const handleToggle = () => {
-		setIsPrivateTraining(!isPrivateTraining)
+	const handleToggle = (bool: any) => {
+		setIsPrivateTraining(bool)
 	}
 
 	const getSelectedReservationCount = async () => {
@@ -411,7 +411,7 @@ export default function Example() {
 									? 'bg-gray-600 text-white'
 									: 'bg-gray-200 text-gray-700'
 							}`}
-							onClick={handleToggle}>
+							onClick={() => handleToggle(true)}>
 							<RiUserLine className='inline-block mr-2' />
 							Private Training
 						</motion.button>
@@ -423,7 +423,7 @@ export default function Example() {
 									? 'bg-gray-600 text-white'
 									: 'bg-gray-200 text-gray-700'
 							}`}
-							onClick={handleToggle}>
+							onClick={() => handleToggle(false)}>
 							<RiGroupLine className='inline-block mr-2' />
 							Public Training
 						</motion.button>
@@ -442,30 +442,28 @@ export default function Example() {
 						</div>
 					) : (
 						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-							<AnimatePresence>
-								{(isPrivateTraining ? activities : activitiesGroup).map(
-									activity => (
-										<motion.button
-											key={activity.id}
-											initial={{ opacity: 0, y: 20 }}
-											animate={{ opacity: 1, y: 0 }}
-											exit={{ opacity: 0, y: -20 }}
-											whileHover={{ scale: 1.05 }}
-											whileTap={{ scale: 0.95 }}
-											className={`flex items-center justify-center space-x-2 p-4 rounded-lg ${
-												selectedActivity === activity.id
-													? 'bg-gray-600 text-white'
-													: 'bg-gray-200 text-gray-700 hover:bg-gray-400'
-											}`}
-											onClick={() => setSelectedActivity(activity.id)}>
-											<span className='text-2xl'>
-												{activityIcons[activity.id]}
-											</span>
-											<span>{activity.name}</span>
-										</motion.button>
-									)
-								)}
-							</AnimatePresence>
+							{(isPrivateTraining ? activities : activitiesGroup).map(
+								activity => (
+									<motion.button
+										key={activity.id}
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -20 }}
+										whileHover={{ scale: 1.05 }}
+										whileTap={{ scale: 0.95 }}
+										className={`flex items-center justify-center space-x-2 p-4 rounded-lg ${
+											selectedActivity === activity.id
+												? 'bg-gray-600 text-white'
+												: 'bg-gray-200 text-gray-700 hover:bg-gray-400'
+										}`}
+										onClick={() => setSelectedActivity(activity.id)}>
+										<span className='text-2xl'>
+											{activityIcons[activity.id]}
+										</span>
+										<span>{activity.name}</span>
+									</motion.button>
+								)
+							)}
 						</div>
 					)}
 				</div>
