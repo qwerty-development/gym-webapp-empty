@@ -131,23 +131,16 @@ export default function Example() {
 	useEffect(() => {
 		const fetchCoachesData = async () => {
 			if (selectedActivity) {
-				setCoachesLoading(true) // Set loading to true while fetching
-
+				setCoachesLoading(true)
 				const coachesData = isPrivateTraining
 					? await fetchCoaches(selectedActivity)
 					: await fetchCoachesGroup(selectedActivity)
 				setCoaches(coachesData)
-				setSelectedCoach(null) // Reset selectedCoach
-				setSelectedDate(null) // Reset selectedDate
-				setSelectedTime('')
-				setAvailableTimes([])
-				setGroupAvailableTimes([])
-				setHighlightDates([]) // Reset highlight dates when coach changes
-				setCoachesLoading(false) // Set loading to false after fetching
+				setCoachesLoading(false)
 			}
 		}
 		fetchCoachesData()
-	}, [selectedActivity])
+	}, [selectedActivity, isPrivateTraining])
 
 	useEffect(() => {
 		const resetDateAndTime = () => {
@@ -185,8 +178,8 @@ export default function Example() {
 										selectedDate.toDateString()
 								)
 								.map(slot => {
-									const startTime = slot.start_time.substr(0, 5) // Take the substring to include only hours and minutes
-									const endTime = slot.end_time.substr(0, 5) // Similarly for end time
+									const startTime = slot.start_time.substr(0, 5)
+									const endTime = slot.end_time.substr(0, 5)
 									return `${startTime} - ${endTime}`
 								})
 							setAvailableTimes(timesForSelectedDate)
@@ -214,14 +207,18 @@ export default function Example() {
 										selectedDate.toDateString()
 								)
 								.map(slot => {
-									const startTime = slot.start_time.substr(0, 5) // Take the substring to include only hours and minutes
-									const endTime = slot.end_time.substr(0, 5) // Similarly for end time
+									const startTime = slot.start_time.substr(0, 5)
+									const endTime = slot.end_time.substr(0, 5)
 									return `${startTime} - ${endTime}`
 								})
 							setGroupAvailableTimes(timesForSelectedDate)
 						}
 					}
 				}
+			} else {
+				setHighlightDates([])
+				setAvailableTimes([])
+				setGroupAvailableTimes([])
 			}
 		}
 
@@ -270,6 +267,20 @@ export default function Example() {
 		setAvailableTimes([])
 		setGroupAvailableTimes([])
 		setHighlightDates([])
+	}
+	const handleCoachSelect = (coachId: any) => {
+		setSelectedCoach(coachId)
+		setSelectedDate(null)
+		setSelectedTime('')
+		setAvailableTimes([])
+		setGroupAvailableTimes([])
+		setHighlightDates([])
+	}
+	const handleDateSelect = (date: any) => {
+		setSelectedDate(date)
+		setSelectedTime('')
+		setAvailableTimes([])
+		setGroupAvailableTimes([])
 	}
 
 	const handlePay = async () => {
@@ -392,12 +403,16 @@ export default function Example() {
 
 	useEffect(() => {
 		const fetchReservationCount = async () => {
-			const count = await getSelectedReservationCount()
-			setReservationCount(count)
+			if (selectedActivity && selectedCoach && selectedDate) {
+				const count = await getSelectedReservationCount()
+				setReservationCount(count)
+			} else {
+				setReservationCount(0)
+			}
 		}
 
 		fetchReservationCount()
-	}, [selectedActivity, selectedCoach, selectedDate, highlightDates])
+	}, [selectedActivity, selectedCoach, selectedDate])
 
 	return (
 		<div
@@ -471,7 +486,7 @@ export default function Example() {
 												? 'bg-green-500 text-white'
 												: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
 										}`}
-										onClick={() => setSelectedActivity(activity.id)}>
+										onClick={() => handleActivitySelect(activity.id)}>
 										<span className='text-4xl '>
 											{activityIcons[activity.id]}
 										</span>
@@ -520,7 +535,7 @@ export default function Example() {
 													? 'bg-green-500 text-white'
 													: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
 											}`}
-											onClick={() => setSelectedCoach(coach.id)}>
+											onClick={() => handleCoachSelect(coach.id)}>
 											<img
 												src={coach.profile_picture}
 												alt={`${coach.name}`}
@@ -549,7 +564,7 @@ export default function Example() {
 								</h2>
 								<DatePicker
 									selected={selectedDate}
-									onChange={setSelectedDate}
+									onChange={date => handleDateSelect(date)}
 									inline
 									calendarClassName='rounded-xl shadow-lg bg-gray-700 border-none text-white'
 									dayClassName={date =>
