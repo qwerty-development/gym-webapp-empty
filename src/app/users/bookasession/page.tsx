@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import NavbarComponent from '../../components/users/navbar'
 import { useUser } from '@clerk/nextjs'
 import { useWallet } from '@/app/components/users/WalletContext'
@@ -40,6 +40,15 @@ import {
 import { RiGroupLine, RiUserLine } from 'react-icons/ri'
 import Image from 'next/image'
 
+const FadeInSection = ({ children, delay = 0 }: any) => (
+	<motion.div
+		initial={{ opacity: 0, y: 20 }}
+		animate={{ opacity: 1, y: 0 }}
+		transition={{ duration: 0.5, delay }}>
+		{children}
+	</motion.div>
+)
+
 export default function Example() {
 	const activityIcons: Record<number, JSX.Element> = {
 		1: <FaHeart />,
@@ -48,6 +57,11 @@ export default function Example() {
 		10: <FaDumbbell />,
 		11: <FaFirstAid />
 	}
+	const activityRef = useRef(null)
+	const coachRef = useRef(null)
+	const dateRef = useRef(null)
+	const timeRef = useRef(null)
+	const confirmRef = useRef(null)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 	const [selectedTime, setSelectedTime] = useState<string>('')
 	const [selectedActivity, setSelectedActivity] = useState<number | null>(null)
@@ -55,6 +69,7 @@ export default function Example() {
 	const [market, setMarket] = useState<any[]>([])
 	const [selectedItems, setSelectedItems] = useState<any[]>([])
 	const [totalPrice, setTotalPrice] = useState<number>(0)
+	const [activeSection, setActiveSection] = useState('activity')
 	const [modalIsOpen, setModalIsOpen] = useState<boolean>(false)
 	const [activities, setActivities] = useState<
 		{ id: number; name: string; credits?: number }[]
@@ -129,6 +144,12 @@ export default function Example() {
 	}, [])
 
 	useEffect(() => {
+		if (selectedTime) {
+			scrollToRef(confirmRef)
+		}
+	}, [selectedTime])
+
+	useEffect(() => {
 		const fetchCoachesData = async () => {
 			if (selectedActivity) {
 				setCoachesLoading(true)
@@ -137,6 +158,9 @@ export default function Example() {
 					: await fetchCoachesGroup(selectedActivity)
 				setCoaches(coachesData)
 				setCoachesLoading(false)
+				scrollToRef(coachRef)
+			} else {
+				setCoaches([])
 			}
 		}
 		fetchCoachesData()
@@ -169,6 +193,7 @@ export default function Example() {
 								.map(slot => new Date(slot.date))
 								.filter((date: Date) => date >= new Date())
 							setHighlightDates(datesForSelectedCoach)
+							scrollToRef(dateRef)
 						}
 						if (selectedDate) {
 							const timesForSelectedDate = data
@@ -183,6 +208,7 @@ export default function Example() {
 									return `${startTime} - ${endTime}`
 								})
 							setAvailableTimes(timesForSelectedDate)
+							scrollToRef(timeRef)
 						}
 					}
 				} else {
@@ -198,6 +224,7 @@ export default function Example() {
 								.map(slot => new Date(slot.date))
 								.filter((date: Date) => date >= new Date())
 							setHighlightDates(datesForSelectedCoach)
+							scrollToRef(dateRef)
 						}
 						if (selectedDate) {
 							const timesForSelectedDate = data
@@ -212,6 +239,7 @@ export default function Example() {
 									return `${startTime} - ${endTime}`
 								})
 							setGroupAvailableTimes(timesForSelectedDate)
+							scrollToRef(timeRef)
 						}
 					}
 				}
@@ -267,7 +295,10 @@ export default function Example() {
 		setAvailableTimes([])
 		setGroupAvailableTimes([])
 		setHighlightDates([])
+		setActiveSection('coach')
+		scrollToRef(coachRef, 100)
 	}
+
 	const handleCoachSelect = (coachId: any) => {
 		setSelectedCoach(coachId)
 		setSelectedDate(null)
@@ -275,14 +306,39 @@ export default function Example() {
 		setAvailableTimes([])
 		setGroupAvailableTimes([])
 		setHighlightDates([])
+		setActiveSection('date')
+		scrollToRef(dateRef, 100)
 	}
+
 	const handleDateSelect = (date: any) => {
 		setSelectedDate(date)
 		setSelectedTime('')
 		setAvailableTimes([])
 		setGroupAvailableTimes([])
+		setHighlightDates([])
+		setActiveSection('time')
+		scrollToRef(timeRef, 100)
 	}
 
+	const handleTimeSelect = (time: any) => {
+		setSelectedTime(time)
+
+		scrollToRef(confirmRef, 100)
+	}
+
+	const scrollToRef = (ref: any, offset = 100) => {
+		if (ref && ref.current) {
+			setTimeout(() => {
+				const yCoordinate =
+					ref.current.getBoundingClientRect().top + window.pageYOffset
+				const yOffset = -offset
+				window.scrollTo({
+					top: yCoordinate + yOffset,
+					behavior: 'smooth'
+				})
+			}, 100) // 100ms delay for smoother transition
+		}
+	}
 	const handlePay = async () => {
 		setLoading(true)
 		if (!user) {
@@ -385,6 +441,12 @@ export default function Example() {
 
 	const handleToggle = (bool: any) => {
 		setIsPrivateTraining(bool)
+		setSelectedActivity(null)
+		setSelectedCoach(null)
+		setSelectedDate(null)
+		setSelectedTime('')
+		setActiveSection('activity')
+		scrollToRef(activityRef, 100)
 	}
 
 	const getSelectedReservationCount = async () => {
@@ -428,7 +490,7 @@ export default function Example() {
 					Book Your Next Session
 				</h1>
 
-				<div className='bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12'>
+				<FadeInSection>
 					<div className='flex justify-center items-center space-x-4 mb-12'>
 						<motion.button
 							whileHover={{ scale: 1.05 }}
@@ -455,73 +517,31 @@ export default function Example() {
 							Classes
 						</motion.button>
 					</div>
+				</FadeInSection>
 
-					<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center'>
-						Select Your Activity
-					</h2>
-					{activitiesLoading ? (
-						<div className='flex items-center justify-center'>
-							<RotateLoader
-								color={'#4ADE80'}
-								loading={activitiesLoading}
-								size={20}
-							/>
-						</div>
-					) : (
-						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
-							{(isPrivateTraining ? activities : activitiesGroup).map(
-								activity => (
-									<motion.button
-										key={activity.id}
-										initial={{ opacity: 0, y: 20 }}
-										animate={{ opacity: 1, y: 0 }}
-										exit={{ opacity: 0, y: -20 }}
-										whileHover={{
-											scale: 1.05,
-											boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
-										}}
-										whileTap={{ scale: 0.95 }}
-										className={`flex flex-col items-center justify-center p-4 sm:p-8 rounded-2xl transition-all duration-300  ${
-											selectedActivity === activity.id
-												? 'bg-green-500 text-white'
-												: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
-										}`}
-										onClick={() => handleActivitySelect(activity.id)}>
-										<span className='text-4xl '>
-											{activityIcons[activity.id]}
-										</span>
-										<span className='text-lg font-semibold'>
-											{activity.name}
-										</span>
-									</motion.button>
-								)
-							)}
-						</div>
-					)}
-				</div>
-
-				{selectedActivity && (
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						className='bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12'>
+				<FadeInSection>
+					<div
+						ref={activityRef}
+						className={`bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
+							activeSection === 'activity' ? 'bg-green-100 bg-opacity-10' : ''
+						}`}>
 						<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center'>
-							Choose Your Coach
+							Select Your {isPrivateTraining ? 'Activity' : 'Class'}
 						</h2>
-						{coachesLoading ? (
+						{activitiesLoading ? (
 							<div className='flex items-center justify-center'>
 								<RotateLoader
 									color={'#4ADE80'}
-									loading={coachesLoading}
+									loading={activitiesLoading}
 									size={20}
 								/>
 							</div>
 						) : (
 							<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
-								<AnimatePresence>
-									{coaches.map(coach => (
+								{(isPrivateTraining ? activities : activitiesGroup).map(
+									activity => (
 										<motion.button
-											key={coach.id}
+											key={activity.id}
 											initial={{ opacity: 0, y: 20 }}
 											animate={{ opacity: 1, y: 0 }}
 											exit={{ opacity: 0, y: -20 }}
@@ -530,99 +550,167 @@ export default function Example() {
 												boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
 											}}
 											whileTap={{ scale: 0.95 }}
-											className={`p-3 sm:p-6 rounded-2xl transition-all duration-300 ${
-												selectedCoach === coach.id
+											className={`flex flex-col items-center justify-center p-4 sm:p-8 rounded-2xl transition-all duration-300  ${
+												selectedActivity === activity.id
 													? 'bg-green-500 text-white'
 													: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
 											}`}
-											onClick={() => handleCoachSelect(coach.id)}>
-											<img
-												src={coach.profile_picture}
-												alt={`${coach.name}`}
-												className='w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 object-cover border-4 border-green-400'
-											/>
-											<p className='text-lg sm:text-xl font-semibold'>
-												{coach.name}
-											</p>
+											onClick={() => handleActivitySelect(activity.id)}>
+											<span className='text-4xl '>
+												{activityIcons[activity.id]}
+											</span>
+											<span className='text-lg font-semibold'>
+												{activity.name}
+											</span>
 										</motion.button>
-									))}
-								</AnimatePresence>
+									)
+								)}
 							</div>
 						)}
-					</motion.div>
+					</div>
+				</FadeInSection>
+
+				{selectedActivity && (
+					<FadeInSection delay={0.1}>
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							className={`bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
+								activeSection === 'coach' ? 'bg-green-100 bg-opacity-10' : ''
+							}`}
+							ref={coachRef}>
+							<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center'>
+								Choose Your {isPrivateTraining ? 'Coach' : 'Instructor'}
+							</h2>
+							{coachesLoading ? (
+								<div className='flex items-center justify-center'>
+									<RotateLoader
+										color={'#4ADE80'}
+										loading={coachesLoading}
+										size={20}
+									/>
+								</div>
+							) : (
+								<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
+									<AnimatePresence>
+										{coaches.map(coach => (
+											<motion.button
+												key={coach.id}
+												initial={{ opacity: 0, y: 20 }}
+												animate={{ opacity: 1, y: 0 }}
+												exit={{ opacity: 0, y: -20 }}
+												whileHover={{
+													scale: 1.05,
+													boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+												}}
+												whileTap={{ scale: 0.95 }}
+												className={`p-3 sm:p-6 rounded-2xl transition-all duration-300 ${
+													selectedCoach === coach.id
+														? 'bg-green-500 text-white'
+														: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
+												}`}
+												onClick={() => handleCoachSelect(coach.id)}>
+												<img
+													src={coach.profile_picture}
+													alt={`${coach.name}`}
+													className='w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 object-cover border-4 border-green-400'
+												/>
+												<p className='text-lg sm:text-xl font-semibold'>
+													{coach.name}
+												</p>
+											</motion.button>
+										))}
+									</AnimatePresence>
+								</div>
+							)}
+						</motion.div>
+					</FadeInSection>
 				)}
 
 				{selectedCoach && (
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						className='bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8'>
-						<div className='flex flex-col lg:flex-row lg:space-x-12'>
-							<div className='lg:w-1/2 mb-8 lg:mb-0'>
-								<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center lg:text-left'>
-									Select a Date
-								</h2>
-								<DatePicker
-									selected={selectedDate}
-									onChange={date => handleDateSelect(date)}
-									inline
-									calendarClassName='rounded-xl shadow-lg bg-gray-700 border-none text-white'
-									dayClassName={date =>
-										'text-gray-300 hover:bg-green-300 hover:text-white rounded-full'
-									}
-									monthClassName={() => 'text-green-400'}
-									weekDayClassName={() => 'text-blue-400'}
-									minDate={new Date()}
-									highlightDates={highlightDates}
-								/>
-							</div>
-							{selectedDate && (
-								<div className='lg:w-1/2'>
+					<FadeInSection delay={0.2}>
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							className={`bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
+								activeSection === 'date' ? 'bg-green-100 bg-opacity-10' : ''
+							}`}
+							ref={dateRef}>
+							<div className='flex flex-col lg:flex-row lg:space-x-12'>
+								<div className='lg:w-1/2 mb-8 lg:mb-0'>
 									<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center lg:text-left'>
-										Available Times
+										Select a Date
 									</h2>
-									<div className='grid grid-cols-2 gap-4'>
-										<AnimatePresence>
-											{(isPrivateTraining
-												? availableTimes
-												: groupAvailableTimes
-											).map(time => (
-												<motion.button
-													key={time}
-													initial={{ opacity: 0, y: 20 }}
-													animate={{ opacity: 1, y: 0 }}
-													exit={{ opacity: 0, y: -20 }}
-													whileHover={{
-														scale: 1.05,
-														boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
-													}}
-													whileTap={{ scale: 0.95 }}
-													className={`p-3 sm:p-4 rounded-xl text-base sm:text-lg font-semibold transition-all duration-300 ${
-														selectedTime === time
-															? 'bg-green-500 text-white'
-															: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
-													}`}
-													onClick={() => setSelectedTime(time)}>
-													{time}
-													{!isPrivateTraining && (
-														<p className='text-sm mt-2'>
-															Capacity: {reservationCount}/{getCapacity()}
-														</p>
-													)}
-												</motion.button>
-											))}
-										</AnimatePresence>
-									</div>
+									<DatePicker
+										selected={selectedDate}
+										onChange={date => handleDateSelect(date)}
+										inline
+										calendarClassName='rounded-xl shadow-lg bg-gray-700 border-none text-white'
+										dayClassName={date =>
+											'text-gray-300 hover:bg-green-300 hover:text-white rounded-full'
+										}
+										monthClassName={() => 'text-green-400'}
+										weekDayClassName={() => 'text-blue-400'}
+										minDate={new Date()}
+										highlightDates={highlightDates}
+									/>
 								</div>
-							)}
-						</div>
-						{selectedTime && (
-							<motion.div
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								className='mt-12 text-center'>
+								{selectedDate && (
+									<div className='lg:w-1/2'>
+										<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center lg:text-left'>
+											Available Times
+										</h2>
+										<div className='grid grid-cols-2 gap-4'>
+											<AnimatePresence>
+												{(isPrivateTraining
+													? availableTimes
+													: groupAvailableTimes
+												).map(time => (
+													<motion.button
+														key={time}
+														initial={{ opacity: 0, y: 20 }}
+														animate={{ opacity: 1, y: 0 }}
+														exit={{ opacity: 0, y: -20 }}
+														whileHover={{
+															scale: 1.05,
+															boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+														}}
+														whileTap={{ scale: 0.95 }}
+														className={`p-3 sm:p-4 rounded-xl text-base sm:text-lg font-semibold transition-all duration-300 ${
+															selectedTime === time
+																? 'bg-green-500 text-white'
+																: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
+														}`}
+														onClick={() => handleTimeSelect(time)}>
+														{time}
+														{!isPrivateTraining && (
+															<p className='text-sm mt-2'>
+																Capacity: {reservationCount}/{getCapacity()}
+															</p>
+														)}
+													</motion.button>
+												))}
+											</AnimatePresence>
+										</div>
+									</div>
+								)}
+							</div>
+						</motion.div>
+					</FadeInSection>
+				)}
+
+				{selectedTime && (
+					<FadeInSection delay={0.3}>
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							className={`bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16 transition-colors duration-300 ${
+								activeSection === 'confirm' ? 'bg-green-100 bg-opacity-10' : ''
+							}`}
+							ref={confirmRef}>
+							<div className='mt-12 text-center'>
 								<p className='text-xl sm:text-2xl font-semibold text-green-400 mb-4 sm:mb-6'>
-									Booking{' '}
+									Booking {isPrivateTraining ? 'private session' : 'class'} for{' '}
 									{
 										(isPrivateTraining ? activities : activitiesGroup).find(
 											a => a.id === selectedActivity
@@ -643,9 +731,9 @@ export default function Example() {
 									className='rounded-full bg-green-500 px-8 sm:px-10 py-3 sm:py-4 text-lg sm:text-xl font-bold text-white transition-all duration-300 hover:bg-green-600 disabled:opacity-50'>
 									{loading ? 'Processing...' : 'Confirm Booking'}
 								</motion.button>
-							</motion.div>
-						)}
-					</motion.div>
+							</div>
+						</motion.div>
+					</FadeInSection>
 				)}
 
 				<Modal
