@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaPlus, FaEdit, FaTrash, FaUserFriends, FaUser } from 'react-icons/fa'
-import FileUploadDropzone from './FileUploadDropZone'
+import FileUploadDropzone from './FileUploadDropzone'
 import { RingLoader } from 'react-spinners'
 import {
 	addCoach,
