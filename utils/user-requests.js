@@ -39,8 +39,7 @@ export const updateUserRecord = async ({
 	email,
 	firstName,
 	lastName,
-	userName,
-	phone
+	userName
 }) => {
 	const supabase = await supabaseClient()
 	const existingUser = await checkUserExists(userId)
@@ -52,8 +51,7 @@ export const updateUserRecord = async ({
 				email,
 				first_name: firstName,
 				last_name: lastName,
-				username: userName,
-				phone
+				username: userName
 			})
 			.eq('user_id', userId)
 
@@ -70,8 +68,7 @@ export const updateUserRecord = async ({
 				email,
 				first_name: firstName,
 				last_name: lastName,
-				username: userName,
-				phone
+				username: userName
 			}
 		])
 
