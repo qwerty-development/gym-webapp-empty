@@ -9,11 +9,7 @@ export const SearchUsers = () => {
 	const pathname = usePathname()
 
 	return (
-		<motion.div
-			initial={{ opacity: 0, y: -20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.5 }}
-			className='max-w-lg mx-auto my-8 p-6 bg-gray-800 rounded-2xl shadow-lg hover:shadow-green-500/30 transition duration-300'>
+		<div className='max-w-lg mx-auto my-8 p-6 bg-gray-800 rounded-2xl shadow-lg hover:shadow-green-500/30 transition duration-300'>
 			<form
 				onSubmit={async e => {
 					e.preventDefault()
@@ -34,15 +30,13 @@ export const SearchUsers = () => {
 						className='w-full px-4 py-3 bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 						placeholder='Enter a name or email'
 					/>
-					<motion.button
+					<button
 						type='submit'
-						whileHover={{ scale: 1.05 }}
-						whileTap={{ scale: 0.95 }}
 						className='absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-green-500 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-800 transition duration-300'>
 						<FaSearch />
-					</motion.button>
+					</button>
 				</div>
 			</form>
-		</motion.div>
+		</div>
 	)
 }

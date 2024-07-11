@@ -1,6 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FaPlus, FaEdit, FaTrash, FaUserFriends, FaUser } from 'react-icons/fa'
+import FileUploadDropzone from './FileUploadDropZone'
+import { RingLoader } from 'react-spinners'
 import {
 	addCoach,
 	deleteCoach,
@@ -13,7 +17,12 @@ import {
 	fetchGroupActivities
 } from '../../../../utils/admin-requests'
 import AdminNavbarComponent from '@/app/components/admin/adminnavbar'
-import { SyncLoader } from 'react-spinners'
+declare global {
+	interface HTMLElement {
+		__react_dropzone_state__?: any // replace 'any' with the type of '__react_dropzone_state__' if known
+	}
+}
+
 import toast, { LoaderIcon } from 'react-hot-toast'
 
 type Coach = {
@@ -221,17 +230,16 @@ const CoachesandActivitiesAdminPage = () => {
 		setButtonLoading(false)
 	}
 
-	const [file, setFile] = useState<File | null>(null)
+	const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
 
-	const handleFileChange: React.ChangeEventHandler<
-		HTMLInputElement
-	> = event => {
-		if (event.target.files && event.target.files.length > 0) {
+	const handleFileChange = (file: File) => {
+		if (file) {
 			if (showUpdateForm) {
-				setUpdatedCoachPicture(event.target.files[0])
+				setUpdatedCoachPicture(file)
 			} else {
-				setNewCoachPicture(event.target.files[0])
+				setNewCoachPicture(file)
 			}
+			setUploadedFileName(file.name)
 		}
 	}
 
@@ -240,11 +248,25 @@ const CoachesandActivitiesAdminPage = () => {
 			// If the form is already open for the same coach, close it
 			setShowUpdateForm(false)
 			setUpdateCoachId(null)
+			setUpdatedCoachName('')
+			setUpdatedCoachPicture(null)
 		} else {
 			setShowUpdateForm(true)
 			setUpdateCoachId(id)
-			setUpdatedCoachName(coaches.find(coach => coach.id === id)?.name || '')
+			const coach = coaches.find(coach => coach.id === id)
+			setUpdatedCoachName(coach?.name || '')
+			setUpdatedCoachPicture(null)
 		}
+
+		// Reset the FileUploadDropzone
+		const dropzones = document.querySelectorAll(
+			'.file-dropzone'
+		) as NodeListOf<HTMLElement>
+		dropzones.forEach(dropzone => {
+			if (dropzone.__react_dropzone_state__) {
+				dropzone.__react_dropzone_state__.reset()
+			}
+		})
 	}
 
 	// Similarly, adjust handleUpdateCoach to pass the file if it's updated
@@ -254,269 +276,251 @@ const CoachesandActivitiesAdminPage = () => {
 	}
 
 	return (
-		<div className='container mx-auto px-4 sm:px-6 lg:px-8'>
-			<section className='mt-10'>
-				<h2 className='text-xl font-semibold mb-6'>Coaches</h2>
-				<div className='flex flex-col sm:flex-row items-center space-y-4 sm:space-x-4 mb-6'>
-					<input
-						type='text'
-						value={newCoachName}
-						onChange={e => setNewCoachName(e.target.value)}
-						placeholder='New Coach Name'
-						className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto flex-grow'
-					/>
-					<div className='flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4'>
-						<input type='file' onChange={handleFileChange} />
-						<button
+		<motion.div
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			transition={{ duration: 0.5 }}
+			className='min-h-screen bg-gray-900 text-white font-sans p-8'>
+			<section className='mb-16'>
+				<h2 className='text-3xl font-bold mb-8 text-green-400'>Coaches</h2>
+				<motion.div
+					className='bg-gray-800 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'
+					whileHover={{ scale: 1.02 }}>
+					<div className='flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4'>
+						<input
+							type='text'
+							value={newCoachName}
+							onChange={e => setNewCoachName(e.target.value)}
+							placeholder='New Coach Name'
+							className='w-full sm:w-1/3 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						/>
+						<FileUploadDropzone onFileChange={handleFileChange} />
+						<motion.button
 							onClick={handleAddCoach}
 							disabled={buttonLoading}
-							className='bg-blue-500 disabled:bg-blue-300 text-white px-4 py-2 rounded-md '>
-							Add Coach
-						</button>
+							whileHover={{ scale: 1.05 }}
+							whileTap={{ scale: 0.95 }}
+							className='w-full sm:w-auto px-6 py-3 bg-green-500 disabled:bg-green-700 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+							<FaPlus className='inline mr-2' /> Add Coach
+						</motion.button>
 					</div>
-				</div>
+				</motion.div>
+
 				{loading ? (
 					<div className='flex justify-center items-center'>
-						<SyncLoader color='#367831' size={25} />
+						<RingLoader color='#10B981' size={60} />
 					</div>
 				) : (
-					<ul>
+					<AnimatePresence>
 						{coaches.map((coach: Coach) => (
-							<li
+							<motion.div
 								key={coach.id}
-								className='bg-gray-100 px-4 py-2 mb-2 rounded-md'>
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -20 }}
+								transition={{ duration: 0.3 }}
+								className='bg-gray-800 rounded-xl p-6 mb-4 shadow-lg hover:shadow-green-500/30 transition duration-300'>
 								<div className='flex items-center justify-between'>
-									<div className='flex items-center space-x-3'>
+									<div className='flex items-center space-x-4'>
 										<img
 											src={coach.profile_picture}
 											alt={`Profile of ${coach.name}`}
-											className='w-10 h-10 rounded-full'
+											className='w-12 h-12 rounded-full border-2 border-green-500'
 										/>
-										<span className='dark:text-black'>{coach.name}</span>
+										<span className='text-xl font-semibold'>{coach.name}</span>
 									</div>
-									<div className='flex'>
-										<button
+									<div className='flex space-x-2'>
+										<motion.button
 											disabled={buttonLoading}
 											onClick={() => handleToggleForm(coach.id)}
-											className='bg-yellow-500 disabled:bg-yellow-300 text-white px-3 py-1 rounded-md mr-2'>
-											Update
-										</button>
-										<button
+											whileHover={{ scale: 1.1 }}
+											whileTap={{ scale: 0.9 }}
+											className='p-2 bg-yellow-500 disabled:bg-yellow-700 text-white rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+											<FaEdit />
+										</motion.button>
+										<motion.button
 											disabled={buttonLoading}
 											onClick={() => handleDeleteCoach(coach.id)}
-											className='bg-red-500 disabled:bg-red-300 text-white px-3 py-1 rounded-md'>
-											Delete
-										</button>
+											whileHover={{ scale: 1.1 }}
+											whileTap={{ scale: 0.9 }}
+											className='p-2 bg-red-500 disabled:bg-red-700 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+											<FaTrash />
+										</motion.button>
 									</div>
 								</div>
-								{showUpdateForm && updateCoachId === coach.id && (
-									<div className='mx-auto p-4'>
-										<input
-											type='text'
-											value={updatedCoachName}
-											onChange={e => setUpdatedCoachName(e.target.value)}
-											placeholder='New Coach Name'
-											className='border border-gray-300 px-3 py-2 mt-4 rounded-md w-64'
-										/>
-										<input
-											className='mt-4'
-											type='file'
-											onChange={handleFileChange}
-										/>
-										<button
-											disabled={buttonLoading}
-											onClick={handleSubmitUpdate}
-											className='bg-blue-500 disabled:bg-blue-300 text-white items-center px-4 py-2 rounded-md mt-4'>
-											Update
-										</button>
-									</div>
-								)}
-							</li>
+								<AnimatePresence>
+									{showUpdateForm && updateCoachId === coach.id && (
+										<motion.div
+											initial={{ opacity: 0, height: 0 }}
+											animate={{ opacity: 1, height: 'auto' }}
+											exit={{ opacity: 0, height: 0 }}
+											transition={{ duration: 0.3 }}
+											className='mt-4 space-y-4'>
+											<input
+												type='text'
+												value={updatedCoachName}
+												onChange={e => setUpdatedCoachName(e.target.value)}
+												placeholder='New Coach Name'
+												className='w-full p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+											/>
+											<FileUploadDropzone onFileChange={handleFileChange} />
+											<motion.button
+												disabled={buttonLoading}
+												onClick={handleSubmitUpdate}
+												whileHover={{ scale: 1.05 }}
+												whileTap={{ scale: 0.95 }}
+												className='w-full px-6 py-3 bg-green-500 disabled:bg-green-700 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+												Update
+											</motion.button>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</motion.div>
 						))}
-					</ul>
+					</AnimatePresence>
 				)}
 			</section>
 
-			<hr className='my-8 border-gray-900 mt-12 mb-12' />
+			<hr className='border-gray-700 my-12' />
 
-			<section className='mt-10'>
-				<div className='justify-between items-center py-4'>
-					<h1 className='text-3xl font-bold'>Activities</h1>
-					<div className='flex m-6 justify-center'>
-						<button
-							disabled={buttonLoading}
-							className={`px-4 py-2 mr-2 rounded ${
-								isPrivateTraining ? 'bg-green-500  text-white' : 'bg-gray-200 '
-							}`}
-							onClick={handleToggle}>
-							Private Training
-						</button>
-						<button
-							disabled={buttonLoading}
-							className={`px-4 py-2 rounded ${
-								!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
-							}`}
-							onClick={handleToggle}>
-							Classes
-						</button>
-					</div>
+			<section className='mt-16'>
+				<h2 className='text-3xl font-bold mb-8 text-green-400'>Activities</h2>
+				<div className='flex justify-center mb-8'>
+					<motion.button
+						disabled={buttonLoading}
+						onClick={handleToggle}
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						className={`px-6 py-3 rounded-l-full ${
+							isPrivateTraining
+								? 'bg-green-500 text-white'
+								: 'bg-gray-700 text-gray-300'
+						} focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300`}>
+						<FaUser className='inline mr-2' /> Private Training
+					</motion.button>
+					<motion.button
+						disabled={buttonLoading}
+						onClick={handleToggle}
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						className={`px-6 py-3 rounded-r-full ${
+							!isPrivateTraining
+								? 'bg-green-500 text-white'
+								: 'bg-gray-700 text-gray-300'
+						} focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300`}>
+						<FaUserFriends className='inline mr-2' /> Classes
+					</motion.button>
 				</div>
-				{isPrivateTraining ? (
-					<>
-						<div className='flex flex-col sm:flex-row items-center space-y-4 lg:space-y-0 space-x-4 mb-6'>
-							<input
-								type='text'
-								value={newActivityName}
-								onChange={e => setNewActivityName(e.target.value)}
-								placeholder='New Activity Name'
-								className='border border-gray-300 px-3 py-2  rounded-md w-full sm:w-auto flex-grow'
-							/>
-							<input
-								type='number'
-								value={newActivityCredits}
-								onChange={e => setNewActivityCredits(e.target.value)}
-								placeholder='Credits'
-								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'
-							/>
-							<select
-								value={selectedCoachId || ''}
-								onChange={handleCoachSelection}
-								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'>
-								<option value=''>Select Coach</option>
-								{coaches.map(coach => (
-									<option key={coach.id} value={coach.id}>
-										{coach.name}
-									</option>
-								))}
-							</select>
-							<button
-								disabled={buttonLoading}
-								onClick={handleAddActivity}
-								className='bg-blue-500 disabled:bg-blue-300 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
-								Add Activity
-							</button>
-						</div>
-						{loading ? (
-							<div className='flex justify-center items-center mt-5'>
-								<SyncLoader color='#367831' size={25} />
-							</div>
-						) : (
-							<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-12 lg:grid-cols-4 gap-4'>
-								{activities.map(activity => (
-									<div
-										key={activity.id}
-										className='bg-gray-100 rounded-md shadow p-4 relative flex flex-col justify-between'>
-										<h3 className='text-lg text-black font-semibold mb-2'>
-											{activity.name}
-										</h3>
-										<p className='text-gray-500 mb-2'>
-											Credits: {activity.credits}
-										</p>
-										<p className='text-gray-500'>
-											Assigned to:{' '}
-											{coaches.find(coach => coach.id === activity.coach_id)
-												?.name || 'None'}
-										</p>
-										<div className='mt-5'>
-											<button
-												disabled={buttonLoading}
-												onClick={() => handleUpdateActivity(activity.id)}
-												className='bg-yellow-500 disabled:bg-yellow-300 text-white px-3 py-1 rounded-md mr-2'>
-												Update
-											</button>
-											<button
-												disabled={buttonLoading}
-												onClick={() => handleDeleteActivity(activity.id)}
-												className='bg-red-500 disabled:bg-red-300 text-white px-3 py-1 rounded-md ml-2'>
-												Delete
-											</button>
-										</div>
-									</div>
-								))}
-							</div>
-						)}
-					</>
-				) : (
-					// Public training content
-					<>
-						<div className='flex flex-col sm:flex-row items-center space-y-4 lg:space-y-0 space-x-4 mb-6'>
-							<input
-								type='text'
-								value={newActivityName}
-								onChange={e => setNewActivityName(e.target.value)}
-								placeholder='New Activity Name'
-								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto flex-grow'
-							/>
-							<input
-								type='number'
-								value={newActivityCredits}
-								onChange={e => setNewActivityCredits(e.target.value)}
-								placeholder='Credits'
-								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'
-							/>
+
+				<motion.div
+					className='bg-gray-800 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'
+					whileHover={{ scale: 1.02 }}>
+					<div className='flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4'>
+						<input
+							type='text'
+							value={newActivityName}
+							onChange={e => setNewActivityName(e.target.value)}
+							placeholder='New Activity Name'
+							className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						/>
+						<input
+							type='number'
+							value={newActivityCredits}
+							onChange={e => setNewActivityCredits(e.target.value)}
+							placeholder='Credits'
+							className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						/>
+						{!isPrivateTraining && (
 							<input
 								type='number'
 								value={newActvityCapacity}
 								onChange={e => setNewActivityCapacity(e.target.value)}
 								placeholder='Capacity'
-								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'
+								className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 							/>
-							<select
-								value={selectedCoachId || ''}
-								onChange={handleCoachSelection}
-								className='border border-gray-300 px-3 py-2 rounded-md w-full sm:w-auto'>
-								<option value=''>Select Coach</option>
-								{coaches.map(coach => (
-									<option key={coach.id} value={coach.id}>
-										{coach.name}
-									</option>
-								))}
-							</select>
-							<button
-								disabled={buttonLoading}
-								onClick={handleAddActivity}
-								className='bg-blue-500 disabled:bg-blue-300 text-white px-4 py-2 rounded-md w-full sm:w-auto'>
-								Add Activity
-							</button>
-						</div>{' '}
-						<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-12 lg:grid-cols-4 gap-4'>
-							{groupactivities.map(activity => (
-								<div
-									key={activity.id}
-									className='bg-gray-100 rounded-md shadow p-4 relative flex flex-col justify-between'>
-									<h3 className='text-lg text-black font-semibold mb-2'>
-										{activity.name}
-									</h3>
-									<p className='text-gray-500 mb-2'>
-										Credits: {activity.credits}
-									</p>
-									<p className='text-gray-500 mb-2'>
-										Assigned to:{' '}
-										{coaches.find(coach => coach.id === activity.coach_id)
-											?.name || 'None'}
-									</p>
-									<p className='text-gray-500'>Capacity: {activity.capacity}</p>
-									<div className='mt-5'>
-										<button
-											disabled={buttonLoading}
-											onClick={() => handleUpdateActivity(activity.id)}
-											className='bg-yellow-500 disabled:bg-yellow-300 text-white px-3 py-1 rounded-md mr-2'>
-											Update
-										</button>
-										<button
-											disabled={buttonLoading}
-											onClick={() => handleDeleteActivity(activity.id)}
-											className='bg-red-500 disabled:bg-red-300 text-white px-3 py-1 rounded-md ml-2'>
-											Delete
-										</button>
-									</div>
-								</div>
+						)}
+						<select
+							value={selectedCoachId || ''}
+							onChange={handleCoachSelection}
+							className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'>
+							<option value=''>Select Coach</option>
+							{coaches.map(coach => (
+								<option key={coach.id} value={coach.id}>
+									{coach.name}
+								</option>
 							))}
-						</div>
-					</>
+						</select>
+						<motion.button
+							disabled={buttonLoading}
+							onClick={handleAddActivity}
+							whileHover={{ scale: 1.05 }}
+							whileTap={{ scale: 0.95 }}
+							className='w-full sm:w-auto px-6 py-3 bg-green-500 disabled:bg-green-700 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+							<FaPlus className='inline mr-2' /> Add Activity
+						</motion.button>
+					</div>
+				</motion.div>
+
+				{loading ? (
+					<div className='flex justify-center items-center'>
+						<RingLoader color='#10B981' size={60} />
+					</div>
+				) : (
+					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+						<AnimatePresence>
+							{(isPrivateTraining ? activities : groupactivities).map(
+								activity => (
+									<motion.div
+										key={activity.id}
+										initial={{ opacity: 0, scale: 0.9 }}
+										animate={{ opacity: 1, scale: 1 }}
+										exit={{ opacity: 0, scale: 0.9 }}
+										transition={{ duration: 0.3 }}
+										className='bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500/30 transition duration-300 flex flex-col justify-between'>
+										<div>
+											<h3 className='text-xl font-semibold mb-2 text-green-400'>
+												{activity.name}
+											</h3>
+											<p className='text-gray-300 mb-2'>
+												Credits: {activity.credits}
+											</p>
+											<p className='text-gray-300 mb-2'>
+												Coach:{' '}
+												{coaches.find(coach => coach.id === activity.coach_id)
+													?.name || 'None'}
+											</p>
+											{!isPrivateTraining && (
+												<p className='text-gray-300'>
+													Capacity: {activity.capacity}
+												</p>
+											)}
+										</div>
+										<div className='flex justify-end space-x-2 mt-4'>
+											<motion.button
+												disabled={buttonLoading}
+												onClick={() => handleUpdateActivity(activity.id)}
+												whileHover={{ scale: 1.1 }}
+												whileTap={{ scale: 0.9 }}
+												className='p-2 bg-yellow-500 disabled:bg-yellow-700 text-white rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+												<FaEdit />
+											</motion.button>
+											<motion.button
+												disabled={buttonLoading}
+												onClick={() => handleDeleteActivity(activity.id)}
+												whileHover={{ scale: 1.1 }}
+												whileTap={{ scale: 0.9 }}
+												className='p-2 bg-red-500 disabled:bg-red-700 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+												<FaTrash />
+											</motion.button>
+										</div>
+									</motion.div>
+								)
+							)}
+						</AnimatePresence>
+					</div>
 				)}
 			</section>
-		</div>
+		</motion.div>
 	)
 }
 
