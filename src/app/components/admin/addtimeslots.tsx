@@ -1,4 +1,4 @@
-'use client' //use clients
+'use client'
 import React, { useState, useEffect } from 'react'
 import Select from 'react-select'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -9,20 +9,56 @@ import {
 	fetchGroupActivities,
 	addTimeSlotGroup
 } from '../../../../utils/admin-requests'
-import MultiDatePicker, { Calendar } from 'react-multi-date-picker'
-import { DateObject } from 'react-multi-date-picker'
+import MultiDatePicker from 'react-multi-date-picker'
 import DatePanel from 'react-multi-date-picker/plugins/date_panel'
 import Icon from 'react-multi-date-picker/components/icon'
 import Toolbar from 'react-multi-date-picker/plugins/toolbar'
 import toast from 'react-hot-toast'
-import { set } from 'date-fns'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FaCalendarAlt, FaClock, FaUserFriends, FaUser } from 'react-icons/fa'
+import { RingLoader } from 'react-spinners'
+import { DateObject } from 'react-multi-date-picker'
 
 type OptionType = {
 	label: string
 	value: string
 }
 
+const customSelectStyles = {
+	control: (provided: any) => ({
+		...provided,
+		backgroundColor: '#1F2937',
+		borderColor: '#10B981',
+		borderRadius: '9999px',
+		padding: '0.5rem',
+		boxShadow: 'none',
+		'&:hover': {
+			borderColor: '#34D399'
+		}
+	}),
+	menu: (provided: any) => ({
+		...provided,
+		backgroundColor: '#1F2937'
+	}),
+	option: (provided: any, state: { isSelected: any }) => ({
+		...provided,
+		backgroundColor: state.isSelected ? '#10B981' : '#1F2937',
+		'&:hover': {
+			backgroundColor: '#34D399',
+			color: 'white'
+		}
+	}),
+	singleValue: (provided: any) => ({
+		...provided,
+		color: 'white'
+	}),
+	input: (provided: any) => ({
+		...provided,
+		color: 'white'
+	})
+}
 export default function AddTimeSlotComponent() {
+	const [isPublic, setIsPublic] = useState(false)
 	const [coaches, setCoaches] = useState<OptionType[]>([])
 	const [activities, setActivities] = useState<OptionType[]>([])
 	const [groupActivities, setGroupActivities] = useState<OptionType[]>([])
@@ -152,128 +188,158 @@ export default function AddTimeSlotComponent() {
 	}
 
 	return (
-		<div className='container mx-auto px-4'>
-			<h1 className='text-2xl font-bold mb-4'>Add Time Slots</h1>
-			<div className='flex flex-wrap mb-4'>
-				<div className='w-full md:w-1/2 px-2 mb-4 md:mb-0'>
+		<motion.div
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			transition={{ duration: 0.5 }}
+			className='min-h-screen bg-gray-900 text-white font-sans p-8'>
+			<h1 className='text-4xl font-bold mb-8 text-green-400'>Add Time Slots</h1>
+
+			<motion.div className='bg-gray-800 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
 					<Select
 						placeholder='Select Coach'
 						options={coaches}
 						onChange={setSelectedCoach}
 						value={selectedCoach}
+						styles={customSelectStyles}
 					/>
-				</div>
-				<div className='w-full md:w-1/2 px-2'>
 					<Select
 						placeholder='Select Activity'
 						options={activities}
 						onChange={setSelectedActivity}
 						value={selectedActivity}
+						styles={customSelectStyles}
 					/>
 				</div>
-			</div>
-			<div className='mb-4 text-center'>
-				<MultiDatePicker
-					value={selectedDates}
-					render={<Icon />}
-					onChange={handleDateChange}
-					format='YYYY-MM-DD'
-					plugins={[
-						<DatePanel key='date-panel' sort='date' />,
-						<Toolbar
-							key='toolbar'
-							position='bottom'
-							sort={['deselect', 'close', 'today']}
+
+				<div className='mb-6 flex flex-row justify-center align-middle'>
+					<MultiDatePicker
+						value={selectedDates}
+						onChange={handleDateChange}
+						format='YYYY-MM-DD'
+						plugins={[
+							<DatePanel key='date-panel' sort='date' />,
+							<Toolbar
+								key='toolbar'
+								position='bottom'
+								sort={['deselect', 'close', 'today']}
+							/>
+						]}
+						render={<Icon />}
+						className='w-full bg-gray-700 border-2 border-green-500 rounded-full text-white'
+					/>
+				</div>
+
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
+					<div className='relative'>
+						<FaClock className='absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500' />
+						<input
+							type='time'
+							value={startTime}
+							onChange={e => setStartTime(e.target.value)}
+							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
 						/>
-					]}
-				/>
-			</div>
-			<div className='flex flex-wrap mb-4'>
-				<div className='w-full md:w-1/2 px-2 mb-4 md:mb-0'>
-					<input
-						type='time'
-						value={startTime}
-						onChange={e => setStartTime(e.target.value)}
-						className='border px-2 py-1 rounded w-full'
-					/>
+					</div>
+					<div className='relative'>
+						<FaClock className='absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500' />
+						<input
+							type='time'
+							value={endTime}
+							onChange={e => setEndTime(e.target.value)}
+							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
+						/>
+					</div>
 				</div>
-				<div className='w-full md:w-1/2 px-2'>
-					<input
-						type='time'
-						value={endTime}
-						onChange={e => setEndTime(e.target.value)}
-						className='border px-2 py-1 rounded w-full'
-					/>
-				</div>
-			</div>
-			<div className='text-center mb-8'>
-				<button
+
+				<motion.button
 					onClick={handleAddTimeSlot}
-					className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
-					Add Time Slots
-				</button>
-			</div>
-			<hr className='mt-12 mb-12'></hr>
-			<h1 className='text-2xl mt-12 font-bold mb-4'>Add Group Time Slots</h1>
-			<div className='flex flex-wrap mb-4'>
-				<div className='w-full md:w-1/2 px-2 mb-4 md:mb-0'>
+					disabled={buttonLoading}
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
+					className='w-full px-6 py-3 bg-green-500 disabled:bg-green-700 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+					{buttonLoading ? (
+						<RingLoader color='#ffffff' size={24} />
+					) : (
+						'Add Time Slots'
+					)}
+				</motion.button>
+			</motion.div>
+
+			<h1 className='text-4xl font-bold mb-8 text-green-400'>
+				Add Group Time Slots
+			</h1>
+
+			<motion.div className='bg-gray-800 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
 					<Select
 						placeholder='Select Coach'
 						options={coaches}
 						onChange={setSelectedCoach}
 						value={selectedCoach}
+						styles={customSelectStyles}
 					/>
-				</div>
-				<div className='w-full md:w-1/2 px-2'>
 					<Select
 						placeholder='Select Group Activity'
 						options={groupActivities}
 						onChange={setSelectedGroupActivity}
 						value={selectedGroupActivity}
+						styles={customSelectStyles}
 					/>
 				</div>
-			</div>
-			<div className='mb-4 text-center'>
-				<MultiDatePicker
-					value={selectedGroupDates}
-					render={<Icon />}
-					onChange={handleGroupDateChange}
-					format='YYYY-MM-DD'
-					plugins={[
-						<DatePanel key='date-panel' sort='date' />,
-						<Toolbar
-							key='toolbar'
-							position='bottom'
-							sort={['deselect', 'close', 'today']}
+
+				<div className='mb-6 flex flex-row justify-center align-middle'>
+					<MultiDatePicker
+						value={selectedGroupDates}
+						onChange={handleGroupDateChange}
+						format='YYYY-MM-DD'
+						plugins={[
+							<DatePanel key='date-panel' sort='date' />,
+							<Toolbar
+								key='toolbar'
+								position='bottom'
+								sort={['deselect', 'close', 'today']}
+							/>
+						]}
+						render={<Icon />}
+						className='w-full text-center mx-auto bg-gray-700 border-2 border-green-500 rounded-full text-white'
+					/>
+				</div>
+
+				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
+					<div className='relative'>
+						<FaClock className='absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500' />
+						<input
+							type='time'
+							value={startTime}
+							onChange={e => setStartTime(e.target.value)}
+							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
 						/>
-					]}
-				/>
-			</div>
-			<div className='flex flex-wrap mb-4'>
-				<div className='w-full md:w-1/2 px-2 mb-4 md:mb-0'>
-					<input
-						type='time'
-						value={startTime}
-						onChange={e => setStartTime(e.target.value)}
-						className='border px-2 py-1 rounded w-full'
-					/>
+					</div>
+					<div className='relative'>
+						<FaClock className='absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500' />
+						<input
+							type='time'
+							value={endTime}
+							onChange={e => setEndTime(e.target.value)}
+							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
+						/>
+					</div>
 				</div>
-				<div className='w-full md:w-1/2 px-2'>
-					<input
-						type='time'
-						value={endTime}
-						onChange={e => setEndTime(e.target.value)}
-						className='border px-2 py-1 rounded w-full'
-					/>
-				</div>
-			</div>
-			<div className='text-center'>
-				<button
+
+				<motion.button
 					onClick={handleAddGroupTimeSlot}
-					className='bg-blue-500 hover:bg-green-700 mb-5 text-white font-bold py-2 px-4 rounded'>
-					Add Group Time Slots
-				</button>
-			</div>
-		</div>
+					disabled={buttonLoading}
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
+					className='w-full px-6 py-3 bg-green-500 disabled:bg-green-700 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+					{buttonLoading ? (
+						<RingLoader color='#ffffff' size={24} />
+					) : (
+						'Add Group Time Slots'
+					)}
+				</motion.button>
+			</motion.div>
+		</motion.div>
 	)
 }
