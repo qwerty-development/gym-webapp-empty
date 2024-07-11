@@ -1,6 +1,14 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Modal from 'react-modal'
+import { motion } from 'framer-motion'
+import {
+	FaSearch,
+	FaSort,
+	FaUserEdit,
+	FaCheckCircle,
+	FaTimesCircle
+} from 'react-icons/fa'
 import {
 	fetchUsers,
 	updateUserCredits,
@@ -146,9 +154,14 @@ const ModifyCreditsComponent = () => {
 			handleSearch()
 		}
 	}
+
 	return (
-		<div className='container mx-auto px-4 py-6'>
-			<div className='mb-4 flex flex-col lg:flex-row gap-5'>
+		<motion.div
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			transition={{ duration: 0.5 }}
+			className='container mx-auto px-4 py-6 bg-gray-900 text-white'>
+			<div className='mb-6 flex flex-col lg:flex-row gap-5'>
 				<div className='flex-grow flex'>
 					<input
 						type='text'
@@ -157,101 +170,119 @@ const ModifyCreditsComponent = () => {
 						onChange={handleSearchChange}
 						onKeyPress={handleKeyPress}
 						disabled={isUpdating || isLoading}
-						className='w-full p-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none text-gray-500 focus:ring-2 focus:ring-blue-500'
+						className='w-full p-3 bg-gray-800 border-2 border-green-500 rounded-l-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 					/>
-					<button
+					<motion.button
 						onClick={handleSearch}
 						disabled={isUpdating || isLoading}
-						className='px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'>
-						Search
-					</button>
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						className='px-6 py-3 bg-green-500 text-white rounded-r-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+						<FaSearch />
+					</motion.button>
 				</div>
 
-				<select
+				<motion.select
 					value={sortOption}
 					onChange={handleSortChange}
 					disabled={isUpdating || isLoading}
-					className='w-fit p-2 text-gray-400 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'>
+					whileHover={{ scale: 1.05 }}
+					className='w-fit p-3 bg-gray-800 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'>
 					<option value='alphabetical'>Sort Alphabetically</option>
 					<option value='newest'>Sort by Newest</option>
-				</select>
+				</motion.select>
 			</div>
 
-			<div className='overflow-x-auto relative shadow-md sm:rounded-lg'>
-				<table className='w-full text-sm text-left text-gray-500 dark:text-gray-400'>
-					<thead className='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400'>
+			<motion.div
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.5, delay: 0.2 }}
+				className='overflow-x-auto relative shadow-md sm:rounded-2xl'>
+				<table className='w-full text-sm text-left text-gray-300'>
+					<thead className='text-xs uppercase bg-gray-800'>
 						<tr>
-							<th scope='col' className='py-3 px-6 text-left'>
+							<th scope='col' className='py-4 px-6 text-left'>
 								Username
 							</th>
-							<th scope='col' className='py-3 px-6 text-left'>
+							<th scope='col' className='py-4 px-6 text-left'>
 								First Name
 							</th>
-							<th scope='col' className='py-3 px-6 text-left'>
+							<th scope='col' className='py-4 px-6 text-left'>
 								Last Name
 							</th>
-							<th scope='col' className='py-3 px-6 text-left'>
+							<th scope='col' className='py-4 px-6 text-left'>
 								Wallet
 							</th>
-							<th scope='col' className='py-3 px-6 text-center'>
+							<th scope='col' className='py-4 px-6 text-center'>
 								is Free
 							</th>
-							<th scope='col' className='py-3 px-6 text-right'>
+							<th scope='col' className='py-4 px-6 text-right'>
 								Add or Remove Credits
 							</th>
 						</tr>
 					</thead>
 					<tbody>
 						{users.map(user => (
-							<tr
+							<motion.tr
 								key={user.id}
-								className='bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'>
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								transition={{ duration: 0.3 }}
+								className='bg-gray-700 border-b border-gray-600 hover:bg-gray-600'>
 								<td className='py-4 px-6'>{user.username}</td>
 								<td className='py-4 px-6'>{user.first_name}</td>
 								<td className='py-4 px-6'>{user.last_name}</td>
 								<td className='py-4 px-6'>{user.wallet}</td>
 								<td className='py-4 px-6 text-center'>
-									<input
-										type='checkbox'
-										disabled={isUpdating || isLoading}
-										checked={user.isFree || false}
-										onChange={() =>
+									<motion.button
+										whileHover={{ scale: 1.1 }}
+										whileTap={{ scale: 0.9 }}
+										onClick={() =>
 											handleToggleFree(user.id, user.isFree || false)
 										}
-									/>
+										disabled={isUpdating || isLoading}
+										className={`p-2 rounded-full ${
+											user.isFree ? 'bg-green-500' : 'bg-red-500'
+										}`}>
+										{user.isFree ? <FaCheckCircle /> : <FaTimesCircle />}
+									</motion.button>
 								</td>
 								<td className='py-4 px-6 text-right'>
-									<button
+									<motion.button
 										onClick={() => openModal(user.id)}
 										disabled={isUpdating || isLoading}
-										className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'>
-										Modify
-									</button>
+										whileHover={{ scale: 1.05 }}
+										whileTap={{ scale: 0.95 }}
+										className='px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+										<FaUserEdit />
+									</motion.button>
 								</td>
-							</tr>
+							</motion.tr>
 						))}
 					</tbody>
 				</table>
-			</div>
+			</motion.div>
 
 			<Modal
 				isOpen={modalIsOpen}
 				onRequestClose={() => setModalIsOpen(false)}
 				contentLabel='Update Credits'
-				className='modal'
-				overlayClassName='overlay'>
-				<h2 className='text-2xl font-bold mb-4 text-black'>Update Credits</h2>
-				<div className='flex flex-col items-center'>
+				className='modal bg-gray-800 p-8 rounded-3xl shadow-lg'
+				overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center'>
+				<h2 className='text-2xl font-bold mb-6 text-green-400'>
+					Update Credits
+				</h2>
+				<div className='flex flex-col items-center space-y-4'>
 					<input
 						type='number'
 						placeholder='New Credits'
 						value={newCredits}
 						disabled={isUpdating || isLoading}
 						onChange={e => setNewCredits(e.target.value)}
-						className='p-2 border text-gray-400 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 '
+						className='p-3 w-full bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 					/>
-					<div className='flex flex-row justify-center items-center gap-1'>
-						<label className='text-gray-400' htmlFor='sales'>
+					<div className='flex flex-row justify-center items-center gap-2 w-full'>
+						<label className='text-green-400' htmlFor='sales'>
 							Sale %
 						</label>
 						<input
@@ -263,25 +294,29 @@ const ModifyCreditsComponent = () => {
 							max={100}
 							disabled={isUpdating || isLoading}
 							onChange={e => setSale(parseInt(e.target.value))}
-							className='p-2 border text-gray-400 border-gray-300 mt-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4'
+							className='p-3 flex-grow bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 						/>
 					</div>
-					<div className='flex flex-row justify-between gap-5'>
-						<button
+					<div className='flex flex-row justify-between gap-5 w-full'>
+						<motion.button
 							onClick={handleUpdateCredits}
 							disabled={isUpdating || isLoading}
-							className='px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 '>
+							whileHover={{ scale: 1.05 }}
+							whileTap={{ scale: 0.95 }}
+							className='px-6 py-3 bg-green-500 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-800 transition duration-300'>
 							Update
-						</button>
-						<button
+						</motion.button>
+						<motion.button
 							onClick={() => setModalIsOpen(false)}
-							className='px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2'>
+							whileHover={{ scale: 1.05 }}
+							whileTap={{ scale: 0.95 }}
+							className='px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-800 transition duration-300'>
 							Close
-						</button>
+						</motion.button>
 					</div>
 				</div>
 			</Modal>
-		</div>
+		</motion.div>
 	)
 }
 
