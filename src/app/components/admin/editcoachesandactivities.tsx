@@ -357,7 +357,7 @@ const CoachesandActivitiesAdminPage = () => {
 								!isPrivateTraining ? 'bg-green-500 text-white' : 'bg-gray-200'
 							}`}
 							onClick={handleToggle}>
-							Public Training
+							Classes
 						</button>
 					</div>
 				</div>
