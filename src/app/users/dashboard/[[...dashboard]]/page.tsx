@@ -111,8 +111,7 @@ export default function Dashboard() {
 					email: user.emailAddresses[0]?.emailAddress,
 					firstName: user.firstName,
 					lastName: user.lastName,
-					userName: user.username,
-					phone: user.phoneNumbers[0]?.phoneNumber
+					userName: user.username
 				})
 
 				const fetchedReservations = await fetchReservations(user.id)

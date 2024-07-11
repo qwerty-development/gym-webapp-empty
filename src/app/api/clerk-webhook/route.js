@@ -15,7 +15,6 @@ export async function POST(request) {
 	const firstName = user.first_name
 	const lastName = user.last_name
 	const userName = user.username
-	const phone = user.phone_numbers[0]?.phone_number
 
 	const { data: existingUser, error: fetchError } = await supabase
 		.from('users')
@@ -40,8 +39,7 @@ export async function POST(request) {
 				email,
 				first_name: firstName,
 				last_name: lastName,
-				username: userName,
-				phone
+				username: userName
 			})
 			.eq('user_id', userId)
 	} else {
@@ -51,8 +49,7 @@ export async function POST(request) {
 				email,
 				first_name: firstName,
 				last_name: lastName,
-				username: userName,
-				phone
+				username: userName
 			}
 		])
 	}
