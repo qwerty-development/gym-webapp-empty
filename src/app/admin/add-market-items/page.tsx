@@ -8,6 +8,8 @@ import {
 import { fetchMarket } from '../../../../utils/user-requests'
 import toast from 'react-hot-toast'
 import AdminNavbarComponent from '@/app/components/admin/adminnavbar'
+import { motion } from 'framer-motion'
+import { FaPlus, FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa'
 
 interface MarketItem {
 	id: number
@@ -85,108 +87,214 @@ export default function MarketManagement() {
 	}
 
 	return (
-		<>
+		<div className='min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white'>
 			<AdminNavbarComponent />
-			<div className='container mx-auto p-6 h-screen  '>
-				<h1 className='text-4xl font-bold mb-6 text-center'>
+			<div className='container mx-auto p-6'>
+				<motion.h1
+					initial={{ opacity: 0, y: -50 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.5 }}
+					className='text-5xl font-bold mb-12 text-center text-green-400'>
 					Market Management
-				</h1>
+				</motion.h1>
 
-				<div className=' p-6 rounded-lg shadow-md mb-6'>
-					<h2 className='text-2xl font-bold mb-4'>Add New Item</h2>
-					<div className='flex flex-col space-y-4'>
-						<input
-							type='text'
-							className='p-3 border rounded-lg text-black'
-							placeholder='Item Name'
-							value={newItemName}
-							onChange={e => setNewItemName(e.target.value)}
-						/>
-						<input
-							type='number'
-							className='p-3 border rounded-lg text-black'
-							placeholder='Item Price'
-							value={newItemPrice}
-							min={0}
-							onChange={e => setNewItemPrice(e.target.value)}
-						/>
-						<button
-							onClick={handleAddItem}
-							disabled={buttonLoading}
-							className='bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-700'>
-							Add Item
-						</button>
-					</div>
-				</div>
-
-				<div className=' p-6 rounded-lg shadow-md'>
-					<h2 className='text-2xl font-bold mb-4'>Items List</h2>
-					{items.map(item => (
-						<div
-							key={item.id}
-							className='flex justify-between items-center p-3 border-b last:border-b-0'>
-							{editingItem === item.id ? (
-								<div className='flex flex-col space-y-2 flex-grow'>
-									<input
-										type='text'
-										className='p-3 border rounded-lg text-black'
-										placeholder='Modify Name'
-										value={editName}
-										onChange={e => setEditName(e.target.value)}
-									/>
-									<input
-										type='number'
-										className='p-3 border rounded-lg text-black'
-										placeholder='Modify Price'
-										value={editPrice}
-										min={0}
-										onChange={e => setEditPrice(e.target.value)}
-									/>
-									<div className='flex space-x-2'>
-										<button
-											onClick={() => handleModifyItem(item.id)}
-											disabled={buttonLoading}
-											className='bg-green-500 text-white p-2 rounded-lg hover:bg-green-700'>
-											Save
-										</button>
-										<button
-											onClick={() => setEditingItem(null)}
-											disabled={buttonLoading}
-											className='bg-red-500 text-white p-2 rounded-lg hover:bg-red-700'>
-											Cancel
-										</button>
-									</div>
-								</div>
-							) : (
-								<>
-									<div className='flex-grow'>
-										<span className='font-semibold'>{item.name}</span> - $
-										{item.price}
-									</div>
-									<div className='flex space-x-2'>
-										<button
-											onClick={() => {
-												setEditingItem(item.id)
-												setEditName(item.name)
-												setEditPrice(item.price.toString())
-											}}
-											className='bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600'
-											disabled={buttonLoading}>
-											Modify
-										</button>
-										<button
-											onClick={() => handleDeleteItem(item.id)}
-											className='bg-red-500 text-white  p-2 rounded-lg hover:bg-red-600'
-											disabled={buttonLoading}>
-											Delete
-										</button>
-									</div>
-								</>
-							)}
-						</div>
-					))}
+				<div className='grid grid-cols-1 md:grid-cols-1 gap-8'>
+					<AddItemCard
+						newItemName={newItemName}
+						setNewItemName={setNewItemName}
+						newItemPrice={newItemPrice}
+						setNewItemPrice={setNewItemPrice}
+						handleAddItem={handleAddItem}
+						buttonLoading={buttonLoading}
+					/>
+					<ItemsList
+						items={items}
+						editingItem={editingItem}
+						setEditingItem={setEditingItem}
+						editName={editName}
+						setEditName={setEditName}
+						editPrice={editPrice}
+						setEditPrice={setEditPrice}
+						handleModifyItem={handleModifyItem}
+						handleDeleteItem={handleDeleteItem}
+						buttonLoading={buttonLoading}
+					/>
 				</div>
 			</div>
-		</>
+		</div>
 	)
 }
+
+const AddItemCard = ({
+	newItemName,
+	setNewItemName,
+	newItemPrice,
+	setNewItemPrice,
+	handleAddItem,
+	buttonLoading
+}: any) => {
+	return (
+		<motion.div
+			initial={{ opacity: 0, scale: 0.9 }}
+			animate={{ opacity: 1, scale: 1 }}
+			transition={{ duration: 0.5 }}
+			className='bg-gray-800 p-6 rounded-2xl hover:shadow-green-500 shadow-lg'>
+			<h2 className='text-3xl font-bold mb-6 text-green-400'>Add New Item</h2>
+			<div className='space-y-4'>
+				<Input
+					type='text'
+					placeholder='Item Name'
+					value={newItemName}
+					onChange={(e: any) => setNewItemName(e.target.value)}
+				/>
+				<Input
+					type='number'
+					placeholder='Item Price'
+					value={newItemPrice}
+					onChange={(e: any) => setNewItemPrice(e.target.value)}
+				/>
+				<Button onClick={handleAddItem} disabled={buttonLoading}>
+					<FaPlus className='inline mr-2' /> Add Item
+				</Button>
+			</div>
+		</motion.div>
+	)
+}
+
+const ItemsList = ({
+	items,
+	editingItem,
+	setEditingItem,
+	editName,
+	setEditName,
+	editPrice,
+	setEditPrice,
+	handleModifyItem,
+	handleDeleteItem,
+	buttonLoading
+}: any) => {
+	return (
+		<motion.div
+			initial={{ opacity: 0, scale: 0.9 }}
+			animate={{ opacity: 1, scale: 1 }}
+			transition={{ duration: 0.5, delay: 0.2 }}
+			className='bg-gray-800 p-6 hover:shadow-green-400 rounded-2xl shadow-lg'>
+			<h2 className='text-3xl font-bold mb-6 text-green-400'>Items List</h2>
+			<div className='space-y-4'>
+				{items.map((item: any) => (
+					<ItemCard
+						key={item.id}
+						item={item}
+						editingItem={editingItem}
+						setEditingItem={setEditingItem}
+						editName={editName}
+						setEditName={setEditName}
+						editPrice={editPrice}
+						setEditPrice={setEditPrice}
+						handleModifyItem={handleModifyItem}
+						handleDeleteItem={handleDeleteItem}
+						buttonLoading={buttonLoading}
+					/>
+				))}
+			</div>
+		</motion.div>
+	)
+}
+
+const ItemCard = ({
+	item,
+	editingItem,
+	setEditingItem,
+	editName,
+	setEditName,
+	editPrice,
+	setEditPrice,
+	handleModifyItem,
+	handleDeleteItem,
+	buttonLoading
+}: any) => {
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			exit={{ opacity: 0, y: -20 }}
+			transition={{ duration: 0.3 }}
+			className='bg-gray-700 hover:bg-green-500 p-4 rounded-xl flex justify-between items-center'>
+			{editingItem === item.id ? (
+				<div className='w-full space-y-2'>
+					<Input
+						type='text'
+						placeholder='Modify Name'
+						value={editName}
+						onChange={(e: any) => setEditName(e.target.value)}
+					/>
+					<Input
+						type='number'
+						placeholder='Modify Price'
+						value={editPrice}
+						onChange={(e: any) => setEditPrice(e.target.value)}
+					/>
+					<div className='flex space-x-2'>
+						<Button
+							onClick={() => handleModifyItem(item.id)}
+							disabled={buttonLoading}
+							color='green'>
+							<FaSave className='inline mr-2' /> Save
+						</Button>
+						<Button
+							onClick={() => setEditingItem(null)}
+							disabled={buttonLoading}
+							color='red'>
+							<FaTimes className='inline mr-2' /> Cancel
+						</Button>
+					</div>
+				</div>
+			) : (
+				<>
+					<div className='flex-grow'>
+						<span className='font-semibold'>{item.name}</span> - ${item.price}
+					</div>
+					<div className='flex space-x-2'>
+						<button
+							onClick={() => {
+								setEditingItem(item.id)
+								setEditName(item.name)
+								setEditPrice(item.price.toString())
+							}}
+							className='text-2xl'
+							disabled={buttonLoading}>
+							<FaEdit className='text-yellow-500 hover:text-yellow-600 transition duration-300' />
+						</button>
+						<button
+							onClick={() => handleDeleteItem(item.id)}
+							className='text-2xl'
+							disabled={buttonLoading}>
+							<FaTrash className='text-red-500 hover:text-red-600 transition duration-300' />
+						</button>
+					</div>
+				</>
+			)}
+		</motion.div>
+	)
+}
+
+const Input = ({ type, placeholder, value, onChange }: any) => (
+	<input
+		type={type}
+		className='w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300'
+		placeholder={placeholder}
+		value={value}
+		onChange={onChange}
+	/>
+)
+
+const Button = ({ onClick, disabled, children, color = 'green' }: any) => (
+	<button
+		onClick={onClick}
+		disabled={disabled}
+		className={`w-full p-3 bg-${color}-500 text-white rounded-lg hover:bg-${color}-600 focus:outline-none focus:ring-2 focus:ring-${color}-400 transition duration-300 ${
+			disabled ? 'opacity-50 cursor-not-allowed' : ''
+		}`}>
+		{children}
+	</button>
+)
