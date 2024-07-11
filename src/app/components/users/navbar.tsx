@@ -75,11 +75,10 @@ export default function NavbarComponent() {
 						))}
 					</div>
 					<div className='flex items-center justify-end w-1/3  '>
-						{walletBalance !== null && (
-							<div className='bg-gray-800 text-green-400 px-3 py-1 rounded-full mr-3 text-sm border text-nowrap border-green-500'>
-								{walletBalance} credits
-							</div>
-						)}
+						<div className='bg-gray-800 text-green-400 px-3 py-1 rounded-full mr-3 text-sm border text-nowrap border-green-500'>
+							{walletBalance} credits
+						</div>
+
 						<UserButton
 							afterSignOutUrl='/'
 							appearance={{
