@@ -254,6 +254,181 @@ export const fetchGroupActivities = async () => {
 	return data
 }
 
+export const fetchTotalUsers = async () => {
+	const supabase = await supabaseClient()
+	const { count, error } = await supabase
+		.from('users')
+		.select('*', { count: 'exact', head: true })
+
+	if (error) {
+		console.error('Error fetching total users:', error.message)
+		return 0
+	}
+
+	return count || 0
+}
+
+export const fetchTotalActivities = async () => {
+	const supabase = await supabaseClient()
+	const { count, error } = await supabase
+		.from('activities')
+		.select('*', { count: 'exact', head: true })
+
+	if (error) {
+		console.error('Error fetching total activities:', error.message)
+		return 0
+	}
+
+	return count || 0
+}
+
+export const fetchTotalCoaches = async () => {
+	const supabase = await supabaseClient()
+	const { count, error } = await supabase
+		.from('coaches')
+		.select('*', { count: 'exact', head: true })
+
+	if (error) {
+		console.error('Error fetching total coaches:', error.message)
+		return 0
+	}
+
+	return count || 0
+}
+
+export const fetchTodaysSessions = async () => {
+	const supabase = await supabaseClient()
+	const today = new Date().toISOString().split('T')[0]
+
+	const { count: individualCount, error: individualError } = await supabase
+		.from('time_slots')
+		.select('*', { count: 'exact', head: true })
+		.eq('date', today)
+		.eq('booked', true)
+
+	const { count: groupCount, error: groupError } = await supabase
+		.from('group_time_slots')
+		.select('*', { count: 'exact', head: true })
+		.eq('date', today)
+		.eq('booked', true)
+
+	if (individualError || groupError) {
+		console.error(
+			"Error fetching today's sessions:",
+			individualError?.message || groupError?.message
+		)
+		return 0
+	}
+
+	return (individualCount || 0) + (groupCount || 0)
+}
+
+export const fetchAllBookedSlotsToday = async () => {
+	const supabase = await supabaseClient()
+	const today = new Date().toISOString().split('T')[0] // Get today's date in YYYY-MM-DD format
+	const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false }) // Get current time in HH:MM:SS format
+
+	// Fetch booked time slots for today
+	const { data: individualSlots, error: individualError } = await supabase
+		.from('time_slots')
+		.select(
+			`
+            id,
+            activities ( name, credits ),
+            coaches ( name ),
+            date,
+            start_time,
+            end_time,
+            users ( user_id, first_name, last_name ),
+            booked
+        `
+		)
+		.eq('date', today)
+		.eq('booked', true)
+		.gt('end_time', currentTime)
+
+	if (individualError) {
+		console.error(
+			'Error fetching individual time slots:',
+			individualError.message
+		)
+		return []
+	}
+
+	// Fetch booked group time slots for today
+	const { data: groupSlots, error: groupError } = await supabase
+		.from('group_time_slots')
+		.select(
+			`
+            id,
+            activities ( name, credits ),
+            coaches ( name ),
+            date,
+            start_time,
+            end_time,
+            user_id,
+            booked
+        `
+		)
+		.eq('date', today)
+		.eq('booked', true)
+		.gt('end_time', currentTime)
+
+	if (groupError) {
+		console.error('Error fetching group time slots:', groupError.message)
+		return []
+	}
+
+	// Fetch users for group slots
+	const userIds = groupSlots.flatMap(slot => slot.user_id)
+	const { data: usersData, error: usersError } = await supabase
+		.from('users')
+		.select('user_id, first_name, last_name')
+		.in('user_id', userIds)
+
+	if (usersError) {
+		console.error('Error fetching users:', usersError.message)
+		return []
+	}
+
+	const usersMap = usersData.reduce((acc, user) => {
+		acc[user.user_id] = user
+		return acc
+	}, {})
+
+	// Transform individual slots
+	const transformedIndividualSlots = individualSlots.map(slot => ({
+		coachName: slot.coaches?.name || 'N/A',
+		activityName: slot.activities?.name || 'N/A',
+		startTime: slot.start_time,
+		endTime: slot.end_time,
+		date: slot.date,
+		users: slot.users
+			? [`${slot.users.first_name} ${slot.users.last_name}`]
+			: []
+	}))
+
+	// Transform group slots
+	const transformedGroupSlots = groupSlots.map(slot => ({
+		coachName: slot.coaches?.name || 'N/A',
+		activityName: slot.activities?.name || 'N/A',
+		startTime: slot.start_time,
+		endTime: slot.end_time,
+		date: slot.date,
+		users: slot.user_id.map(userId => {
+			const user = usersMap[userId]
+			return user ? `${user.first_name} ${user.last_name}` : 'Unknown User'
+		})
+	}))
+
+	// Combine and sort all slots
+	const allSlots = [
+		...transformedIndividualSlots,
+		...transformedGroupSlots
+	].sort((a, b) => a.startTime.localeCompare(b.startTime))
+
+	return allSlots
+}
 // In admin-requests.js
 
 // In admin-requests.js

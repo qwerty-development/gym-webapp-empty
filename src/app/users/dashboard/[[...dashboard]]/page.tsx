@@ -13,6 +13,12 @@ import {
 	payForItems,
 	payForGroupItems
 } from '../../../../../utils/user-requests'
+import {
+	fetchTotalUsers,
+	fetchTotalActivities,
+	fetchTodaysSessions,
+	fetchAllBookedSlotsToday
+} from '../../../../../utils/admin-requests'
 import { AddToCalendarButton } from 'add-to-calendar-button-react'
 import { RingLoader } from 'react-spinners'
 import { useWallet } from '@/app/components/users/WalletContext'
@@ -24,6 +30,7 @@ import Link from 'next/link'
 import useConfirmationModal from '../../../../../utils/useConfirmationModel'
 import ConfirmationModal from '@/app/components/users/ConfirmationModal'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+
 type Reservation = {
 	id: number
 	date: string
@@ -68,6 +75,15 @@ type Activity = {
 	name: string
 }
 
+interface Session {
+	activityName: string
+	coachName: string
+	startTime: string
+	endTime: string
+	date: string
+	users: string[]
+}
+
 const LoadingOverlay = () => (
 	<div className='fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50'>
 		<div className='p-5 mx-auto text-center flex flex-col justify-center items-center rounded-lg'>
@@ -79,6 +95,10 @@ const LoadingOverlay = () => (
 
 export default function Dashboard() {
 	const [isCancelling, setIsCancelling] = useState(false)
+	const [totalUsers, setTotalUsers] = useState(0)
+	const [totalActivities, setTotalActivities] = useState(0)
+
+	const [todaysSessions, setTodaysSessions] = useState(0)
 	const [currentPage, setCurrentPage] = useState(1)
 	const itemsPerPage = 6
 	const {
@@ -98,10 +118,12 @@ export default function Dashboard() {
 	const [sidebarOpen, setSidebarOpen] = useState(false)
 
 	const { isLoaded, isSignedIn, user } = useUser()
+	console.log(user)
 	const [reservations, setReservations] = useState<Reservation[]>([])
 	const [groupReservations, setGroupReservations] = useState<
 		GroupReservation[]
 	>([])
+	const [allSessions, setAllSessions] = useState<Session[]>([])
 	const [activities, setActivities] = useState<Activity[]>([])
 	const [isLoading, setIsLoading] = useState<boolean>(true) // State to track loading status
 	const { refreshWalletBalance } = useWallet()
@@ -111,6 +133,14 @@ export default function Dashboard() {
 	).length
 
 	useEffect(() => {
+		const fetchAllSessions = async () => {
+			const fetchedSessions = await fetchAllBookedSlotsToday()
+			setAllSessions(fetchedSessions)
+		}
+		fetchAllSessions()
+	}, [])
+
+	useEffect(() => {
 		const fetchMarketItems = async () => {
 			const marketData = await fetchMarket()
 			setMarket(marketData)
@@ -118,6 +148,27 @@ export default function Dashboard() {
 		fetchMarketItems()
 	}, [])
 
+	useEffect(() => {
+		const fetchAdminData = async () => {
+			const users = await fetchTotalUsers()
+			const activities = await fetchTotalActivities()
+
+			const sessions = await fetchTodaysSessions()
+
+			setTotalUsers(users)
+			setTotalActivities(activities)
+
+			setTodaysSessions(sessions)
+		}
+
+		if (user?.publicMetadata.role === 'admin') {
+			fetchAdminData()
+		} else {
+			console.log('hello world')
+		}
+	}, [])
+
+	console.log(fetchAllBookedSlotsToday())
 	useEffect(() => {
 		const fetchData = async () => {
 			if (isLoaded && isSignedIn) {
@@ -503,46 +554,149 @@ export default function Dashboard() {
 								<motion.div
 									initial={{ opacity: 0, x: 20 }}
 									animate={{ opacity: 1, x: 0 }}
-									className='bg-gray-800 rounded-xl p-6 shadow-lg  hover:shadow-green-500 '>
+									className='bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500'>
 									<h3 className='text-2xl font-bold text-green-400 mb-4'>
-										Quick Stats
+										{user.publicMetadata.role === 'admin'
+											? 'Admin Overview'
+											: 'Quick Stats'}
 									</h3>
 									<div className='space-y-4'>
-										<div>
-											<p className='text-gray-300'>Total Reservations</p>
-											<p className='text-3xl font-bold text-white'>
-												{reservations.length + groupReservations.length}
-											</p>
-										</div>
-										<div>
-											<p className='text-gray-300'>Upcoming This Week</p>
-											<p className='text-3xl font-bold text-white'>
-												{upcomingThisWeek}
-											</p>
-										</div>
+										{user.publicMetadata.role === 'admin' ? (
+											<>
+												<div>
+													<p className='text-gray-300'>Total Users</p>
+													<p className='text-3xl font-bold text-white'>
+														{totalUsers}
+													</p>
+												</div>
+												<div>
+													<p className='text-gray-300'>Total Activities</p>
+													<p className='text-3xl font-bold text-white'>
+														{totalActivities}
+													</p>
+												</div>
+
+												<div>
+													<p className='text-gray-300'>Today's Sessions</p>
+													<p className='text-3xl font-bold text-white'>
+														{todaysSessions}
+													</p>
+												</div>
+											</>
+										) : (
+											<>
+												<div>
+													<p className='text-gray-300'>Total Reservations</p>
+													<p className='text-3xl font-bold text-white'>
+														{reservations.length + groupReservations.length}
+													</p>
+												</div>
+												<div>
+													<p className='text-gray-300'>Upcoming This Week</p>
+													<p className='text-3xl font-bold text-white'>
+														{upcomingThisWeek}
+													</p>
+												</div>
+											</>
+										)}
 									</div>
 								</motion.div>
 
-								<motion.div
-									initial={{ opacity: 0, x: 20 }}
-									animate={{ opacity: 1, x: 0 }}
-									transition={{ delay: 0.2 }}
-									className='hidden md:block bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500 '>
-									<h3 className='text-2xl font-bold text-green-400 mb-4'>
-										Popular Activities
-									</h3>
-									<ul className='space-y-2'>
-										{activities.slice(0, 5).map((activity, index) => (
-											<li
-												key={activity.id}
-												className='text-gray-300 flex items-center'>
-												<span className='w-2 h-2 bg-green-500 rounded-full mr-2'></span>
-												{activity.name}
-											</li>
-										))}
-									</ul>
-								</motion.div>
+								{user.publicMetadata.role !== 'admin' && (
+									<motion.div
+										initial={{ opacity: 0, x: 20 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ delay: 0.2 }}
+										className='hidden md:block bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500 '>
+										<h3 className='text-2xl font-bold text-green-400 mb-4'>
+											Popular Activities
+										</h3>
+										<ul className='space-y-2'>
+											{activities.slice(0, 5).map((activity, index) => (
+												<li
+													key={activity.id}
+													className='text-gray-300 flex items-center'>
+													<span className='w-2 h-2 bg-green-500 rounded-full mr-2'></span>
+													{activity.name}
+												</li>
+											))}
+										</ul>
+									</motion.div>
+								)}
+								{user.publicMetadata.role === 'admin' && (
+									<motion.div
+										initial={{ opacity: 0, x: 20 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ delay: 0.2 }}
+										className=' bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500 overflow-y-auto max-h-[400px]'>
+										<h3 className='text-2xl font-bold text-green-400 mb-4'>
+											Today's Sessions
+										</h3>
+										<ul className='space-y-4'>
+											{allSessions
+												.sort((a, b) => {
+													const now = new Date()
+													const aTime = new Date(`${a.date}T${a.startTime}`)
+													const bTime = new Date(`${b.date}T${b.startTime}`)
+													return (
+														aTime.getTime() -
+														now.getTime() -
+														(bTime.getTime() - now.getTime())
+													)
+												})
+												.map((session, index) => {
+													const now = new Date()
+													const startTime = new Date(
+														`${session.date}T${session.startTime}`
+													)
+													const endTime = new Date(
+														`${session.date}T${session.endTime}`
+													)
+													const isActive = now >= startTime && now <= endTime
+													const isStartingSoon =
+														startTime.getTime() - now.getTime() <=
+															15 * 60 * 1000 && startTime > now
 
+													return (
+														<li
+															key={index}
+															className={`text-gray-300 p-2 rounded ${
+																isActive
+																	? 'shadow-lg shadow-green-400'
+																	: isStartingSoon
+																	? 'shadow-lg shadow-yellow-700'
+																	: ''
+															}`}>
+															<div className='font-bold'>
+																{session.activityName}
+															</div>
+															<div>Coach: {session.coachName}</div>
+															<div>
+																Time: {session.startTime.slice(0, 5)} -{' '}
+																{session.endTime.slice(0, 5)}
+															</div>
+															<div>Users: {session.users.join(', ')}</div>
+															{isActive && (
+																<div className='text-green-400 font-bold'>
+																	Active Now
+																</div>
+															)}
+															{isStartingSoon && (
+																<div className='text-yellow-400 font-bold'>
+																	Starting Soon
+																</div>
+															)}
+														</li>
+													)
+												})}
+										</ul>
+										{allSessions.length === 0 && (
+											<p className='text-green-300 text-center'>
+												No sessions today
+											</p>
+										)}
+									</motion.div>
+								)}
 								<motion.div
 									initial={{ opacity: 0, x: 20 }}
 									animate={{ opacity: 1, x: 0 }}
@@ -552,11 +706,20 @@ export default function Dashboard() {
 										Quick Actions
 									</h3>
 									<div className='space-y-2'>
-										<Link href='/users/bookasession'>
-											<button className='w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
-												Book New Session
-											</button>
-										</Link>
+										{user.publicMetadata.role !== 'admin' && (
+											<Link href='/users/bookasession'>
+												<button className='w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
+													Book New Session
+												</button>
+											</Link>
+										)}
+										{user.publicMetadata.role === 'admin' && (
+											<Link href='/admin/manage-users'>
+												<button className='w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
+													Go To Admin Panel
+												</button>
+											</Link>
+										)}
 									</div>
 								</motion.div>
 							</div>

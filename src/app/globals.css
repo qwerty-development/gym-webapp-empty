@@ -63,21 +63,23 @@ body {
 .react-select-container .react-select__dropdown-indicator {
 	color: #10b981;
 }
+
 @keyframes neon {
 	0%,
 	100% {
-		text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, 0 0 30px #39ff14,
-			0 0 40px #39ff14, 0 0 70px #39ff14;
+		text-shadow: 0 0 2px #39ff14, 0 0 4px #39ff14, 0 0 6px #39ff14;
 	}
 	50% {
-		text-shadow: 0 0 20px #39ff14, 0 0 30px #39ff14, 0 0 40px #39ff14,
-			0 0 50px #39ff14, 0 0 80px #39ff14;
+		text-shadow: 0 0 3px #39ff14, 0 0 5px #39ff14, 0 0 7px #39ff14;
 	}
 }
 
 .neon-button {
-	@apply rounded-full bg-gray-800 px-6 py-3 text-lg font-semibold text-green-400 shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-300 flex items-center justify-center;
-	animation: neon 1.5s ease-in-out infinite alternate;
+	@apply rounded-full bg-gray-900 px-6 py-3 text-lg font-semibold text-green-200
+           hover:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-green-200
+           focus:ring-offset-1 focus:ring-offset-gray-900 transition-all duration-300
+           flex items-center justify-center;
+	animation: neon 3s ease-in-out infinite alternate;
 }
 
 .filter.drop-shadow-glow {
