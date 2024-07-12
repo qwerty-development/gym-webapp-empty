@@ -52,7 +52,21 @@ body {
 		box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
 	}
 }
+.react-select-container .react-select__input-container::after {
+	content: none;
+}
 
+.react-select-container .react-select__indicator-separator {
+	display: none;
+}
+
+.react-select-container .react-select__dropdown-indicator {
+	color: #10b981;
+}
+
+.react-select-container .react-select__dropdown-indicator:hover {
+	color: #34d399;
+}
 .loader-overlay {
 	position: fixed;
 	top: 0;
