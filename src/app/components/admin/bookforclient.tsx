@@ -372,7 +372,7 @@ export default function BookForClient() {
 				</h1>
 
 				<FadeInSection>
-					<div className='mb-16 bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8'>
+					<div className='mb-16 bg-gray-700 text-white bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8'>
 						<h2 className='text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 mb-6 text-center'>
 							Select Your User
 						</h2>
