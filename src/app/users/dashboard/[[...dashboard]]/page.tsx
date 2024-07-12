@@ -577,7 +577,7 @@ export default function Dashboard() {
 												</div>
 
 												<div>
-													<p className='text-gray-300'>Today's Sessions</p>
+													<p className='text-gray-300'>Sessions Today</p>
 													<p className='text-3xl font-bold text-white'>
 														{todaysSessions}
 													</p>
