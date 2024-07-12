@@ -630,7 +630,7 @@ export default function Dashboard() {
 										transition={{ delay: 0.2 }}
 										className=' bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500 overflow-y-auto max-h-[400px]'>
 										<h3 className='text-2xl font-bold text-green-400 mb-4'>
-											Today's Sessions
+											Sessions Today
 										</h3>
 										<ul className='space-y-4'>
 											{allSessions
