@@ -23,7 +23,7 @@ import { FaUser, FaCalendarAlt, FaUsers, FaBars, FaClock } from 'react-icons/fa'
 import Link from 'next/link'
 import useConfirmationModal from '../../../../../utils/useConfirmationModel'
 import ConfirmationModal from '@/app/components/users/ConfirmationModal'
-
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 type Reservation = {
 	id: number
 	date: string
@@ -68,7 +68,19 @@ type Activity = {
 	name: string
 }
 
+const LoadingOverlay = () => (
+	<div className='fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50'>
+		<div className='p-5 mx-auto text-center flex flex-col justify-center items-center rounded-lg'>
+			<RingLoader color={'#10B981'} size={70} />
+			<p className='mt-4 text-green-400 text-xl'>Cancelling reservation...</p>
+		</div>
+	</div>
+)
+
 export default function Dashboard() {
+	const [isCancelling, setIsCancelling] = useState(false)
+	const [currentPage, setCurrentPage] = useState(1)
+	const itemsPerPage = 6
 	const {
 		isOpen,
 		message,
@@ -94,6 +106,10 @@ export default function Dashboard() {
 	const [isLoading, setIsLoading] = useState<boolean>(true) // State to track loading status
 	const { refreshWalletBalance } = useWallet()
 	const [market, setMarket] = useState<any[]>([])
+	const totalReservations = (
+		activeTab === 'individual' ? reservations : groupReservations
+	).length
+
 	useEffect(() => {
 		const fetchMarketItems = async () => {
 			const marketData = await fetchMarket()
@@ -285,12 +301,14 @@ export default function Dashboard() {
 
 	const handleCancel = async (reservationId: number) => {
 		setButtonLoading(true)
+		setIsCancelling(true)
 		if (user) {
 			const confirmed = await showConfirmationModal(
 				'Are you sure you want to cancel this reservation?'
 			)
 			if (!confirmed) {
 				setButtonLoading(false)
+				setIsCancelling(false)
 				return
 			}
 
@@ -308,16 +326,19 @@ export default function Dashboard() {
 			}
 		}
 		setButtonLoading(false)
+		setIsCancelling(false)
 	}
 
 	const handleCancelGroup = async (reservationId: number) => {
 		setButtonLoading(true)
+		setIsCancelling(true)
 		if (user) {
 			const confirmed = await showConfirmationModal(
 				'Are you sure you want to cancel this group reservation?'
 			)
 			if (!confirmed) {
 				setButtonLoading(false)
+				setIsCancelling(false)
 				return
 			}
 
@@ -335,6 +356,7 @@ export default function Dashboard() {
 			}
 		}
 		setButtonLoading(false)
+		setIsCancelling(false)
 	}
 
 	if (!isLoaded || !isSignedIn) {
@@ -354,6 +376,12 @@ export default function Dashboard() {
 		const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
 		return reservationDate >= today && reservationDate <= weekFromNow
 	}).length
+
+	const paginatedReservations = (
+		activeTab === 'individual' ? reservations : groupReservations
+	).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+	const totalPages = Math.max(1, Math.ceil(totalReservations / itemsPerPage))
 	return (
 		<div className='min-h-screen bg-gray-700 text-white font-sans'>
 			<ConfirmationModal
@@ -551,103 +579,103 @@ export default function Dashboard() {
 									</motion.div>
 								) : (
 									<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-										{(activeTab === 'individual'
-											? reservations
-											: groupReservations
-										).map((reservation, index) => (
-											<motion.div
-												key={reservation.id}
-												initial={{ opacity: 0, y: 20 }}
-												animate={{ opacity: 1, y: 0 }}
-												transition={{ delay: index * 0.1 }}
-												className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-xl hover:shadow-green-500/30 transition duration-300'>
-												<div className='p-6 space-y-4'>
-													<div className='flex justify-between items-center mb-4'>
-														<h3 className='text-2xl font-bold text-green-400'>
-															{reservation.activity.name}
-														</h3>
-														<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
-															{reservation.activity.credits} Credits
-														</span>
-													</div>
-													<div className='space-y-2 text-gray-300'>
-														<p className='flex items-center'>
-															<FaCalendarAlt className='mr-2 text-green-500' />
-															{reservation.date}
-														</p>
-														<p className='flex items-center'>
-															<FaClock className='mr-2 text-green-500' />
-															{reservation.start_time} - {reservation.end_time}
-														</p>
-														<p className='flex items-center'>
-															<FaUser className='mr-2 text-green-500' />
-															{reservation.coach.name}
-														</p>
-														{activeTab === 'group' && (
+										{paginatedReservations.map(
+											(reservation: any, index: any) => (
+												<motion.div
+													key={reservation.id}
+													initial={{ opacity: 0, y: 20 }}
+													animate={{ opacity: 1, y: 0 }}
+													transition={{ delay: index * 0.1 }}
+													className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-xl hover:shadow-green-500/30 transition duration-300'>
+													<div className='p-6 space-y-4'>
+														<div className='flex justify-between items-center mb-4'>
+															<h3 className='text-2xl font-bold text-green-400'>
+																{reservation.activity.name}
+															</h3>
+															<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
+																{reservation.activity.credits} Credits
+															</span>
+														</div>
+														<div className='space-y-2 text-gray-300'>
 															<p className='flex items-center'>
-																<FaUsers className='mr-2 text-green-500' />
-																Attendance: {reservation.count}
+																<FaCalendarAlt className='mr-2 text-green-500' />
+																{reservation.date}
 															</p>
-														)}
-													</div>
-													<div className='bg-gray-700 rounded-lg p-3 mt-4'>
-														<p className='text-sm text-gray-300'>
-															<span className='font-semibold text-green-400'>
-																Additions:
-															</span>{' '}
-															{reservation.additions &&
-															reservation.additions.length > 0
-																? reservation.additions
-																		.map(addition =>
-																			typeof addition === 'string'
-																				? addition
-																				: addition.items
-																						.map(item => item.name)
-																						.join(', ')
-																		)
-																		.join(', ')
-																: 'No additions'}
-														</p>
-													</div>
-													<div className='flex flex-col space-y-2 mt-4'>
-														<div className='flex flex-row justify-center items-center'>
-															<AddToCalendarButton
-																name={`${reservation.activity.name} with ${reservation.coach.name}`}
-																startDate={reservation.date}
-																startTime={reservation.start_time}
-																endTime={reservation.end_time}
-																options={['Apple', 'Google']}
-																timeZone='Asia/Beirut'
-																buttonStyle='default'
-																styleLight='--btn-background: #ffffff; --btn-text: #000; --btn-shadow: none;'
-																styleDark='--btn-background: #10B981; --btn-text: #000; --btn-shadow: none;'
-																size='3'
-																inline
-															/>
+															<p className='flex items-center'>
+																<FaClock className='mr-2 text-green-500' />
+																{reservation.start_time} -{' '}
+																{reservation.end_time}
+															</p>
+															<p className='flex items-center'>
+																<FaUser className='mr-2 text-green-500' />
+																{reservation.coach.name}
+															</p>
+															{activeTab === 'group' && (
+																<p className='flex items-center'>
+																	<FaUsers className='mr-2 text-green-500' />
+																	Attendance: {reservation.count}
+																</p>
+															)}
 														</div>
+														<div className='bg-gray-700 rounded-lg p-3 mt-4'>
+															<p className='text-sm text-gray-300'>
+																<span className='font-semibold text-green-400'>
+																	Additions:
+																</span>{' '}
+																{reservation.additions &&
+																reservation.additions.length > 0
+																	? reservation.additions
+																			.map((addition: any) =>
+																				typeof addition === 'string'
+																					? addition
+																					: addition.items
+																							.map((item: any) => item.name)
+																							.join(', ')
+																			)
+																			.join(', ')
+																	: 'No additions'}
+															</p>
+														</div>
+														<div className='flex flex-col space-y-2 mt-4'>
+															<div className='flex flex-row justify-center items-center'>
+																<AddToCalendarButton
+																	name={`${reservation.activity.name} with ${reservation.coach.name}`}
+																	startDate={reservation.date}
+																	startTime={reservation.start_time}
+																	endTime={reservation.end_time}
+																	options={['Apple', 'Google']}
+																	timeZone='Asia/Beirut'
+																	buttonStyle='default'
+																	styleLight='--btn-background: #ffffff; --btn-text: #000; --btn-shadow: none;'
+																	styleDark='--btn-background: #10B981; --btn-text: #000; --btn-shadow: none;'
+																	size='3'
+																	inline
+																/>
+															</div>
 
-														<div className='flex flex-col md:flex-row justify-between mt-4'>
-															<button
-																onClick={() => openMarketModal(reservation)}
-																className='bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 mb-2 md:mb-0 rounded-lg transition duration-200 flex-grow mr-0 md:mr-2'
-																disabled={buttonLoading}>
-																Add Items
-															</button>
-															<button
-																onClick={() =>
-																	activeTab === 'individual'
-																		? handleCancel(reservation.id)
-																		: handleCancelGroup(reservation.id)
-																}
-																className='bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex-grow ml-0 md:ml-2'
-																disabled={buttonLoading}>
-																Cancel
-															</button>
+															<div className='flex flex-col md:flex-row justify-between mt-4'>
+																<button
+																	onClick={() => openMarketModal(reservation)}
+																	className='bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 mb-2 md:mb-0 rounded-lg transition duration-200 flex-grow mr-0 md:mr-2'
+																	disabled={buttonLoading}>
+																	Add Items
+																</button>
+																<button
+																	onClick={() =>
+																		activeTab === 'individual'
+																			? handleCancel(reservation.id)
+																			: handleCancelGroup(reservation.id)
+																	}
+																	className='bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex-grow ml-0 md:ml-2'
+																	disabled={buttonLoading}>
+																	Cancel
+																</button>
+															</div>
 														</div>
 													</div>
-												</div>
-											</motion.div>
-										))}
+												</motion.div>
+											)
+										)}
 									</div>
 								)}
 							</div>
@@ -656,6 +684,31 @@ export default function Dashboard() {
 						</motion.div>
 					)}
 				</AnimatePresence>
+				{totalPages > 1 && (
+					<div className='flex justify-center items-center mt-8 space-x-4'>
+						<button
+							onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+							disabled={currentPage === 1}
+							className='p-2 bg-green-500 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600 transition-colors duration-200'
+							aria-label='Previous page'>
+							<FaChevronLeft size={20} />
+						</button>
+
+						<span className='px-4 py-2 bg-gray-700 text-white rounded-md text-sm font-medium'>
+							Page {currentPage} of {totalPages}
+						</span>
+
+						<button
+							onClick={() =>
+								setCurrentPage(prev => Math.min(prev + 1, totalPages))
+							}
+							disabled={currentPage === totalPages}
+							className='p-2 bg-green-500 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600 transition-colors duration-200'
+							aria-label='Next page'>
+							<FaChevronRight size={20} />
+						</button>
+					</div>
+				)}
 			</div>
 
 			{/* Market Modal */}
@@ -735,6 +788,7 @@ export default function Dashboard() {
 					</div>
 				</div>
 			</Modal>
+			{isCancelling && <LoadingOverlay />}
 		</div>
 	)
 }
