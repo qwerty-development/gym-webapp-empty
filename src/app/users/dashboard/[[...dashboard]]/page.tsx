@@ -383,7 +383,7 @@ export default function Dashboard() {
 								? 'bg-green-500 text-white'
 								: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
 						}`}>
-						Group
+						Class
 					</button>
 				</div>
 			</div>
@@ -416,7 +416,7 @@ export default function Dashboard() {
 							className={`flex items-center ${
 								activeTab === 'individual' ? 'hover:text-green-400' : ''
 							} w-full text-left`}>
-							<FaUsers size={35} className='mr-2' /> Group Reservations
+							<FaUsers size={35} className='mr-2' /> Class Reservations
 						</button>
 					</li>
 				</ul>

@@ -31,7 +31,6 @@ import {
 } from 'react-icons/fa'
 import { RiGroupLine, RiUserLine } from 'react-icons/ri'
 
-
 const FadeInSection = ({ children, delay = 0 }: any) => (
 	<motion.div
 		initial={{ opacity: 0, y: 20 }}
@@ -321,13 +320,13 @@ export default function Example() {
 	const scrollToRef = (ref: any, offset = 100) => {
 		if (ref && ref.current) {
 			setTimeout(() => {
-				smoothScroll(ref.current, 1000, offset)
+				smoothScroll(ref.current, 300, offset)
 				ref.current.classList.add('highlight-section')
 				setTimeout(
 					() => ref.current.classList.remove('highlight-section'),
-					2000
+					1500
 				)
-			}, 300) // 300ms delay before scrolling
+			}, 200) // 300ms delay before scrolling
 		}
 	}
 	const handlePay = async () => {
@@ -374,7 +373,7 @@ export default function Example() {
 		}
 	}
 
-	const smoothScroll = (target: any, duration = 500, offset = 100) => {
+	const smoothScroll = (target: any, duration = 300, offset = 100) => {
 		const targetPosition =
 			target.getBoundingClientRect().top + window.pageYOffset - offset
 		const startPosition = window.pageYOffset
