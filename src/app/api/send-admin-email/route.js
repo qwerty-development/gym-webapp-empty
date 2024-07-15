@@ -24,7 +24,7 @@ export async function POST(request) {
 
 	const mailOptions = {
 		from: 'noreply@notqwerty.com',
-		to: 'saiid.saliba@gmail.com', // Replace with your admin email
+		to: 'info@fitnessvista.co', // Replace with your admin email
 		subject: 'New Booking',
 		html: `
 		  <!DOCTYPE html>
