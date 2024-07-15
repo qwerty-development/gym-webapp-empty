@@ -514,7 +514,7 @@ export default function Example() {
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							className={`px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
+							className={`px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-base sm:text-lg font-semibold transition-all duration-300 ${
 								isPrivateTraining
 									? 'bg-green-500 text-white shadow-lg'
 									: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
@@ -526,7 +526,7 @@ export default function Example() {
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							className={`px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
+							className={`px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-base sm:text-lg font-semibold transition-all duration-300 ${
 								!isPrivateTraining
 									? 'bg-green-500 text-white shadow-lg'
 									: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'

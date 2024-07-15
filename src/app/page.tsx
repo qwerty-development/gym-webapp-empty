@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { FaRocket, FaUserAstronaut } from 'react-icons/fa'
 import { RiDashboardLine } from 'react-icons/ri'
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 
 export default function Example() {
 	const { isLoaded, isSignedIn, user } = useUser()
@@ -24,9 +25,12 @@ export default function Example() {
 				animate={{ y: 0, opacity: 1 }}
 				transition={{ duration: 0.8, type: 'spring' }}
 				className='mb-12'>
-				<img
+				<Image
 					src='/images/logo.png'
-					className='w-auto h-40 md:h-60 filter drop-shadow-glow'
+					className='w-auto h-48 md:h-72 '
+					alt='Logo'
+					width={200}
+					height={200}
 				/>
 			</motion.div>
 

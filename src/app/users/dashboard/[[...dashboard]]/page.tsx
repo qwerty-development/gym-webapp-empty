@@ -466,7 +466,7 @@ export default function Dashboard() {
 							<h3 className='text-2xl font-bold text-green-400'>
 								{session.activities.name}
 							</h3>
-							<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
+							<span className='text-sm bg-green-600 text-white text-nowrap px-2 py-1 rounded-full'>
 								{session.activities.credits} Credits
 							</span>
 						</div>
@@ -787,7 +787,7 @@ export default function Dashboard() {
 									initial={{ opacity: 0, x: 20 }}
 									animate={{ opacity: 1, x: 0 }}
 									transition={{ delay: 0.4 }}
-									className='hidden md:block bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500'>
+									className=' bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500'>
 									<h3 className='text-2xl font-bold text-green-400 mb-4  '>
 										Quick Actions
 									</h3>

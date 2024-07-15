@@ -36,13 +36,13 @@ export default function LoginPage() {
 						appearance={{
 							elements: {
 								formButtonPrimary: 'bg-green-500 hover:bg-green-600 text-white',
-								formFieldInput: 'bg-gray-700 text-white border-gray-600',
-								formFieldLabel: 'text-gray-300',
+								formFieldInput: ' text-green-500 border-gray-600',
+								formFieldLabel: 'text-green-500',
 								headerTitle: 'text-green-400',
 								headerSubtitle: 'text-gray-400',
 								socialButtonsBlockButton:
-									'border-gray-600 text-white hover:bg-gray-700',
-								socialButtonsBlockButtonText: 'text-gray-300',
+									'border-gray-600 text-white hover:shadow-lg hover:shadow-green-400',
+								socialButtonsBlockButtonText: 'text-green-400',
 								footerActionLink: 'text-green-400 hover:text-green-300'
 							}
 						}}

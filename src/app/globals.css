@@ -75,11 +75,10 @@ body {
 }
 
 .neon-button {
-	@apply rounded-full bg-gray-900 px-6 py-3 text-lg font-semibold text-green-200
+	@apply rounded-full bg-gray-900 px-6 py-3 text-lg font-semibold text-green-400
            hover:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-green-200
            focus:ring-offset-1 focus:ring-offset-gray-900 transition-all duration-300
            flex items-center justify-center;
-	animation: neon 3s ease-in-out infinite alternate;
 }
 
 .filter.drop-shadow-glow {
@@ -238,4 +237,8 @@ body {
 	bottom: 0;
 	background-color: rgba(0, 0, 0, 0.5);
 	z-index: 999;
+}
+
+.react-datepicker__month {
+	padding-right: 12px !important;
 }
