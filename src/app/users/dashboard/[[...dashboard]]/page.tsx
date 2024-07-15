@@ -118,7 +118,7 @@ export default function Dashboard() {
 	const [sidebarOpen, setSidebarOpen] = useState(false)
 
 	const { isLoaded, isSignedIn, user } = useUser()
-	console.log(user)
+
 	const [reservations, setReservations] = useState<Reservation[]>([])
 	const [groupReservations, setGroupReservations] = useState<
 		GroupReservation[]
@@ -138,7 +138,7 @@ export default function Dashboard() {
 			setAllSessions(fetchedSessions)
 		}
 		fetchAllSessions()
-	}, [])
+	}, [isCancelling])
 
 	useEffect(() => {
 		const fetchMarketItems = async () => {
@@ -161,14 +161,9 @@ export default function Dashboard() {
 			setTodaysSessions(sessions)
 		}
 
-		if (user?.publicMetadata.role === 'admin') {
-			fetchAdminData()
-		} else {
-			console.log('hello world')
-		}
-	}, [])
+		fetchAdminData()
+	}, [isCancelling])
 
-	console.log(fetchAllBookedSlotsToday())
 	useEffect(() => {
 		const fetchData = async () => {
 			if (isLoaded && isSignedIn) {
@@ -268,7 +263,7 @@ export default function Dashboard() {
 
 	const handlePay = async () => {
 		setButtonLoading(true)
-		console.log(selectedReservation)
+
 		const response = selectedReservation?.count
 			? await payForGroupItems({
 					userId: user?.id,
@@ -630,7 +625,7 @@ export default function Dashboard() {
 										transition={{ delay: 0.2 }}
 										className=' bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500 overflow-y-auto max-h-[400px]'>
 										<h3 className='text-2xl font-bold text-green-400 mb-4'>
-											Sessions Today
+											Sessions Left Today
 										</h3>
 										<ul className='space-y-4'>
 											{allSessions
@@ -692,7 +687,7 @@ export default function Dashboard() {
 										</ul>
 										{allSessions.length === 0 && (
 											<p className='text-green-300 text-center'>
-												No sessions today
+												No sessions left today
 											</p>
 										)}
 									</motion.div>
