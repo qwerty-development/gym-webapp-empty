@@ -341,13 +341,18 @@ body {
 .rmdp-week-day {
 	color: #fff !important;
 }
-
+.rmdp-panel-header {
+	color: #fff !important;
+}
 .rmdp-arrow {
 	border-color: #36783a !important; /* green-400 */
 }
 
 .custom-calendar .rmdp-header-values span {
 	color: #d1d4d1 !important; /* gray-200 */
+}
+.rmdp-day.rmdp-selected span:not(.highlight) {
+	background-color: #36783a !important; /* green-400 */
 }
 
 .rmdp-week-day {
