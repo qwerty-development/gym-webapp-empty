@@ -17,7 +17,8 @@ import {
 	fetchTotalUsers,
 	fetchTotalActivities,
 	fetchTodaysSessions,
-	fetchAllBookedSlotsToday
+	fetchAllBookedSlotsToday,
+	fetchUpcomingSessions
 } from '../../../../../utils/admin-requests'
 import { AddToCalendarButton } from 'add-to-calendar-button-react'
 import { RingLoader } from 'react-spinners'
@@ -94,6 +95,10 @@ const LoadingOverlay = () => (
 )
 
 export default function Dashboard() {
+	const [adminIndividualSessions, setAdminIndividualSessions] = useState<any[]>(
+		[]
+	)
+	const [adminGroupSessions, setAdminGroupSessions] = useState<any[]>([])
 	const [isCancelling, setIsCancelling] = useState(false)
 	const [totalUsers, setTotalUsers] = useState(0)
 	const [totalActivities, setTotalActivities] = useState(0)
@@ -131,6 +136,16 @@ export default function Dashboard() {
 	const totalReservations = (
 		activeTab === 'individual' ? reservations : groupReservations
 	).length
+
+	useEffect(() => {
+		const fetchSessions = async () => {
+			const individualSessions = await fetchUpcomingSessions('individual')
+			const groupSessions = await fetchUpcomingSessions('group')
+			setAdminIndividualSessions(individualSessions)
+			setAdminGroupSessions(groupSessions)
+		}
+		fetchSessions()
+	}, [])
 
 	useEffect(() => {
 		const fetchAllSessions = async () => {
@@ -428,6 +443,83 @@ export default function Dashboard() {
 	).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
 	const totalPages = Math.max(1, Math.ceil(totalReservations / itemsPerPage))
+
+	const renderAdminSessions = (sessions: any) => {
+		return sessions.length === 0 ? (
+			<motion.div
+				initial={{ opacity: 0, y: 20 }}
+				animate={{ opacity: 1, y: 0 }}
+				className='bg-gray-800 rounded-xl p-8 text-center col-span-2'>
+				<FaCalendarAlt className='text-green-500 text-5xl mb-4 mx-auto' />
+				<p className='text-xl text-gray-300'>No upcoming sessions scheduled.</p>
+			</motion.div>
+		) : (
+			sessions.map((session: any, index: any) => (
+				<motion.div
+					key={session.id}
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: index * 0.1 }}
+					className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-xl hover:shadow-green-500/30 transition duration-300'>
+					<div className='p-6 space-y-4'>
+						<div className='flex justify-between items-center mb-4'>
+							<h3 className='text-2xl font-bold text-green-400'>
+								{session.activities.name}
+							</h3>
+							<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
+								{session.activities.credits} Credits
+							</span>
+						</div>
+						<div className='space-y-2 text-gray-300'>
+							<p className='flex items-center'>
+								<FaCalendarAlt className='mr-2 text-green-500' />
+								{session.date}
+							</p>
+							<p className='flex items-center'>
+								<FaClock className='mr-2 text-green-500' />
+								{session.start_time} - {session.end_time}
+							</p>
+							<p className='flex items-center'>
+								<FaUser className='mr-2 text-green-500' />
+								{session.coaches.name}
+							</p>
+							<p className='flex items-center'>
+								<FaUsers className='mr-2 text-green-500' />
+								{activeTab === 'individual' ? 'Client: ' : 'Clients: '}
+								{activeTab === 'individual'
+									? `${session.users.first_name} ${session.users.last_name}`
+									: session.count}
+							</p>
+							{activeTab === 'group' && (
+								<>
+									<p className='flex items-center'>
+										<FaUsers className='mr-2 text-green-500' />
+										Capacity: {session.activities.capacity}
+									</p>
+								</>
+							)}
+						</div>
+						<div className='bg-gray-700 rounded-lg p-3 mt-4'>
+							<p className='text-sm text-gray-300'>
+								<span className='font-semibold text-green-400'>Additions:</span>{' '}
+								{session.additions && session.additions.length > 0
+									? session.additions
+											.map((addition: any) =>
+												typeof addition === 'string'
+													? addition
+													: addition.items
+															.map((item: any) => item.name)
+															.join(', ')
+											)
+											.join(', ')
+									: 'No additions'}
+							</p>
+						</div>
+					</div>
+				</motion.div>
+			))
+		)
+	}
 	return (
 		<div className='min-h-screen bg-gray-700 text-white font-sans'>
 			<ConfirmationModal
@@ -527,7 +619,6 @@ export default function Dashboard() {
 					</div>
 				</motion.div>
 
-				{/* Reservations */}
 				<AnimatePresence mode='wait'>
 					{isLoading ? (
 						<motion.div
@@ -718,123 +809,138 @@ export default function Dashboard() {
 									</div>
 								</motion.div>
 							</div>
+							{/* Reservations */}
 							<div className='lg:w-3/4 space-y-8'>
 								<h2 className='text-3xl md:text-4xl font-bold tracking-tight mb-6 text-green-400'>
 									{activeTab === 'individual'
 										? 'Individual Reservations'
 										: 'Group Reservations'}
 								</h2>
-								{(activeTab === 'individual' ? reservations : groupReservations)
-									.length === 0 ? (
-									<motion.div
-										initial={{ opacity: 0, y: 20 }}
-										animate={{ opacity: 1, y: 0 }}
-										className='bg-gray-800 rounded-xl p-8 text-center'>
-										<FaCalendarAlt className='text-green-500 text-5xl mb-4 mx-auto' />
-										<p className='text-xl text-gray-300'>
-											No upcoming reservations. Time to book your next session!
-										</p>
-									</motion.div>
-								) : (
+								{user.publicMetadata.role === 'admin' ? (
+									// Admin view
 									<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-										{paginatedReservations.map(
-											(reservation: any, index: any) => (
-												<motion.div
-													key={reservation.id}
-													initial={{ opacity: 0, y: 20 }}
-													animate={{ opacity: 1, y: 0 }}
-													transition={{ delay: index * 0.1 }}
-													className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-xl hover:shadow-green-500/30 transition duration-300'>
-													<div className='p-6 space-y-4'>
-														<div className='flex justify-between items-center mb-4'>
-															<h3 className='text-2xl font-bold text-green-400'>
-																{reservation.activity.name}
-															</h3>
-															<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
-																{reservation.activity.credits} Credits
-															</span>
-														</div>
-														<div className='space-y-2 text-gray-300'>
-															<p className='flex items-center'>
-																<FaCalendarAlt className='mr-2 text-green-500' />
-																{reservation.date}
-															</p>
-															<p className='flex items-center'>
-																<FaClock className='mr-2 text-green-500' />
-																{reservation.start_time} -{' '}
-																{reservation.end_time}
-															</p>
-															<p className='flex items-center'>
-																<FaUser className='mr-2 text-green-500' />
-																{reservation.coach.name}
-															</p>
-															{activeTab === 'group' && (
-																<p className='flex items-center'>
-																	<FaUsers className='mr-2 text-green-500' />
-																	Attendance: {reservation.count}
-																</p>
-															)}
-														</div>
-														<div className='bg-gray-700 rounded-lg p-3 mt-4'>
-															<p className='text-sm text-gray-300'>
-																<span className='font-semibold text-green-400'>
-																	Additions:
-																</span>{' '}
-																{reservation.additions &&
-																reservation.additions.length > 0
-																	? reservation.additions
-																			.map((addition: any) =>
-																				typeof addition === 'string'
-																					? addition
-																					: addition.items
-																							.map((item: any) => item.name)
-																							.join(', ')
-																			)
-																			.join(', ')
-																	: 'No additions'}
-															</p>
-														</div>
-														<div className='flex flex-col space-y-2 mt-4'>
-															<div className='flex flex-row justify-center items-center'>
-																<AddToCalendarButton
-																	name={`${reservation.activity.name} with ${reservation.coach.name}`}
-																	startDate={reservation.date}
-																	startTime={reservation.start_time}
-																	endTime={reservation.end_time}
-																	options={['Apple', 'Google']}
-																	timeZone='Asia/Beirut'
-																	buttonStyle='default'
-																	styleLight='--btn-background: #ffffff; --btn-text: #000; --btn-shadow: none;'
-																	styleDark='--btn-background: #10B981; --btn-text: #000; --btn-shadow: none;'
-																	size='3'
-																	inline
-																/>
-															</div>
-
-															<div className='flex flex-col md:flex-row justify-between mt-4'>
-																<button
-																	onClick={() => openMarketModal(reservation)}
-																	className='bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 mb-2 md:mb-0 rounded-lg transition duration-200 flex-grow mr-0 md:mr-2'
-																	disabled={buttonLoading}>
-																	Add Items
-																</button>
-																<button
-																	onClick={() =>
-																		activeTab === 'individual'
-																			? handleCancel(reservation.id)
-																			: handleCancelGroup(reservation.id)
-																	}
-																	className='bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex-grow ml-0 md:ml-2'
-																	disabled={buttonLoading}>
-																	Cancel
-																</button>
-															</div>
-														</div>
-													</div>
-												</motion.div>
-											)
+										{renderAdminSessions(
+											activeTab === 'individual'
+												? adminIndividualSessions
+												: adminGroupSessions
 										)}
 									</div>
+								) : (
+									// Non-admin view
+									<>
+										{(activeTab === 'individual'
+											? reservations
+											: groupReservations
+										).length === 0 ? (
+											<motion.div
+												initial={{ opacity: 0, y: 20 }}
+												animate={{ opacity: 1, y: 0 }}
+												className='bg-gray-800 rounded-xl p-8 text-center'>
+												<FaCalendarAlt className='text-green-500 text-5xl mb-4 mx-auto' />
+												<p className='text-xl text-gray-300'>
+													No upcoming reservations. Time to book your next
+													session!
+												</p>
+											</motion.div>
+										) : (
+											<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+												{paginatedReservations.map((reservation, index) => (
+													<motion.div
+														key={reservation.id}
+														initial={{ opacity: 0, y: 20 }}
+														animate={{ opacity: 1, y: 0 }}
+														transition={{ delay: index * 0.1 }}
+														className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-xl hover:shadow-green-500/30 transition duration-300'>
+														<div className='p-6 space-y-4'>
+															<div className='flex justify-between items-center mb-4'>
+																<h3 className='text-2xl font-bold text-green-400'>
+																	{reservation.activity.name}
+																</h3>
+																<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
+																	{reservation.activity.credits} Credits
+																</span>
+															</div>
+															<div className='space-y-2 text-gray-300'>
+																<p className='flex items-center'>
+																	<FaCalendarAlt className='mr-2 text-green-500' />
+																	{reservation.date}
+																</p>
+																<p className='flex items-center'>
+																	<FaClock className='mr-2 text-green-500' />
+																	{reservation.start_time} -{' '}
+																	{reservation.end_time}
+																</p>
+																<p className='flex items-center'>
+																	<FaUser className='mr-2 text-green-500' />
+																	{reservation.coach.name}
+																</p>
+																{activeTab === 'group' && (
+																	<p className='flex items-center'>
+																		<FaUsers className='mr-2 text-green-500' />
+																		Attendance: {reservation.count}
+																	</p>
+																)}
+															</div>
+															<div className='bg-gray-700 rounded-lg p-3 mt-4'>
+																<p className='text-sm text-gray-300'>
+																	<span className='font-semibold text-green-400'>
+																		Additions:
+																	</span>{' '}
+																	{reservation.additions &&
+																	reservation.additions.length > 0
+																		? reservation.additions
+																				.map(addition =>
+																					typeof addition === 'string'
+																						? addition
+																						: addition.items
+																								.map(item => item.name)
+																								.join(', ')
+																				)
+																				.join(', ')
+																		: 'No additions'}
+																</p>
+															</div>
+															<div className='flex flex-col space-y-2 mt-4'>
+																<div className='flex flex-row justify-center items-center'>
+																	<AddToCalendarButton
+																		name={`${reservation.activity.name} with ${reservation.coach.name}`}
+																		startDate={reservation.date}
+																		startTime={reservation.start_time}
+																		endTime={reservation.end_time}
+																		options={['Apple', 'Google']}
+																		timeZone='Asia/Beirut'
+																		buttonStyle='default'
+																		styleLight='--btn-background: #ffffff; --btn-text: #000; --btn-shadow: none;'
+																		styleDark='--btn-background: #10B981; --btn-text: #000; --btn-shadow: none;'
+																		size='3'
+																		inline
+																	/>
+																</div>
+																<div className='flex flex-col md:flex-row justify-between mt-4'>
+																	<button
+																		onClick={() => openMarketModal(reservation)}
+																		className='bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 mb-2 md:mb-0 rounded-lg transition duration-200 flex-grow mr-0 md:mr-2'
+																		disabled={buttonLoading}>
+																		Add Items
+																	</button>
+																	<button
+																		onClick={() =>
+																			activeTab === 'individual'
+																				? handleCancel(reservation.id)
+																				: handleCancelGroup(reservation.id)
+																		}
+																		className='bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex-grow ml-0 md:ml-2'
+																		disabled={buttonLoading}>
+																		Cancel
+																	</button>
+																</div>
+															</div>
+														</div>
+													</motion.div>
+												))}
+											</div>
+										)}
+									</>
 								)}
 							</div>
 

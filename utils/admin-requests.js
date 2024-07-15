@@ -20,7 +20,71 @@ export const addActivity = async activity => {
 
 	return data ? data[0] : null
 }
+// Add this to your existing file or create a new one
 
+export const fetchUpcomingSessions = async (type, limit = 6) => {
+	const supabase = await supabaseClient()
+	const now = new Date().toISOString()
+
+	if (type === 'individual') {
+		const { data: individualSessions, error } = await supabase
+			.from('time_slots')
+			.select(
+				`
+        id,
+        activities ( name, credits ),
+        coaches ( name ),
+        date,
+        start_time,
+        end_time,
+        users ( user_id, first_name, last_name ),
+        booked,
+        additions
+      `
+			)
+			.gte('date', now.split('T')[0])
+			.eq('booked', true)
+			.order('date', { ascending: true })
+			.order('start_time', { ascending: true })
+			.limit(limit)
+
+		if (error) {
+			console.error('Error fetching individual sessions:', error.message)
+			return []
+		}
+
+		return individualSessions || []
+	} else {
+		const { data: groupSessions, error } = await supabase
+			.from('group_time_slots')
+			.select(
+				`
+        id,
+        activities ( name, credits, capacity ),
+        coaches ( name ),
+        date,
+        start_time,
+        end_time,
+        user_id,
+        booked,
+        additions,
+        count
+      `
+			)
+			.gte('date', now.split('T')[0])
+			.gt('count', 0)
+			.order('date', { ascending: true })
+			.order('start_time', { ascending: true })
+			.limit(limit)
+
+		if (error) {
+			console.error('Error fetching group sessions:', error.message)
+			return []
+		}
+
+		return groupSessions || []
+	}
+}
 export const addCoach = async (coach, file) => {
 	const supabase = await supabaseClient()
 
