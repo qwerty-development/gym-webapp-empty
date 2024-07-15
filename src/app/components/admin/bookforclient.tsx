@@ -367,13 +367,13 @@ export default function BookForClient() {
 				animate={{ opacity: 1 }}
 				transition={{ duration: 0.5 }}
 				className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 mb-8 sm:mb-12 text-center'>
+				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-700 mb-8 sm:mb-12 text-center'>
 					Book a Session for a User
 				</h1>
 
 				<FadeInSection>
 					<div className='mb-16 bg-gray-700 text-white bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8'>
-						<h2 className='text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 mb-6 text-center'>
+						<h2 className='text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-700 mb-6 text-center'>
 							Select Your User
 						</h2>
 						<div className='relative'>
@@ -400,37 +400,37 @@ export default function BookForClient() {
 									...theme,
 									colors: {
 										...theme.colors,
-										primary25: '#34D399',
-										primary: '#10B981',
-										neutral0: 'rgba(31, 41, 55, 0.5)',
-										neutral80: '#D1D5DB',
-										neutral20: '#10B981'
+										primary25: '#4c6f46', // green-500
+										primary: '#36783a', // green-400 (primary)
+										neutral0: 'rgba(53, 59, 53, 0.5)', // gray-800 with opacity
+										neutral80: '#d1d4d1', // gray-200
+										neutral20: '#36783a' // green-400 (primary)
 									}
 								})}
 								styles={{
 									control: base => ({
 										...base,
-										backgroundColor: 'rgba(31, 41, 55, 0.5)',
+										backgroundColor: 'rgba(53, 59, 53, 0.5)', // gray-800 with opacity
 										borderRadius: '1.5rem',
 										padding: '0.5rem',
 										paddingLeft: '2.5rem',
-										borderColor: '#10B981',
-										boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)',
+										borderColor: '#36783a', // green-400 (primary)
+										boxShadow: '0 0 15px rgba(54, 120, 58, 0.3)', // green-400 with opacity
 										'&:hover': {
-											borderColor: '#34D399',
-											boxShadow: '0 0 20px rgba(52, 211, 153, 0.5)'
+											borderColor: '#4c6f46', // green-500
+											boxShadow: '0 0 20px rgba(76, 111, 70, 0.5)' // green-500 with opacity
 										}
 									}),
 									input: base => ({
 										...base,
-										color: '#D1D5DB',
+										color: '#d1d4d1', // gray-200
 										'& input': {
-											color: '#D1D5DB !important'
+											color: '#d1d4d1 !important' // gray-200
 										}
 									}),
 									menu: base => ({
 										...base,
-										backgroundColor: 'rgba(31, 41, 55, 0.9)',
+										backgroundColor: 'rgba(53, 59, 53, 0.9)', // gray-800 with opacity
 										backdropFilter: 'blur(8px)',
 										borderRadius: '1rem',
 										overflow: 'hidden'
@@ -438,10 +438,10 @@ export default function BookForClient() {
 									option: (base, state) => ({
 										...base,
 										backgroundColor: state.isSelected
-											? '#10B981'
+											? '#36783a' // green-400 (primary)
 											: 'transparent',
 										'&:hover': {
-											backgroundColor: '#34D399'
+											backgroundColor: '#4c6f46' // green-500
 										}
 									})
 								}}
@@ -707,12 +707,12 @@ export default function BookForClient() {
 				className='modal rounded-3xl p-4 sm:p-6 md:p-8 mx-auto mt-10 sm:mt-20 w-11/12 md:max-w-4xl'
 				style={{
 					content: {
-						backgroundColor: 'rgba(31, 41, 55, 0.9)', // This is equivalent to bg-gray-800 with 90% opacity
+						backgroundColor: 'rgba(53, 59, 53, 0.9)', // This is gray-800 with 90% opacity
 						backdropFilter: 'blur(16px)' // This adds the blur effect
 					}
 				}}
 				overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center'>
-				<h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500'>
+				<h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-800'>
 					Enhance Your Session
 				</h2>
 				<div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
@@ -736,7 +736,7 @@ export default function BookForClient() {
 										selectedItems.find(
 											selectedItem => selectedItem.id === item.id
 										)
-											? 'bg-red-500 hover:bg-red-600'
+											? 'bg-red-700 hover:bg-red-600'
 											: 'bg-green-500 hover:bg-green-600'
 									}`}
 									onClick={() => handleItemSelect(item)}>
@@ -758,7 +758,7 @@ export default function BookForClient() {
 						<motion.button
 							whileHover={{
 								scale: 1.05,
-								boxShadow: '0 0 30px rgba(74, 222, 128, 0.7)'
+								boxShadow: '0 0 30px rgba(54, 120, 58, 0.7)' // Using green-400 with 70% opacity
 							}}
 							whileTap={{ scale: 0.95 }}
 							className='bg-green-500 text-white py-2 sm:py-3 px-5 sm:px-6 md:px-8 rounded-full text-base sm:text-lg md:text-xl font-bold transition-all duration-300 hover:bg-green-600 disabled:opacity-50'

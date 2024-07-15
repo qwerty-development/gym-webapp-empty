@@ -1,11 +1,15 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+
+import { Poppins } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 import { WalletProvider } from './components/users/WalletContext'
 import { Toaster } from 'react-hot-toast'
-
-const inter = Inter({ subsets: ['latin'] })
+import 'react-datepicker/dist/react-datepicker.css'
+const poppins = Poppins({
+	weight: ['300', '400', '500', '600', '700', '800', '900'],
+	subsets: ['latin']
+})
 
 export const metadata: Metadata = {
 	title: 'Fitness Vista',
@@ -43,7 +47,7 @@ export default function RootLayout({
 					<meta name='theme-color' content='#ffffff' />
 				</head>
 
-				<body className={inter.className}>
+				<body className={poppins.className}>
 					<Toaster position='top-center' />
 					<WalletProvider>{children}</WalletProvider>
 				</body>

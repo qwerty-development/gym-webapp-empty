@@ -27,24 +27,24 @@ type OptionType = {
 const customSelectStyles = {
 	control: (provided: any) => ({
 		...provided,
-		backgroundColor: '#1F2937',
-		borderColor: '#10B981',
+		backgroundColor: '#353b35', // gray-800
+		borderColor: '#36783a', // green-400 (primary)
 		borderRadius: '9999px',
 		padding: '0.5rem',
 		boxShadow: 'none',
 		'&:hover': {
-			borderColor: '#34D399'
+			borderColor: '#4c6f46' // green-500
 		}
 	}),
 	menu: (provided: any) => ({
 		...provided,
-		backgroundColor: '#1F2937'
+		backgroundColor: '#353b35' // gray-800
 	}),
 	option: (provided: any, state: { isSelected: any }) => ({
 		...provided,
-		backgroundColor: state.isSelected ? '#10B981' : '#1F2937',
+		backgroundColor: state.isSelected ? '#36783a' : '#353b35', // green-400 if selected, gray-800 if not
 		'&:hover': {
-			backgroundColor: '#34D399',
+			backgroundColor: '#4c6f46', // green-500
 			color: 'white'
 		}
 	}),

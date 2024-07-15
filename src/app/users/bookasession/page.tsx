@@ -535,7 +535,7 @@ export default function Example() {
 				animate={{ opacity: 1 }}
 				transition={{ duration: 0.5 }}
 				className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 mb-8 sm:mb-12 text-center'>
+				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-800 mb-8 sm:mb-12 text-center'>
 					Book Your Next Session
 				</h1>
 
@@ -596,7 +596,7 @@ export default function Example() {
 											exit={{ opacity: 0, y: -20 }}
 											whileHover={{
 												scale: 1.05,
-												boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+												boxShadow: '0 0 30px rgba(54, 120, 58, 0.7)' // Using green-400 with 70% opacity
 											}}
 											whileTap={{ scale: 0.95 }}
 											className={`flex flex-col items-center justify-center p-4 sm:p-8 rounded-2xl transition-all duration-300  ${
@@ -650,7 +650,7 @@ export default function Example() {
 												exit={{ opacity: 0, y: -20 }}
 												whileHover={{
 													scale: 1.05,
-													boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+													boxShadow: '0 0 30px rgba(54, 120, 58, 0.7)' // Using green-400 with 70% opacity
 												}}
 												whileTap={{ scale: 0.95 }}
 												className={`p-3 sm:p-6 rounded-2xl transition-all duration-300 ${
@@ -722,7 +722,7 @@ export default function Example() {
 														exit={{ opacity: 0, y: -20 }}
 														whileHover={{
 															scale: 1.05,
-															boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+															boxShadow: '0 0 30px rgba(54, 120, 58, 0.7)' // Using green-400 with 70% opacity
 														}}
 														whileTap={{ scale: 0.95 }}
 														className={`p-3 sm:p-4 rounded-xl text-base sm:text-lg font-semibold transition-all duration-300 ${
@@ -771,7 +771,7 @@ export default function Example() {
 								<motion.button
 									whileHover={{
 										scale: 1.05,
-										boxShadow: '0 0 30px rgba(74, 222, 128, 0.7)'
+										boxShadow: '0 0 30px rgba(54, 120, 58, 0.7)' // Using green-400 with 70% opacity
 									}}
 									whileTap={{ scale: 0.95 }}
 									type='button'
@@ -792,12 +792,12 @@ export default function Example() {
 					className='modal rounded-3xl p-4 sm:p-6 md:p-8 mx-auto mt-10 sm:mt-20 w-11/12 md:max-w-4xl'
 					style={{
 						content: {
-							backgroundColor: 'rgba(31, 41, 55, 0.9)', // This is equivalent to bg-gray-800 with 90% opacity
+							backgroundColor: 'rgba(53, 59, 53, 0.9)', // This is gray-800 with 90% opacity
 							backdropFilter: 'blur(16px)' // This adds the blur effect
 						}
 					}}
 					overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center'>
-					<h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500'>
+					<h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-800'>
 						Enhance Your Session
 					</h2>
 					<div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
@@ -821,7 +821,7 @@ export default function Example() {
 											selectedItems.find(
 												selectedItem => selectedItem.id === item.id
 											)
-												? 'bg-red-500 hover:bg-red-600'
+												? 'bg-red-700 hover:bg-red-600'
 												: 'bg-green-500 hover:bg-green-600'
 										}`}
 										onClick={() => handleItemSelect(item)}>
@@ -854,7 +854,7 @@ export default function Example() {
 							<motion.button
 								whileHover={{ scale: 1.05 }}
 								whileTap={{ scale: 0.95 }}
-								className='bg-red-500 text-white py-2 sm:py-3 px-5 sm:px-6 md:px-8 rounded-full text-base sm:text-lg md:text-xl font-bold transition-all duration-300 hover:bg-red-600'
+								className='bg-red-700 text-white py-2 sm:py-3 px-5 sm:px-6 md:px-8 rounded-full text-base sm:text-lg md:text-xl font-bold transition-all duration-300 hover:bg-red-600'
 								onClick={handleCloseModal}>
 								Close
 							</motion.button>

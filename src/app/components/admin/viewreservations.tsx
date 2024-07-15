@@ -550,7 +550,7 @@ export default function ViewReservationsComponent() {
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
 							onClick={() => setShowFilters(false)}
-							className='px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600'>
+							className='px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600'>
 							Close
 						</motion.button>
 					</div>
@@ -561,7 +561,7 @@ export default function ViewReservationsComponent() {
 				whileHover={{ scale: 1.05 }}
 				whileTap={{ scale: 0.95 }}
 				onClick={deleteSelectedReservations}
-				className='mb-6 px-6 py-3 bg-red-500 tex</motion.button>t-white rounded-full hover:bg-red-600'>
+				className='mb-6 px-6 py-3 bg-red-700 tex</motion.button>t-white rounded-full hover:bg-red-600'>
 				<FaTrash className='inline-block mr-2' /> Delete Selected
 			</motion.button>
 
@@ -646,7 +646,7 @@ export default function ViewReservationsComponent() {
 																reservation.activity?.credits
 															)
 														}
-														className='ml-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600'>
+														className='ml-2 p-1 bg-red-700 text-white rounded-full hover:bg-red-600'>
 														<FaTimes size={12} />
 													</motion.button>
 												</div>
@@ -657,7 +657,7 @@ export default function ViewReservationsComponent() {
 									{reservation.booked ? (
 										<FaCheck className='text-green-500' />
 									) : (
-										<FaTimes className='text-red-500 text-center' />
+										<FaTimes className='text-red-700 text-center' />
 									)}
 								</td>
 								<td className='px-4 py-3'>

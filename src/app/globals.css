@@ -1,9 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 :root {
-	--foreground-rgb: 35, 38, 35;
+	--foreground-rgb: 53, 59, 53; /* gray-800 */
 	--background-start-rgb: 255, 255, 255;
 	--background-end-rgb: 255, 255, 255;
 }
@@ -11,7 +10,7 @@
 @media (prefers-color-scheme: dark) {
 	:root {
 		--foreground-rgb: 255, 255, 255;
-		--background-start-rgb: 35, 38, 35;
+		--background-start-rgb: 53, 59, 53; /* gray-800 */
 		--background-end-rgb: 0, 0, 0;
 	}
 }
@@ -34,22 +33,22 @@ body {
 
 .custom-calendar {
 	border-radius: 15px;
-	border: 1px #0c8af8 solid;
+	border: 1px #36783a solid; /* green-400 */
 	padding: 4px 12px;
 	background-color: white;
 	height: 22px;
-	box-shadow: 0 0 2px #0074d9;
+	box-shadow: 0 0 2px #36783a; /* green-400 */
 }
 
 @keyframes highlightPulse {
 	0% {
-		box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+		box-shadow: 0 0 0 0 rgba(54, 120, 58, 0.7); /* green-400 with opacity */
 	}
 	70% {
-		box-shadow: 0 0 0 20px rgba(74, 222, 128, 0);
+		box-shadow: 0 0 0 20px rgba(54, 120, 58, 0);
 	}
 	100% {
-		box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+		box-shadow: 0 0 0 0 rgba(54, 120, 58, 0);
 	}
 }
 .react-select-container .react-select__input-container::after {
@@ -61,31 +60,34 @@ body {
 }
 
 .react-select-container .react-select__dropdown-indicator {
-	color: #10b981;
+	color: #36783a; /* green-400 */
 }
 
 @keyframes neon {
 	0%,
 	100% {
-		text-shadow: 0 0 2px #39ff14, 0 0 4px #39ff14, 0 0 6px #39ff14;
+		text-shadow: 0 0 2px #36783a, 0 0 4px #36783a, 0 0 6px #36783a; /* green-400 */
 	}
 	50% {
-		text-shadow: 0 0 3px #39ff14, 0 0 5px #39ff14, 0 0 7px #39ff14;
+		text-shadow: 0 0 3px #36783a, 0 0 5px #36783a, 0 0 7px #36783a; /* green-400 */
 	}
 }
 
 .neon-button {
-	@apply rounded-full bg-gray-900 px-6 py-3 text-lg font-semibold text-green-400
-           hover:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-green-200
-           focus:ring-offset-1 focus:ring-offset-gray-900 transition-all duration-300
+	@apply rounded-full bg-gray-800 px-6 py-3 text-lg font-semibold text-green-400
+           hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-green-300
+           focus:ring-offset-1 focus:ring-offset-gray-800 transition-all duration-300
            flex items-center justify-center;
 }
 
 .filter.drop-shadow-glow {
-	filter: drop-shadow(0 0 10px rgba(57, 255, 20, 0.7));
+	filter: drop-shadow(
+		0 0 10px rgba(54, 120, 58, 0.7)
+	); /* green-400 with opacity */
 }
+
 .react-select-container .react-select__dropdown-indicator:hover {
-	color: #34d399;
+	color: #4c6f46; /* green-500 */
 }
 .loader-overlay {
 	position: fixed;
@@ -93,8 +95,9 @@ body {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: rgba(0, 0, 0, 0.7);
+	background: rgba(53, 59, 53, 0.7); /* gray-800 with opacity */
 	backdrop-filter: blur(5px);
+
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -109,8 +112,8 @@ body {
 }
 .custom-calendar:focus {
 	outline: none;
-	border: 1px solid #0c8af8;
-	box-shadow: 0 0 10px 2px #0074d9;
+	border: 1px solid #36783a; /* green-400 */
+	box-shadow: 0 0 10px 2px #4c6f46; /* green-500 */
 }
 
 .react-datepicker {
@@ -150,7 +153,7 @@ body {
 }
 /* Adjust the Add to Calendar button */
 .atcb-button {
-	background-color: #add8e6; /* Light blue */
+	background-color: #36783a; /* green-400 */
 	color: white;
 	font-weight: bold;
 	border: none;
@@ -185,7 +188,7 @@ body {
 }
 
 .cl-userButton {
-	background-color: #add8e6 !important;
+	background-color: #36783a !important; /* green-400 */
 }
 /* Centering and styling the buttons */
 .addButtonContainer {
@@ -195,7 +198,7 @@ body {
 }
 
 .addButton {
-	background-color: #4caf50; /* Green */
+	background-color: #36783a; /* green-400 */
 	border: none;
 	color: white;
 	padding: 10px 20px;
@@ -210,18 +213,18 @@ body {
 }
 
 .addButton:hover {
-	background-color: #45a049; /* Darker green */
+	background-color: #4c6f46; /* green-500 */
 }
-
 /* modalStyles.css */
 .modal {
 	position: fixed;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	background-color: white;
+	background-color: #d1d4d1; /* gray-200 */
+	box-shadow: 0px 4px 8px rgba(53, 59, 53, 0.1); /* gray-800 with opacity */
 	padding: 20px;
-	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+
 	z-index: 1000;
 	border-radius: 10px;
 	max-width: 90%;
@@ -235,7 +238,7 @@ body {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(53, 59, 53, 0.5);
 	z-index: 999;
 }
 

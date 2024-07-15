@@ -219,7 +219,7 @@ const ItemCard = ({
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -20 }}
 			transition={{ duration: 0.3 }}
-			className='bg-gray-700 hover:bg-green-500 p-4 rounded-xl flex justify-between items-center'>
+			className='bg-gray-700 hover:bg-green-700 p-4 rounded-xl flex justify-between items-center'>
 			{editingItem === item.id ? (
 				<div className='w-full space-y-2'>
 					<Input
@@ -263,13 +263,13 @@ const ItemCard = ({
 							}}
 							className='text-2xl'
 							disabled={buttonLoading}>
-							<FaEdit className='text-yellow-500 hover:text-yellow-600 transition duration-300' />
+							<FaEdit className='text-yellow-700 hover:text-yellow-600 transition duration-300' />
 						</button>
 						<button
 							onClick={() => handleDeleteItem(item.id)}
 							className='text-2xl'
 							disabled={buttonLoading}>
-							<FaTrash className='text-red-500 hover:text-red-600 transition duration-300' />
+							<FaTrash className='text-red-700 hover:text-red-600 transition duration-300' />
 						</button>
 					</div>
 				</>

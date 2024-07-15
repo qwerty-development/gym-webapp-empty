@@ -242,7 +242,7 @@ const ModifyCreditsComponent = () => {
 										}
 										disabled={isUpdating || isLoading}
 										className={`p-2 rounded-full ${
-											user.isFree ? 'bg-green-500' : 'bg-red-500'
+											user.isFree ? 'bg-green-500' : 'bg-red-700'
 										}`}>
 										{user.isFree ? <FaCheckCircle /> : <FaTimesCircle />}
 									</motion.button>
@@ -310,7 +310,7 @@ const ModifyCreditsComponent = () => {
 							onClick={() => setModalIsOpen(false)}
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							className='px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-800 transition duration-300'>
+							className='px-6 py-3 bg-red-700 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-800 transition duration-300'>
 							Close
 						</motion.button>
 					</div>

@@ -335,7 +335,7 @@ const CoachesandActivitiesAdminPage = () => {
 											onClick={() => handleToggleForm(coach.id)}
 											whileHover={{ scale: 1.1 }}
 											whileTap={{ scale: 0.9 }}
-											className='p-2 bg-yellow-500 disabled:bg-yellow-700 text-white rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+											className='p-2 bg-yellow-700 disabled:bg-yellow-300 text-white rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
 											<FaEdit />
 										</motion.button>
 										<motion.button
@@ -343,7 +343,7 @@ const CoachesandActivitiesAdminPage = () => {
 											onClick={() => handleDeleteCoach(coach.id)}
 											whileHover={{ scale: 1.1 }}
 											whileTap={{ scale: 0.9 }}
-											className='p-2 bg-red-500 disabled:bg-red-700 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+											className='p-2 bg-red-700 disabled:bg-red-300 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
 											<FaTrash />
 										</motion.button>
 									</div>
@@ -501,7 +501,7 @@ const CoachesandActivitiesAdminPage = () => {
 												onClick={() => handleUpdateActivity(activity.id)}
 												whileHover={{ scale: 1.1 }}
 												whileTap={{ scale: 0.9 }}
-												className='p-2 bg-yellow-500 disabled:bg-yellow-700 text-white rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+												className='p-2 bg-yellow-700 disabled:bg-yellow-300 text-white rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
 												<FaEdit />
 											</motion.button>
 											<motion.button
@@ -509,7 +509,7 @@ const CoachesandActivitiesAdminPage = () => {
 												onClick={() => handleDeleteActivity(activity.id)}
 												whileHover={{ scale: 1.1 }}
 												whileTap={{ scale: 0.9 }}
-												className='p-2 bg-red-500 disabled:bg-red-700 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+												className='p-2 bg-red-700 disabled:bg-red-300 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
 												<FaTrash />
 											</motion.button>
 										</div>
