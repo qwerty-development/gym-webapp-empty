@@ -252,7 +252,8 @@ const ItemCard = ({
 			) : (
 				<>
 					<div className='flex-grow'>
-						<span className='font-semibold'>{item.name}</span> - ${item.price}
+						<span className='font-semibold'>{item.name}</span> -{item.price}{' '}
+						Credits
 					</div>
 					<div className='flex space-x-2'>
 						<button

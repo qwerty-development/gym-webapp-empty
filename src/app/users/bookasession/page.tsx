@@ -811,7 +811,7 @@ export default function Example() {
 											{item.name}
 										</span>
 										<span className='text-lg sm:text-xl font-bold text-green-400'>
-											${item.price}
+											{item.price} Credits
 										</span>
 									</div>
 									<motion.button
@@ -837,7 +837,7 @@ export default function Example() {
 					</div>
 					<div className='text-right'>
 						<p className='text-lg sm:text-xl md:text-2xl font-bold text-green-400 mb-3 sm:mb-4 md:mb-6'>
-							Total Price: ${totalPrice}
+							Total Price: {totalPrice} Credits
 						</p>
 						<div className='flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-6'>
 							<motion.button
