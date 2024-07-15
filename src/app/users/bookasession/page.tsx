@@ -167,31 +167,48 @@ export default function Example() {
 			resetDateAndTime()
 		}
 	}, [selectedCoach]) // Add selectedCoach as a dependency
-
 	useEffect(() => {
 		const fetchDatesAndTimes = async () => {
 			if (selectedActivity && selectedCoach) {
+				const currentDate = new Date()
+				const isToday =
+					selectedDate &&
+					selectedDate.toDateString() === currentDate.toDateString()
+
 				if (isPrivateTraining) {
 					const data = await fetchFilteredUnbookedTimeSlots({
 						activityId: selectedActivity,
 						coachId: selectedCoach,
 						date: selectedDate ? formatDate(selectedDate) : undefined
 					})
+
 					if (data) {
 						if (!selectedDate) {
 							const datesForSelectedCoach = data
 								.filter(slot => slot.coach_id === selectedCoach)
 								.map(slot => new Date(slot.date))
-								.filter((date: Date) => date >= new Date())
+								.filter((date: Date) => date >= currentDate)
 							setHighlightDates(datesForSelectedCoach)
 							scrollToRef(dateRef)
 						}
+
 						if (selectedDate) {
+							const currentTime = isToday
+								? `${currentDate
+										.getHours()
+										.toString()
+										.padStart(2, '0')}:${currentDate
+										.getMinutes()
+										.toString()
+										.padStart(2, '0')}`
+								: '00:00'
+
 							const timesForSelectedDate = data
 								.filter(
 									slot =>
 										new Date(slot.date).toDateString() ===
-										selectedDate.toDateString()
+											selectedDate.toDateString() &&
+										(!isToday || slot.end_time > currentTime)
 								)
 								.map(slot => {
 									const startTime = slot.start_time.substr(0, 5)
@@ -208,21 +225,34 @@ export default function Example() {
 						coachId: selectedCoach,
 						date: selectedDate ? formatDate(selectedDate) : undefined
 					})
+
 					if (data) {
 						if (!selectedDate) {
 							const datesForSelectedCoach = data
 								.filter(slot => slot.coach_id === selectedCoach)
 								.map(slot => new Date(slot.date))
-								.filter((date: Date) => date >= new Date())
+								.filter((date: Date) => date >= currentDate)
 							setHighlightDates(datesForSelectedCoach)
 							scrollToRef(dateRef)
 						}
+
 						if (selectedDate) {
+							const currentTime = isToday
+								? `${currentDate
+										.getHours()
+										.toString()
+										.padStart(2, '0')}:${currentDate
+										.getMinutes()
+										.toString()
+										.padStart(2, '0')}`
+								: '00:00'
+
 							const timesForSelectedDate = data
 								.filter(
 									slot =>
 										new Date(slot.date).toDateString() ===
-										selectedDate.toDateString()
+											selectedDate.toDateString() &&
+										(!isToday || slot.end_time > currentTime)
 								)
 								.map(slot => {
 									const startTime = slot.start_time.substr(0, 5)
