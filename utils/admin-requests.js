@@ -498,16 +498,24 @@ export const fetchAllBookedSlotsToday = async () => {
 // In admin-requests.js
 export const fetchTimeSlots = async () => {
 	const supabase = await supabaseClient()
-	const { data, error } = await supabase.from('time_slots').select(`
-          id,
-          activities ( name, credits ),
-          coaches ( name ),
-          date,
-          start_time,
-          end_time,
-          users ( user_id, first_name, last_name ),
-          booked
-      `) // Join logic here based on your database relations
+
+	const today = new Date()
+
+	const { data, error } = await supabase
+		.from('time_slots')
+		.select(
+			`
+            id,
+            activities ( name, credits ),
+            coaches ( name ),
+            date,
+            start_time,
+            end_time,
+            users ( user_id, first_name, last_name ),
+            booked
+        `
+		)
+		.gte('date', today.toISOString().split('T')[0])
 
 	if (error) {
 		console.error('Error fetching time slots:', error.message)
@@ -516,7 +524,7 @@ export const fetchTimeSlots = async () => {
 
 	// Transform the data to ensure it fits the Reservation type
 	const transformedData = data.map(slot => ({
-		id: slot.id, // Make sure to assign the id to each reservation
+		id: slot.id,
 		activity: slot.activities
 			? { name: slot.activities.name, credits: slot.activities.credits }
 			: null,
@@ -534,7 +542,14 @@ export const fetchTimeSlots = async () => {
 		booked: slot.booked
 	}))
 
-	return transformedData
+	// Sort the transformed data
+	const sortedData = transformedData.sort((a, b) => {
+		const dateA = new Date(a.date + 'T' + a.start_time)
+		const dateB = new Date(b.date + 'T' + b.start_time)
+		return dateA.getTime() - dateB.getTime()
+	})
+
+	return sortedData
 }
 
 export const cancelGroupBooking = async timeSlotId => {
@@ -644,16 +659,25 @@ export const cancelGroupBooking = async timeSlotId => {
 // Existing fetchGroupTimeSlots function
 export const fetchGroupTimeSlots = async () => {
 	const supabase = await supabaseClient()
-	const { data, error } = await supabase.from('group_time_slots').select(`
-    id,
-    activities ( name, credits,capacity ),
-    coaches ( name ),
-    date,
-    start_time,
-    end_time,
-    user_id,
-    booked
-  `)
+
+	// Get today's date at the start of the day (midnight)
+	const today = new Date()
+
+	const { data, error } = await supabase
+		.from('group_time_slots')
+		.select(
+			`
+            id,
+            activities ( name, credits, capacity ),
+            coaches ( name ),
+            date,
+            start_time,
+            end_time,
+            user_id,
+            booked
+        `
+		)
+		.gte('date', today.toISOString().split('T')[0]) // Filter for dates from today onwards
 
 	if (error) {
 		console.error('Error fetching group time slots:', error.message)
@@ -693,7 +717,14 @@ export const fetchGroupTimeSlots = async () => {
 		booked: slot.booked
 	}))
 
-	return transformedData
+	// Sort the transformed data
+	const sortedData = transformedData.sort((a, b) => {
+		const dateA = new Date(a.date + 'T' + a.start_time)
+		const dateB = new Date(b.date + 'T' + b.start_time)
+		return dateA.getTime() - dateB.getTime()
+	})
+
+	return sortedData
 }
 
 // In admin-requests.js
