@@ -232,6 +232,140 @@ body {
 	overflow-y: auto;
 }
 
+.custom-date-picker {
+	background-color: #353b35 !important; /* gray-800 */
+	border-color: #36783a !important; /* green-400 */
+	color: #d1d4d1 !important; /* gray-200 */
+}
+
+.custom-date-picker-container .rmdp-wrapper {
+	background-color: #353b35 !important; /* gray-800 */
+	border-color: #36783a !important; /* green-400 */
+}
+
+.custom-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span {
+	color: #d1d4d1 !important; /* gray-200 */
+}
+
+.custom-calendar
+	.rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden)
+	span:hover {
+	background-color: #4c6f46 !important; /* green-500 */
+	color: white !important;
+}
+
+.custom-calendar .rmdp-day.rmdp-selected span {
+	background-color: #36783a !important; /* green-400 */
+	color: white !important;
+}
+
+.custom-calendar .rmdp-day.rmdp-today span {
+	background-color: #a5b89a !important; /* green-300 */
+	color: #353b35 !important; /* gray-800 */
+}
+
+.custom-calendar .rmdp-week-day {
+	color: #a5b89a !important; /* green-300 */
+}
+
+.custom-calendar .rmdp-header-values {
+	color: #d1d4d1 !important; /* gray-200 */
+}
+
+.custom-calendar .rmdp-arrow {
+	border-color: #36783a !important; /* green-400 */
+}
+
+.custom-calendar .rmdp-arrow-container:hover {
+	background-color: #4c6f46 !important; /* green-500 */
+}
+
+.custom-calendar .rmdp-panel-body li {
+	background-color: #353b35 !important; /* gray-800 */
+	border-color: #36783a !important; /* green-400 */
+	color: #d1d4d1 !important; /* gray-200 */
+}
+
+.custom-calendar .rmdp-panel-body li:hover {
+	background-color: #4c6f46 !important; /* green-500 */
+	color: white !important;
+}
+
+.custom-calendar .rmdp-toolbar-button {
+	background-color: #36783a !important; /* green-400 */
+	color: white !important;
+}
+
+.custom-calendar .rmdp-toolbar-button:hover {
+	background-color: #4c6f46 !important; /* green-500 */
+}
+
+.custom-calendar .rmdp-input {
+	background-color: #353b35 !important; /* gray-800 */
+	border-color: #36783a !important; /* green-400 */
+	color: #d1d4d1 !important; /* gray-200 */
+}
+
+.custom-calendar .rmdp-range {
+	background-color: #4c6f46 !important; /* green-500 */
+	box-shadow: 0 0 3px #36783a !important; /* green-400 */
+}
+
+.custom-calendar .rmdp-range-hover {
+	background-color: #a5b89a !important; /* green-300 */
+	color: #353b35 !important; /* gray-800 */
+}
+
+.custom-calendar .rmdp-header {
+	border-bottom-color: #36783a !important; /* green-400 */
+}
+
+.custom-calendar .rmdp-day-picker {
+	background-color: #353b35 !important; /* gray-800 */
+}
+
+.custom-calendar .rmdp-month-picker,
+.custom-calendar .rmdp-year-picker {
+	background-color: #353b35 !important; /* gray-800 */
+}
+
+.rmdp-arrow-container .rmdp-right {
+	background-color: #36783a !important; /* green-400 */
+	color: #36783a !important; /* green-400 */
+}
+.rmdp-header-values {
+	color: #fff !important;
+}
+
+.rmdp-day,
+.rmdp-week-day {
+	color: #fff !important;
+}
+
+.rmdp-arrow {
+	border-color: #36783a !important; /* green-400 */
+}
+
+.custom-calendar .rmdp-header-values span {
+	color: #d1d4d1 !important; /* gray-200 */
+}
+
+.rmdp-week-day {
+	color: #a5b89a !important; /* green-300 */
+}
+
+.rmdp-panel-body .b-date {
+	background-color: #36783a !important;
+}
+
+.rmdp-panel-body li .b-deselect {
+	background-color: #36783a !important;
+}
+
+.rmdp-toolbar div {
+	background-color: #36783a !important;
+}
+
 .overlay {
 	position: fixed;
 	top: 0;
@@ -242,6 +376,66 @@ body {
 	z-index: 999;
 }
 
+.custom-datepicker {
+	background-color: #353b35 !important; /* gray-800 */
+}
+
+.custom-datepicker .react-datepicker__header {
+	background-color: #353b35 !important; /* gray-800 */
+	border-bottom: 1px solid #36783a !important; /* green-400 */
+}
+
+.custom-datepicker .react-datepicker__current-month {
+	color: #36783a !important; /* green-400 */
+}
+
+.custom-datepicker .react-datepicker__day-name {
+	color: #a5b89a !important; /* green-300 */
+}
+
+.custom-datepicker .react-datepicker__day {
+	color: #d1d4d1 !important; /* gray-200 */
+}
+
+.custom-datepicker .react-datepicker__day:hover {
+	background-color: #4c6f46 !important; /* green-500 */
+	color: white !important;
+}
+
+.custom-datepicker .react-datepicker__day--selected {
+	background-color: #36783a !important; /* green-400 */
+	color: white !important;
+}
+
+.custom-datepicker .react-datepicker__day--keyboard-selected {
+	background-color: #4c6f46 !important; /* green-500 */
+	color: white !important;
+}
+
+.custom-datepicker .react-datepicker__day--today {
+	font-weight: bold;
+	color: #36783a !important; /* green-400 */
+}
+
+.custom-datepicker .react-datepicker__day--disabled {
+	color: #6d726d !important; /* gray-600 */
+}
+
+.custom-datepicker .react-datepicker__navigation-icon::before {
+	border-color: #36783a !important; /* green-400 */
+}
+
+.custom-datepicker .react-datepicker__navigation:hover *::before {
+	border-color: #36783a !important; /* green-500 */
+}
+
 .react-datepicker__month {
 	padding-right: 12px !important;
+}
+.react-datepicker__day--highlighted,
+.react-datepicker__month-text--highlighted,
+.react-datepicker__quarter-text--highlighted,
+.react-datepicker__year-text--highlighted {
+	background-color: #4c6f46 !important; /* green-500 */
+	color: white !important;
 }

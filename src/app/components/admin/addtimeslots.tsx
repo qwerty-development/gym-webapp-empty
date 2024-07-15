@@ -227,7 +227,8 @@ export default function AddTimeSlotComponent() {
 							/>
 						]}
 						render={<Icon />}
-						className='w-full bg-gray-700 border-2 border-green-500 rounded-full text-white'
+						className='custom-date-picker w-full bg-gray-700 border-2 border-green-400 rounded-full text-white'
+						containerClassName='custom-date-picker-container'
 					/>
 				</div>
 
@@ -302,7 +303,8 @@ export default function AddTimeSlotComponent() {
 							/>
 						]}
 						render={<Icon />}
-						className='w-full text-center mx-auto bg-gray-700 border-2 border-green-500 rounded-full text-white'
+						className='custom-date-picker w-full bg-gray-700 border-2 border-green-400 rounded-full text-white'
+						containerClassName='custom-date-picker-container'
 					/>
 				</div>
 

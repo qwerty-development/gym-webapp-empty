@@ -599,12 +599,12 @@ export default function BookForClient() {
 										selected={selectedDate}
 										onChange={setSelectedDate}
 										inline
-										calendarClassName='rounded-xl shadow-lg bg-gray-700 border-none text-white'
-										dayClassName={date =>
-											'text-gray-300 hover:bg-green-300 hover:text-white rounded-full'
+										calendarClassName='custom-datepicker rounded-xl shadow-lg bg-gray-800 border-none text-white'
+										dayClassName={() =>
+											'text-gray-200 hover:bg-green-500 hover:text-white'
 										}
 										monthClassName={() => 'text-green-400'}
-										weekDayClassName={() => 'text-blue-400'}
+										weekDayClassName={() => 'text-green-300'}
 										minDate={new Date()}
 										highlightDates={highlightDates}
 									/>
