@@ -659,7 +659,7 @@ export const fetchCoaches = async activityId => {
 	// Fetch coaches based on extracted coach IDs
 	const { data: coachesData, error: coachesError } = await supabase
 		.from('coaches')
-		.select('id, name, profile_picture')
+		.select('id, name, profile_picture,email')
 		.in('id', coachIds) // Filter coaches by extracted IDs
 
 	if (coachesError) {
@@ -693,7 +693,7 @@ export const fetchCoachesGroup = async activityId => {
 	// Fetch coaches based on extracted coach IDs
 	const { data: coachesData, error: coachesError } = await supabase
 		.from('coaches')
-		.select('id, name, profile_picture')
+		.select('id, name, profile_picture,email')
 		.in('id', coachIds) // Filter coaches by extracted IDs
 
 	if (coachesError) {
@@ -799,7 +799,7 @@ export const bookTimeSlot = async ({
 
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
-			.select('name')
+			.select('*')
 			.eq('id', coachId)
 			.single()
 
@@ -818,6 +818,7 @@ export const bookTimeSlot = async ({
 			start_time: startTime,
 			end_time: endTime,
 			coach_name: coachData.name,
+			coach_email: coachData.email,
 			user_wallet: newWalletBalance
 		}
 
@@ -1008,7 +1009,7 @@ export const bookTimeSlotGroup = async ({
 
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
-			.select('name')
+			.select('*')
 			.eq('id', coachId)
 			.single()
 
@@ -1027,6 +1028,7 @@ export const bookTimeSlotGroup = async ({
 			start_time: startTime,
 			end_time: endTime,
 			coach_name: coachData.name,
+			coach_email: coachData.email,
 			user_wallet: newWalletBalance
 		}
 

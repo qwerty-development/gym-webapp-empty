@@ -73,6 +73,7 @@ export default function Example() {
 			profile_picture: string | undefined
 			id: number
 			name: string
+			email: string
 		}[]
 	>([])
 	const [availableTimes, setAvailableTimes] = useState<string[]>([])
