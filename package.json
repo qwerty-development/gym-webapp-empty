@@ -13,7 +13,7 @@
     "@daypilot/daypilot-lite-react": "^3.21.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
-    "@headlessui/react": "^1.7.18",
+    "@headlessui/react": "^1.7.19",
     "@heroicons/react": "^2.1.1",
     "@mui/icons-material": "^5.15.15",
     "@mui/material": "^5.15.15",

@@ -20,6 +20,7 @@ import {
 	fetchAllBookedSlotsToday,
 	fetchUpcomingSessions
 } from '../../../../../utils/admin-requests'
+import { Menu, Transition } from '@headlessui/react'
 import { AddToCalendarButton } from 'add-to-calendar-button-react'
 import { RingLoader } from 'react-spinners'
 import { useWallet } from '@/app/components/users/WalletContext'
@@ -30,7 +31,7 @@ import { FaUser, FaCalendarAlt, FaUsers, FaBars, FaClock } from 'react-icons/fa'
 import Link from 'next/link'
 import useConfirmationModal from '../../../../../utils/useConfirmationModel'
 import ConfirmationModal from '@/app/components/users/ConfirmationModal'
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { FaChevronLeft, FaChevronRight, FaChevronDown } from 'react-icons/fa'
 
 type Reservation = {
 	id: number
@@ -466,7 +467,7 @@ export default function Dashboard() {
 							<h3 className='text-2xl font-bold text-green-400'>
 								{session.activities.name}
 							</h3>
-							<span className='text-sm bg-green-600 text-white text-nowrap px-2 py-1 rounded-full'>
+							<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
 								{session.activities.credits} Credits
 							</span>
 						</div>
@@ -483,13 +484,53 @@ export default function Dashboard() {
 								<FaUser className='mr-2 text-green-500' />
 								{session.coaches.name}
 							</p>
-							<p className='flex items-center'>
-								<FaUsers className='mr-2 text-green-500' />
-								{activeTab === 'individual' ? 'Client: ' : 'Clients: '}
-								{activeTab === 'individual'
-									? `${session.users.first_name} ${session.users.last_name}`
-									: session.count}
-							</p>
+							{activeTab === 'individual' ? (
+								<p className='flex items-center'>
+									<FaUser className='mr-2 text-green-500' />
+									Client:{' '}
+									{`${session.users.first_name} ${session.users.last_name}`}
+								</p>
+							) : (
+								<Menu as='div' className='relative inline-block text-center'>
+									<div>
+										<Menu.Button className='inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-gray-700 text-sm font-medium text-gray-300 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-green-500'>
+											Clients ({session.users.length})
+											<FaChevronDown
+												className='-mr-1 ml-2 h-5 w-5'
+												aria-hidden='true'
+											/>
+										</Menu.Button>
+									</div>
+									<Transition
+										as={React.Fragment}
+										enter='transition ease-out duration-100'
+										enterFrom='transform opacity-0 scale-95'
+										enterTo='transform opacity-100 scale-100'
+										leave='transition ease-in duration-75'
+										leaveFrom='transform opacity-100 scale-100'
+										leaveTo='transform opacity-0 scale-95'>
+										<Menu.Items className='origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none'>
+											<div className='py-1'>
+												{session.users.map((user: any, userIndex: any) => (
+													<Menu.Item key={userIndex}>
+														{({ active }) => (
+															<a
+																href='#'
+																className={`${
+																	active
+																		? 'bg-gray-600 text-gray-100'
+																		: 'text-gray-300'
+																} block px-4 py-2 text-sm`}>
+																{`${user.first_name} ${user.last_name}`}
+															</a>
+														)}
+													</Menu.Item>
+												))}
+											</div>
+										</Menu.Items>
+									</Transition>
+								</Menu>
+							)}
 							{activeTab === 'group' && (
 								<>
 									<p className='flex items-center'>
@@ -520,6 +561,7 @@ export default function Dashboard() {
 			))
 		)
 	}
+
 	return (
 		<div className='min-h-screen bg-gray-700 text-white font-sans'>
 			<ConfirmationModal
