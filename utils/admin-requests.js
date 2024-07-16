@@ -133,16 +133,21 @@ export const addCoach = async (coach, file) => {
 			return null
 		}
 
-		// Construct the public URL manually
 		const publicURL = `https://ofsmbbjjveacrikuuueh.supabase.co/storage/v1/object/public/coach_profile_picture/${fileName}`
 		console.log('Constructed public URL: ' + publicURL)
-		//hulemzdcxcxolglazzyt.supabase.co/storage/v1/s3
-		https: if (publicURL) {
+
+		if (publicURL) {
 			coach.profile_picture = publicURL
 		} else {
 			console.error('Public URL is undefined.')
 			return null
 		}
+	}
+
+	// Ensure the coach object has a name and email
+	if (!coach.name || !coach.email) {
+		console.error('Coach name and email are required.')
+		return null
 	}
 
 	const { data, error } = await supabase.from('coaches').insert([coach])
@@ -154,7 +159,6 @@ export const addCoach = async (coach, file) => {
 
 	return data ? data[0] : null
 }
-
 export const updateCoach = async (coachId, updates, file) => {
 	const supabase = await supabaseClient()
 
@@ -171,12 +175,16 @@ export const updateCoach = async (coachId, updates, file) => {
 			return null
 		}
 
-		// Manually construct the public URL for the uploaded file
 		const publicURL = `https://ofsmbbjjveacrikuuueh.supabase.co/storage/v1/object/public/coach_profile_picture/${fileName}`
 		console.log('New Public URL: ' + publicURL)
 
-		// Update the image URL in the coach updates
 		updates.profile_picture = publicURL
+	}
+
+	// Ensure the updates object has a name and email
+	if (!updates.name || !updates.email) {
+		console.error('Coach name and email are required for updates.')
+		return null
 	}
 
 	// Update the coach in the database

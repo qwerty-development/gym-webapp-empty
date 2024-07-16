@@ -28,7 +28,8 @@ import toast, { LoaderIcon } from 'react-hot-toast'
 type Coach = {
 	id: number
 	name: string
-	profile_picture: string // Make sure this is being fetched
+	email: string // Add this line
+	profile_picture: string
 }
 
 type Activity = {
@@ -69,7 +70,8 @@ const CoachesandActivitiesAdminPage = () => {
 	const [newCoachPicture, setNewCoachPicture] = useState<File | null>(null)
 	const [isPrivateTraining, setIsPrivateTraining] = useState<boolean>(true) // State for toggle under activities
 	const [buttonLoading, setButtonLoading] = useState(false)
-
+	const [newCoachEmail, setNewCoachEmail] = useState('')
+	const [updatedCoachEmail, setUpdatedCoachEmail] = useState('')
 	useEffect(() => {
 		const loadInitialData = async () => {
 			setLoading(true)
@@ -90,32 +92,34 @@ const CoachesandActivitiesAdminPage = () => {
 	// Adjusted handleAddCoach to pass the file parameter
 	const handleAddCoach = async () => {
 		setButtonLoading(true)
-		if (newCoachName.trim()) {
-			await addCoach({ name: newCoachName }, newCoachPicture)
+		if (newCoachName.trim() && newCoachEmail.trim()) {
+			await addCoach(
+				{ name: newCoachName, email: newCoachEmail },
+				newCoachPicture
+			)
 			setNewCoachName('')
+			setNewCoachEmail('')
 			setNewCoachPicture(null)
 			refreshData()
 			toast.success('Coach added successfully')
 		} else {
-			toast.error('Please provide a valid name for the coach')
+			toast.error('Please provide a valid name and email for the coach')
 		}
-
 		setButtonLoading(false)
 	}
-
 	const handleSubmitUpdate = async () => {
 		setButtonLoading(true)
-		if (updatedCoachName.trim() !== '') {
+		if (updatedCoachName.trim() !== '' && updatedCoachEmail.trim() !== '') {
 			await updateCoach(
 				updateCoachId!,
-				{ name: updatedCoachName },
+				{ name: updatedCoachName, email: updatedCoachEmail },
 				updatedCoachPicture
 			)
 			setShowUpdateForm(false)
 			refreshData()
 			toast.success('Coach updated successfully')
 		} else {
-			toast.error('Please provide a valid name for the coach')
+			toast.error('Please provide a valid name and email for the coach')
 		}
 		setButtonLoading(false)
 	}
@@ -245,16 +249,17 @@ const CoachesandActivitiesAdminPage = () => {
 
 	const handleToggleForm = (id: React.SetStateAction<number | null>) => {
 		if (updateCoachId === id) {
-			// If the form is already open for the same coach, close it
 			setShowUpdateForm(false)
 			setUpdateCoachId(null)
 			setUpdatedCoachName('')
+			setUpdatedCoachEmail('')
 			setUpdatedCoachPicture(null)
 		} else {
 			setShowUpdateForm(true)
 			setUpdateCoachId(id)
 			const coach = coaches.find(coach => coach.id === id)
 			setUpdatedCoachName(coach?.name || '')
+			setUpdatedCoachEmail(coach?.email || '')
 			setUpdatedCoachPicture(null)
 		}
 
@@ -268,7 +273,6 @@ const CoachesandActivitiesAdminPage = () => {
 			}
 		})
 	}
-
 	// Similarly, adjust handleUpdateCoach to pass the file if it's updated
 
 	const handleToggle = () => {
@@ -292,6 +296,13 @@ const CoachesandActivitiesAdminPage = () => {
 							value={newCoachName}
 							onChange={e => setNewCoachName(e.target.value)}
 							placeholder='New Coach Name'
+							className='w-full sm:w-1/3 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						/>
+						<input
+							type='email'
+							value={newCoachEmail}
+							onChange={e => setNewCoachEmail(e.target.value)}
+							placeholder='New Coach Email'
 							className='w-full sm:w-1/3 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 						/>
 						<FileUploadDropzone onFileChange={handleFileChange} />
@@ -327,7 +338,12 @@ const CoachesandActivitiesAdminPage = () => {
 											alt={`Profile of ${coach.name}`}
 											className='w-12 h-12 rounded-full border-2 border-green-500'
 										/>
-										<span className='text-xl font-semibold'>{coach.name}</span>
+										<div>
+											<span className='text-xl font-semibold'>
+												{coach.name}
+											</span>
+											<p className='text-sm text-gray-400'>{coach.email}</p>
+										</div>
 									</div>
 									<div className='flex space-x-2'>
 										<motion.button
@@ -361,6 +377,13 @@ const CoachesandActivitiesAdminPage = () => {
 												value={updatedCoachName}
 												onChange={e => setUpdatedCoachName(e.target.value)}
 												placeholder='New Coach Name'
+												className='w-full p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+											/>
+											<input
+												type='email'
+												value={updatedCoachEmail}
+												onChange={e => setUpdatedCoachEmail(e.target.value)}
+												placeholder='New Coach Email'
 												className='w-full p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 											/>
 											<FileUploadDropzone onFileChange={handleFileChange} />
