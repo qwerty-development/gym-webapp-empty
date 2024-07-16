@@ -96,7 +96,9 @@ export default function ViewReservationsComponent() {
 		// Fetch existing group time slot data
 		const { data: existingSlot, error: existingSlotError } = await supabase
 			.from('group_time_slots')
-			.select('user_id, count, booked, additions')
+			.select(
+				'user_id, count, booked, additions, activity_id, coach_id, date, start_time, end_time'
+			)
 			.eq('id', timeSlotId)
 			.single()
 
@@ -115,7 +117,7 @@ export default function ViewReservationsComponent() {
 		// Fetch user data
 		const { data: userData, error: userError } = await supabase
 			.from('users')
-			.select('wallet, isFree')
+			.select('wallet, isFree, first_name, last_name, email')
 			.eq('user_id', userId)
 			.single()
 
@@ -179,9 +181,84 @@ export default function ViewReservationsComponent() {
 			await updateUserCreditsCancellation(userId, totalRefund)
 		}
 
+		// Fetch activity data
+		const { data: activityData, error: activityError } = await supabase
+			.from('activities')
+			.select('name')
+			.eq('id', existingSlot.activity_id)
+			.single()
+
+		if (activityError) {
+			console.error('Error fetching activity data:', activityError.message)
+			return
+		}
+
+		// Fetch coach data
+		const { data: coachData, error: coachError } = await supabase
+			.from('coaches')
+			.select('name, email')
+			.eq('id', existingSlot.coach_id)
+			.single()
+
+		if (coachError) {
+			console.error('Error fetching coach data:', coachError.message)
+			return
+		}
+
+		// Prepare email data
+		const emailData = {
+			user_name: `${userData.first_name} ${userData.last_name}`,
+			user_email: userData.email,
+			activity_name: activityData.name,
+			activity_date: existingSlot.date,
+			start_time: existingSlot.start_time,
+			end_time: existingSlot.end_time,
+			coach_name: coachData.name,
+			coach_email: coachData.email
+		}
+
+		// Send removal email to admin
+		try {
+			const responseAdmin = await fetch('/api/send-cancel-admin', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(emailData)
+			})
+
+			if (!responseAdmin.ok) {
+				const resultAdmin = await responseAdmin.json()
+				throw new Error(
+					`Failed to send admin removal email: ${resultAdmin.error}`
+				)
+			}
+		} catch (error) {
+			console.error('Error sending admin removal email:', error)
+		}
+
+		// Send removal email to user
+		try {
+			const responseUser = await fetch('/api/send-cancel-user', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(emailData)
+			})
+
+			if (!responseUser.ok) {
+				const resultUser = await responseUser.json()
+				throw new Error(
+					`Failed to send user removal email: ${resultUser.error}`
+				)
+			}
+		} catch (error) {
+			console.error('Error sending user removal email:', error)
+		}
+
 		fetchData()
 	}
-
 	useEffect(() => {
 		const data = isPrivateTraining ? privateSession : publicSession
 		setReservations(data)
@@ -326,74 +403,136 @@ export default function ViewReservationsComponent() {
 		) {
 			if (isPrivateTraining) {
 				const supabase = await supabaseClient()
-				const { data: reservationData, error: reservationError } =
-					await supabase
-						.from('time_slots')
-						.select('additions')
-						.eq('id', reservation.id)
+
+				try {
+					// Fetch reservation details
+					const { data: reservationData, error: reservationError } =
+						await supabase
+							.from('time_slots')
+							.select('additions, coach_id, date, start_time, end_time')
+							.eq('id', reservation.id)
+							.single()
+
+					if (reservationError || !reservationData) {
+						throw new Error(
+							reservationError?.message || 'Reservation not found'
+						)
+					}
+
+					// Fetch additions prices from the market table
+					const { data: additionsData, error: additionsError } = await supabase
+						.from('market')
+						.select('name, price')
+						.in('name', reservationData.additions || [])
+
+					if (additionsError) {
+						throw new Error(
+							`Error fetching additions data: ${additionsError.message}`
+						)
+					}
+
+					const additionsTotalPrice = additionsData.reduce(
+						(total, item) => total + item.price,
+						0
+					)
+
+					// Fetch user data
+					const { data: userData, error: userError } = await supabase
+						.from('users')
+						.select('isFree, first_name, last_name, email')
+						.eq('user_id', reservation.user?.user_id)
 						.single()
 
-				if (reservationError || !reservationData) {
-					console.error(
-						'Error fetching reservation details:',
-						reservationError?.message || 'Reservation not found'
+					if (userError || !userData) {
+						throw new Error(
+							`Error fetching user data: ${
+								userError?.message || 'User not found'
+							}`
+						)
+					}
+
+					let totalRefund = additionsTotalPrice
+					if (!userData.isFree) {
+						totalRefund += reservation.activity?.credits || 0
+					}
+
+					const updatedSlot = {
+						...reservation,
+						user_id: null,
+						booked: false,
+						additions: [] // Clear additions after cancellation
+					}
+
+					const { success, error } = await updateTimeSlot(updatedSlot)
+					if (!success) {
+						throw new Error(`Failed to cancel booking: ${error}`)
+					}
+
+					// Update user credits
+					await updateUserCreditsCancellation(
+						reservation.user?.user_id,
+						totalRefund
 					)
-					return
-				}
 
-				// Fetch additions prices from the market table
-				const { data: additionsData, error: additionsError } = await supabase
-					.from('market')
-					.select('name, price')
-					.in('name', reservationData.additions || [])
+					// Fetch coach data
+					const { data: coachData, error: coachError } = await supabase
+						.from('coaches')
+						.select('name, email')
+						.eq('id', reservationData.coach_id)
+						.single()
 
-				if (additionsError) {
-					console.error(
-						'Error fetching additions data:',
-						additionsError.message
-					)
-					return
-				}
+					if (coachError) {
+						throw new Error(`Error fetching coach data: ${coachError.message}`)
+					}
 
-				const additionsTotalPrice = additionsData.reduce(
-					(total, item) => total + item.price,
-					0
-				)
+					// Prepare email data
+					const emailData = {
+						user_name: `${userData.first_name} ${userData.last_name}`,
+						user_email: userData.email,
+						activity_name: reservation.activity?.name,
+						activity_date: reservationData.date,
+						start_time: reservationData.start_time,
+						end_time: reservationData.end_time,
+						coach_name: coachData.name,
+						coach_email: coachData.email
+					}
 
-				// Fetch user data
-				const { data: userData, error: userError } = await supabase
-					.from('users')
-					.select('isFree')
-					.eq('user_id', reservation.user?.user_id)
-					.single()
+					// Send cancellation email to admin
+					const responseAdmin = await fetch('/api/send-cancel-admin', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify(emailData)
+					})
 
-				if (userError || !userData) {
-					console.error(
-						`Error fetching user data for user ${reservation.user?.user_id}:`,
-						userError?.message || 'User not found'
-					)
-					return
-				}
+					if (!responseAdmin.ok) {
+						const resultAdmin = await responseAdmin.json()
+						throw new Error(
+							`Failed to send admin cancellation email: ${resultAdmin.error}`
+						)
+					}
 
-				let totalRefund = additionsTotalPrice
-				if (!userData.isFree) {
-					totalRefund += reservation.activity?.credits || 0
-				}
+					// Send cancellation email to user
+					const responseUser = await fetch('/api/send-cancel-user', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify(emailData)
+					})
 
-				const updatedSlot = {
-					...reservation,
-					user_id: null,
-					booked: false,
-					additions: [] // Clear additions after cancellation
-				}
+					if (!responseUser.ok) {
+						const resultUser = await responseUser.json()
+						throw new Error(
+							`Failed to send user cancellation email: ${resultUser.error}`
+						)
+					}
 
-				const { success, error } = await updateTimeSlot(updatedSlot)
-				if (success) {
 					console.log('Booking cancelled successfully.')
-					updateUserCreditsCancellation(reservation.user?.user_id, totalRefund)
 					fetchData()
-				} else {
-					console.error('Failed to cancel booking:', error)
+				} catch (error) {
+					console.error('Error cancelling booking:')
 				}
 			} else {
 				const { success, error } = await cancelGroupBooking(reservation.id)

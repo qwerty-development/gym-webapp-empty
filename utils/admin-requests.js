@@ -590,7 +590,9 @@ export const cancelGroupBooking = async timeSlotId => {
 	// Fetch existing group time slot data
 	const { data: existingSlot, error: existingSlotError } = await supabase
 		.from('group_time_slots')
-		.select('user_id, count, activity_id, additions')
+		.select(
+			'user_id, count, activity_id, additions, coach_id, date, start_time, end_time'
+		)
 		.eq('id', timeSlotId)
 		.single()
 
@@ -608,13 +610,13 @@ export const cancelGroupBooking = async timeSlotId => {
 
 	const { data: activityData, error: activityError } = await supabase
 		.from('activities')
-		.select('credits')
+		.select('credits, name')
 		.eq('id', existingSlot.activity_id)
 		.single()
 
 	if (activityError || !activityData) {
 		console.error(
-			'Error fetching activity credits:',
+			'Error fetching activity data:',
 			activityError?.message || 'Activity not found'
 		)
 		return {
@@ -625,13 +627,23 @@ export const cancelGroupBooking = async timeSlotId => {
 
 	const activityCredits = activityData.credits
 
-	// Refund credits to each user in the user_id array including additions
-	for (const userAddition of existingSlot.additions) {
-		const { user_id: userId, items } = userAddition
+	// Fetch coach data
+	const { data: coachData, error: coachError } = await supabase
+		.from('coaches')
+		.select('name, email')
+		.eq('id', existingSlot.coach_id)
+		.single()
 
+	if (coachError) {
+		console.error('Error fetching coach data:', coachError.message)
+		return { success: false, error: coachError.message }
+	}
+
+	// Process refunds and send emails to all users in the user_id array
+	for (const userId of existingSlot.user_id) {
 		const { data: userData, error: userError } = await supabase
 			.from('users')
-			.select('wallet, isFree')
+			.select('wallet, isFree, first_name, last_name, email')
 			.eq('user_id', userId)
 			.single()
 
@@ -648,11 +660,17 @@ export const cancelGroupBooking = async timeSlotId => {
 			totalRefund += activityCredits
 		}
 
-		const additionsTotalPrice = items.reduce(
-			(total, item) => total + item.price,
-			0
+		// Check if user has any additions
+		const userAddition = existingSlot.additions.find(
+			addition => addition.user_id === userId
 		)
-		totalRefund += additionsTotalPrice
+		if (userAddition) {
+			const additionsTotalPrice = userAddition.items.reduce(
+				(total, item) => total + item.price,
+				0
+			)
+			totalRefund += additionsTotalPrice
+		}
 
 		const newWalletBalance = userData.wallet + totalRefund
 
@@ -666,6 +684,39 @@ export const cancelGroupBooking = async timeSlotId => {
 				`Error updating wallet for user ${userId}:`,
 				walletUpdateError.message
 			)
+		}
+
+		// Prepare email data for each user
+		const emailData = {
+			user_name: `${userData.first_name} ${userData.last_name}`,
+			user_email: userData.email,
+			activity_name: activityData.name,
+			activity_date: existingSlot.date,
+			start_time: existingSlot.start_time,
+			end_time: existingSlot.end_time,
+			coach_name: coachData.name,
+			coach_email: coachData.email,
+			refund_amount: totalRefund
+		}
+
+		// Send cancellation email to user
+		try {
+			const responseUser = await fetch('/api/send-cancel-user', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(emailData)
+			})
+
+			if (!responseUser.ok) {
+				const resultUser = await responseUser.json()
+				console.error(
+					`Failed to send user cancellation email: ${resultUser.error}`
+				)
+			}
+		} catch (error) {
+			console.error('Error sending user cancellation email:', error)
 		}
 	}
 
@@ -683,6 +734,36 @@ export const cancelGroupBooking = async timeSlotId => {
 	if (error) {
 		console.error('Error updating group time slot:', error.message)
 		return { success: false, error: error.message }
+	}
+
+	// Send cancellation email to admin
+	const adminEmailData = {
+		activity_name: activityData.name,
+		activity_date: existingSlot.date,
+		start_time: existingSlot.start_time,
+		end_time: existingSlot.end_time,
+		coach_name: coachData.name,
+		coach_email: coachData.email,
+		cancelled_users: existingSlot.count
+	}
+
+	try {
+		const responseAdmin = await fetch('/api/send-cancel-admin', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(adminEmailData)
+		})
+
+		if (!responseAdmin.ok) {
+			const resultAdmin = await responseAdmin.json()
+			console.error(
+				`Failed to send admin cancellation email: ${resultAdmin.error}`
+			)
+		}
+	} catch (error) {
+		console.error('Error sending admin cancellation email:', error)
 	}
 
 	return { success: true, data }
