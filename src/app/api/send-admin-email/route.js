@@ -1,143 +1,156 @@
-// src/app/api/sendAdminEmail/route.js
+// src/app/api/sendBookingEmail/route.js
 import nodemailer from 'nodemailer'
 
+function generateBookingEmailHTML(recipient, bookingDetails) {
+	const isAdmin = recipient === 'admin'
+	return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Booking Confirmation</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            .container {
+                background-color: #f9f9f9;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                padding: 20px;
+            }
+            .header {
+                background-color: #4CAF50;
+                color: white;
+                text-align: center;
+                padding: 10px;
+                border-radius: 5px 5px 0 0;
+            }
+            .content {
+                background-color: white;
+                padding: 20px;
+                border-radius: 0 0 5px 5px;
+            }
+            .booking-details {
+                background-color: #f5f5f5;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            .booking-details p {
+                margin: 5px 0;
+            }
+            .footer {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 0.8em;
+                color: #777;
+            }
+            .cta-button {
+                display: inline-block;
+                background-color: #4CAF50;
+                color: white;
+                text-decoration: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>New Booking Confirmation</h1>
+            </div>
+            <div class="content">
+                <p>Dear ${isAdmin ? 'Admin' : bookingDetails.coach_name},</p>
+                <p>A new booking has been made. Here are the details:</p>
+
+                <div class="booking-details">
+                    <p><strong>Activity:</strong> ${
+											bookingDetails.activity_name
+										}</p>
+                    <p><strong>Date:</strong> ${
+											bookingDetails.activity_date
+										}</p>
+                    <p><strong>Time:</strong> ${bookingDetails.start_time} - ${
+		bookingDetails.end_time
+	}</p>
+                    <p><strong>Client:</strong> ${bookingDetails.user_name}</p>
+                    <p><strong>Client Email:</strong> ${
+											bookingDetails.user_email
+										}</p>
+                    ${
+											isAdmin
+												? `
+                    <p><strong>Coach:</strong> ${bookingDetails.coach_name}</p>
+                    <p><strong>Activity Price:</strong> ${bookingDetails.activity_price}</p>
+                    <p><strong>User Wallet:</strong> ${bookingDetails.user_wallet}</p>
+                    `
+												: ''
+										}
+                </div>
+
+
+            </div>
+            <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} NotQwerty. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `
+}
+
 export async function POST(request) {
-	const {
-		user_name,
-		user_email,
-		activity_name,
-		activity_price,
-		activity_date,
-		start_time,
-		end_time,
-		coach_name,
-		user_wallet
-	} = await request.json()
-
-	const transporter = nodemailer.createTransport({
-		service: 'gmail',
-		auth: {
-			user: process.env.EMAIL_USER,
-			pass: process.env.EMAIL_PASS
-		}
-	})
-
-	const mailOptions = {
-		from: 'noreply@notqwerty.com',
-		to: 'info@fitnessvista.co', // Replace with your admin email
-		subject: 'New Booking',
-		html: `
-		  <!DOCTYPE html>
-		  <html lang="en">
-		  <head>
-			  <meta charset="UTF-8">
-			  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-			  <title>New Booking</title>
-			  <style>
-				  body {
-					  font-family: Arial, sans-serif;
-					  background-color: #f4f4f4;
-					  margin: 0;
-					  padding: 0;
-					  color: #333;
-				  }
-				  .container {
-					  width: 100%;
-					  padding: 20px;
-					  background-color: #fff;
-					  max-width: 600px;
-					  margin: 20px auto;
-					  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-				  }
-				  .header {
-					  background-color: #4CAF50;
-					  color: #fff;
-					  padding: 10px 0;
-					  text-align: center;
-				  }
-				  .header h1 {
-					  margin: 0;
-					  font-size: 24px;
-				  }
-				  .content {
-					  padding: 20px;
-					  text-align: center;
-				  }
-				  .content .activity-name {
-					  font-size: 28px;
-					  font-weight: bold;
-					  margin: 20px 0;
-				  }
-				  .content .calendar {
-					  display: inline-block;
-					  padding: 10px;
-					  border: 1px solid #ddd;
-					  border-radius: 5px;
-					  margin: 20px 0;
-				  }
-				  .content .calendar .date {
-					  font-size: 20px;
-					  font-weight: bold;
-				  }
-				  .content .calendar .time {
-					  font-size: 16px;
-					  color: #555;
-				  }
-				  .content p {
-					  margin: 0 0 10px;
-					  line-height: 1.6;
-					  text-align: left;
-				  }
-				  .content p strong {
-					  display: block;
-					  margin-bottom: 5px;
-					  color: #555;
-				  }
-				  .footer {
-					  text-align: center;
-					  padding: 10px 0;
-					  background-color: #f4f4f4;
-					  color: #777;
-					  font-size: 12px;
-				  }
-			  </style>
-		  </head>
-		  <body>
-			  <div class="container">
-				  <div class="header">
-					  <h1>New Booking</h1>
-				  </div>
-				  <div class="content">
-					  <div class="activity-name">${activity_name}</div>
-					  <div class="calendar">
-						  <div class="date">${activity_date}</div>
-						  <div class="time">${start_time} - ${end_time}</div>
-					  </div>
-					  <p><strong>User Name:</strong> ${user_name}</p>
-					  <p><strong>User Email:</strong> ${user_email}</p>
-					  <p><strong>User Wallet:</strong> ${user_wallet}</p>
-					  <p><strong>Activity Price:</strong> ${activity_price}</p>
-					  <p><strong>Coach Name:</strong> ${coach_name}</p>
-				  </div>
-				  <div class="footer">
-					  <p>&copy; 2024 NotQwerty. All rights reserved.</p>
-				  </div>
-			  </div>
-		  </body>
-		  </html>
-		`
-	}
-
 	try {
-		await transporter.sendMail(mailOptions)
+		const bookingDetails = await request.json()
+
+		const transporter = nodemailer.createTransport({
+			service: 'gmail',
+			auth: {
+				user: process.env.EMAIL_USER,
+				pass: process.env.EMAIL_PASS
+			}
+		})
+
+		const adminMailOptions = {
+			from: 'noreply@notqwerty.com',
+			to: 'info@fitnessvista.co',
+			subject: 'New Booking Notification',
+			html: generateBookingEmailHTML('admin', bookingDetails)
+		}
+
+		const coachMailOptions = {
+			from: 'noreply@notqwerty.com',
+			to: bookingDetails.coach_email,
+			subject: 'New Booking: Schedule Update',
+			html: generateBookingEmailHTML('coach', bookingDetails)
+		}
+
+		await transporter.sendMail(adminMailOptions)
+		await transporter.sendMail(coachMailOptions)
+
 		return new Response(
-			JSON.stringify({ message: 'Email sent successfully' }),
+			JSON.stringify({
+				message: 'Booking confirmation emails sent successfully'
+			}),
 			{ status: 200 }
 		)
 	} catch (error) {
-		console.error(error)
-		return new Response(JSON.stringify({ error: 'Failed to send email' }), {
-			status: 500
-		})
+		console.error('Error sending booking confirmation emails:', error)
+		return new Response(
+			JSON.stringify({ error: 'Failed to send booking confirmation emails' }),
+			{
+				status: 500
+			}
+		)
 	}
 }

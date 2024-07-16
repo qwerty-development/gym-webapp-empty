@@ -103,7 +103,8 @@ export const fetchReservations = async userId => {
             ),
             coach:coaches (
                 id,
-                name
+                name,
+                email
             )
         `
 		)
@@ -143,7 +144,8 @@ export const fetchReservationsGroup = async userId => {
             ),
             coach:coaches (
                 id,
-                name
+                name,
+                email
             )
         `
 		)
@@ -275,7 +277,7 @@ export const cancelReservation = async (
 		// Fetch coach data
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
-			.select('name')
+			.select('*')
 			.eq('id', reservationData.coach_id)
 			.single()
 
@@ -291,7 +293,8 @@ export const cancelReservation = async (
 			activity_date: reservationData.date,
 			start_time: reservationData.start_time,
 			end_time: reservationData.end_time,
-			coach_name: coachData.name
+			coach_name: coachData.name,
+			coach_email: coachData.email
 		}
 
 		// Send cancellation email to admin
@@ -451,7 +454,7 @@ export const cancelReservationGroup = async (
 
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
-			.select('name')
+			.select('*')
 			.eq('id', reservationData.coach_id)
 			.single()
 
@@ -466,7 +469,8 @@ export const cancelReservationGroup = async (
 			activity_date: reservationData.date,
 			start_time: reservationData.start_time,
 			end_time: reservationData.end_time,
-			coach_name: coachData.name
+			coach_name: coachData.name,
+			coach_email: coachData.email
 		}
 
 		const responseAdmin = await fetch('/api/send-cancel-admin', {
@@ -659,7 +663,7 @@ export const fetchCoaches = async activityId => {
 	// Fetch coaches based on extracted coach IDs
 	const { data: coachesData, error: coachesError } = await supabase
 		.from('coaches')
-		.select('id, name, profile_picture')
+		.select('id, name, profile_picture,email')
 		.in('id', coachIds) // Filter coaches by extracted IDs
 
 	if (coachesError) {
@@ -693,7 +697,7 @@ export const fetchCoachesGroup = async activityId => {
 	// Fetch coaches based on extracted coach IDs
 	const { data: coachesData, error: coachesError } = await supabase
 		.from('coaches')
-		.select('id, name, profile_picture')
+		.select('id, name, profile_picture,email')
 		.in('id', coachIds) // Filter coaches by extracted IDs
 
 	if (coachesError) {
@@ -799,7 +803,7 @@ export const bookTimeSlot = async ({
 
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
-			.select('name')
+			.select('*')
 			.eq('id', coachId)
 			.single()
 
@@ -818,6 +822,7 @@ export const bookTimeSlot = async ({
 			start_time: startTime,
 			end_time: endTime,
 			coach_name: coachData.name,
+			coach_email: coachData.email,
 			user_wallet: newWalletBalance
 		}
 
@@ -1008,7 +1013,7 @@ export const bookTimeSlotGroup = async ({
 
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
-			.select('name')
+			.select('*')
 			.eq('id', coachId)
 			.single()
 
@@ -1027,6 +1032,7 @@ export const bookTimeSlotGroup = async ({
 			start_time: startTime,
 			end_time: endTime,
 			coach_name: coachData.name,
+			coach_email: coachData.email,
 			user_wallet: newWalletBalance
 		}
 
