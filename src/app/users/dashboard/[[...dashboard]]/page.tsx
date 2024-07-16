@@ -203,7 +203,11 @@ export default function Dashboard() {
 								.slice(0, 2)
 								.join(':'),
 							end_time: reservation.end_time.split(':').slice(0, 2).join(':'),
-							coach: { name: reservation.coach.name, id: reservation.coach.id },
+							coach: {
+								name: reservation.coach.name,
+								id: reservation.coach.id,
+								email: reservation.coach.email
+							},
 							activity: {
 								name: reservation.activity.name,
 								credits: reservation.activity.credits,
@@ -227,7 +231,11 @@ export default function Dashboard() {
 								.slice(0, 2)
 								.join(':'),
 							end_time: reservation.end_time.split(':').slice(0, 2).join(':'),
-							coach: { name: reservation.coach.name, id: reservation.coach.id },
+							coach: {
+								name: reservation.coach.name,
+								id: reservation.coach.id,
+								email: reservation.coach.email
+							},
 							activity: {
 								name: reservation.activity.name,
 								credits: reservation.activity.credits,
@@ -336,7 +344,11 @@ export default function Dashboard() {
 						date: reservation.date,
 						start_time: reservation.start_time.split(':').slice(0, 2).join(':'),
 						end_time: reservation.end_time.split(':').slice(0, 2).join(':'),
-						coach: { name: reservation.coach.name, id: reservation.coach.id },
+						coach: {
+							name: reservation.coach.name,
+							id: reservation.coach.id,
+							email: reservation.coach.email
+						},
 						activity: {
 							name: reservation.activity.name,
 							credits: reservation.activity.credits,
