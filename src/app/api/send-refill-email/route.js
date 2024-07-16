@@ -196,7 +196,7 @@ export async function POST(request) {
         </div>
         <div class="content">
             <p><strong>Name:</strong> ${user_name}</p>
-            <p><strong>Address:</strong> ${user_email}</p>
+            <p><strong>Email:</strong> ${user_email}</p>
             <p><strong>Wallet:</strong> ${user_wallet} credits</p>
         </div>
         <div class="content">
