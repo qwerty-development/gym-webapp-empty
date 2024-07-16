@@ -921,7 +921,7 @@ export const fetchUsers = async searchQuery => {
 
 // src/app/api/update-user-credits/route.js
 
-export const updateUserCredits = async (userId, wallet,sale,newCredits) => {
+export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 	const supabase = await supabaseClient()
 
 	// Fetch user details
@@ -1070,7 +1070,7 @@ export const bookTimeSlotForClient = async ({
 	// Fetch coach name
 	const { data: coachData, error: coachError } = await supabase
 		.from('coaches')
-		.select('name')
+		.select('*')
 		.eq('id', coachId)
 		.single()
 
@@ -1089,6 +1089,7 @@ export const bookTimeSlotForClient = async ({
 		start_time: startTime,
 		end_time: endTime,
 		coach_name: coachData.name,
+		coach_email: coachData.email,
 		user_wallet: newWalletBalance
 	}
 
@@ -1269,7 +1270,7 @@ export const bookTimeSlotForClientGroup = async ({
 	// Fetch coach name
 	const { data: coachData, error: coachError } = await supabase
 		.from('coaches')
-		.select('name')
+		.select('*')
 		.eq('id', coachId)
 		.single()
 
@@ -1288,6 +1289,7 @@ export const bookTimeSlotForClientGroup = async ({
 		start_time: startTime,
 		end_time: endTime,
 		coach_name: coachData.name,
+		coach_email: coachData.email,
 		user_wallet: newWalletBalance
 	}
 
