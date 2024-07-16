@@ -102,7 +102,8 @@ export const fetchUpcomingSessions = async (type, limit = 6) => {
 			...session,
 			users: session.user_id
 				.map(userId => usersMap[userId] || null)
-				.filter(Boolean)
+				.filter(Boolean),
+			additions: session.additions || []
 		}))
 
 		return transformedSessions

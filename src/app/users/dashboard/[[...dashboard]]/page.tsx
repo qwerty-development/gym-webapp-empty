@@ -543,8 +543,29 @@ export default function Dashboard() {
 						<div className='bg-gray-700 rounded-lg p-3 mt-4'>
 							<p className='text-sm text-gray-300'>
 								<span className='font-semibold text-green-400'>Additions:</span>{' '}
-								{session.additions && session.additions.length > 0
-									? session.additions
+								{session.additions && session.additions.length > 0 ? (
+									activeTab === 'group' ? (
+										<ul className='space-y-1'>
+											{session.additions.map(
+												(addition: any, addIndex: number) => (
+													<li key={addIndex}>
+														<span className='font-bold text-yellow-300'>
+															{session.users.find(
+																(user: any) => user.user_id === addition.user_id
+															)?.first_name || 'Unknown'}
+														</span>
+														<span className='text-gray-300'>: </span>
+														<span className='text-green-300'>
+															{addition.items
+																.map((item: any) => item.name)
+																.join(', ')}
+														</span>
+													</li>
+												)
+											)}
+										</ul>
+									) : (
+										session.additions
 											.map((addition: any) =>
 												typeof addition === 'string'
 													? addition
@@ -553,7 +574,10 @@ export default function Dashboard() {
 															.join(', ')
 											)
 											.join(', ')
-									: 'No additions'}
+									)
+								) : (
+									'No additions'
+								)}
 							</p>
 						</div>
 					</div>
