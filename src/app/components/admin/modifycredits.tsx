@@ -106,7 +106,9 @@ const ModifyCreditsComponent = () => {
 					const updatedCredits = (currentUser.wallet || 0) + creditChange
 					const { error } = await updateUserCredits(
 						selectedUserId,
-						updatedCredits
+						updatedCredits,
+						sale,
+						newCredits
 					)
 					if (!error) {
 						setUsers(prevUsers =>

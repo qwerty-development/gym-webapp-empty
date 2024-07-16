@@ -913,7 +913,7 @@ export const fetchUsers = async searchQuery => {
 
 // src/app/api/update-user-credits/route.js
 
-export const updateUserCredits = async (userId, wallet) => {
+export const updateUserCredits = async (userId, wallet,sale,newCredits) => {
 	const supabase = await supabaseClient()
 
 	// Fetch user details
@@ -944,7 +944,9 @@ export const updateUserCredits = async (userId, wallet) => {
 		user_name: userData.first_name + ' ' + userData.last_name,
 		user_email: userData.email,
 		user_wallet: wallet,
-		creditsAdded: wallet - userData.wallet // Assuming creditsAdded is the difference
+		creditsAdded: wallet - userData.wallet, // Assuming creditsAdded is the difference
+		sale,
+		newCredits
 	}
 
 	// Send email notification to user
