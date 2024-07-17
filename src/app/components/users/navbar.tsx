@@ -6,7 +6,7 @@ import { UserButton } from '@clerk/nextjs'
 import { useUser } from '@clerk/nextjs'
 import { useWallet } from './WalletContext'
 import Image from 'next/image'
-import { FaBars, FaTimes, FaUser, FaCalendarAlt, FaCog } from 'react-icons/fa'
+import { FaBars, FaTimes, FaUser, FaCalendarAlt, FaCog, FaShoppingCart } from 'react-icons/fa'
 import Link from 'next/link'
 
 export default function NavbarComponent() {
@@ -21,11 +21,8 @@ export default function NavbarComponent() {
 
 	const navItems = [
 		{ href: '/users/dashboard', label: 'Dashboard', icon: FaUser },
-		{
-			href: '/users/bookasession',
-			label: 'Book a session',
-			icon: FaCalendarAlt
-		},
+		{ href: '/users/bookasession', label: 'Book a session', icon: FaCalendarAlt },
+		{ href: '/users/shop', label: 'Shop', icon: FaShoppingCart },
 		...(user?.publicMetadata?.role === 'admin'
 			? [{ href: '/admin/manage-users', label: 'Admin', icon: FaCog }]
 			: [])
