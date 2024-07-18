@@ -29,7 +29,14 @@ import { useWallet } from '@/app/components/users/WalletContext'
 import toast from 'react-hot-toast'
 import Modal from 'react-modal'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaCalendarAlt, FaUsers, FaBars, FaClock, FaShoppingCart } from 'react-icons/fa'
+import {
+	FaUser,
+	FaCalendarAlt,
+	FaUsers,
+	FaBars,
+	FaClock,
+	FaShoppingCart
+} from 'react-icons/fa'
 import Link from 'next/link'
 import useConfirmationModal from '../../../../../utils/useConfirmationModel'
 import ConfirmationModal from '@/app/components/users/ConfirmationModal'
@@ -139,34 +146,34 @@ export default function Dashboard() {
 	const totalReservations = (
 		activeTab === 'individual' ? reservations : groupReservations
 	).length
-	const [shopTransactions, setShopTransactions] = useState<any[]>([]);
+	const [shopTransactions, setShopTransactions] = useState<any[]>([])
 
 	const loadShopTransactions = async () => {
-		const transactions = await fetchShopTransactions();
-		setShopTransactions(transactions);
-	};
+		const transactions = await fetchShopTransactions()
+		setShopTransactions(transactions)
+	}
 
 	useEffect(() => {
 		if (user && user.publicMetadata.role === 'admin') {
-			loadShopTransactions();
+			loadShopTransactions()
 		}
-	}, [user]);
+	}, [user])
 	const handleClaimTransaction = async (transactionId: string) => {
-		const success = await claimTransaction(transactionId);
+		const success = await claimTransaction(transactionId)
 
 		if (success) {
-			toast.success('Transaction claimed successfully');
-			loadShopTransactions(); // Refresh the transactions list
+			toast.success('Transaction claimed successfully')
+			loadShopTransactions() // Refresh the transactions list
 		} else {
-			toast.error('Failed to claim transaction');
+			toast.error('Failed to claim transaction')
 		}
-	};
+	}
 
 	useEffect(() => {
 		if (user && user.publicMetadata.role === 'admin') {
-			fetchShopTransactions();
+			fetchShopTransactions()
 		}
-	}, [user]);
+	}, [user])
 
 	useEffect(() => {
 		const fetchSessions = async () => {
@@ -274,8 +281,8 @@ export default function Dashboard() {
 							count: reservation.count,
 							additions: reservation.additions
 								? reservation.additions.filter(
-									(addition: any) => addition.user_id === user.id
-								)
+										(addition: any) => addition.user_id === user.id
+								  )
 								: []
 						})
 					)
@@ -292,8 +299,6 @@ export default function Dashboard() {
 		}
 		fetchData()
 	}, [isLoaded, isSignedIn, user])
-
-
 
 	const [buttonLoading, setButtonLoading] = useState(false)
 	const handleItemSelect = (item: any) => {
@@ -322,21 +327,21 @@ export default function Dashboard() {
 
 		const response = selectedReservation?.count
 			? await payForGroupItems({
-				userId: user?.id,
-				activityId: selectedReservation?.activity.id,
-				coachId: selectedReservation?.coach.id,
-				date: selectedReservation?.date,
-				startTime: selectedReservation?.start_time,
-				selectedItems
-			})
+					userId: user?.id,
+					activityId: selectedReservation?.activity.id,
+					coachId: selectedReservation?.coach.id,
+					date: selectedReservation?.date,
+					startTime: selectedReservation?.start_time,
+					selectedItems
+			  })
 			: await payForItems({
-				userId: user?.id,
-				activityId: selectedReservation?.activity.id,
-				coachId: selectedReservation?.coach.id,
-				date: selectedReservation?.date,
-				startTime: selectedReservation?.start_time,
-				selectedItems
-			})
+					userId: user?.id,
+					activityId: selectedReservation?.activity.id,
+					coachId: selectedReservation?.coach.id,
+					date: selectedReservation?.date,
+					startTime: selectedReservation?.start_time,
+					selectedItems
+			  })
 
 		setButtonLoading(false)
 		if (response.error) {
@@ -389,8 +394,8 @@ export default function Dashboard() {
 						count: reservation.count,
 						additions: reservation.additions
 							? reservation.additions.filter(
-								(addition: any) => addition.user_id === user?.id
-							)
+									(addition: any) => addition.user_id === user?.id
+							  )
 							: []
 					})
 				)
@@ -511,7 +516,7 @@ export default function Dashboard() {
 							<h3 className='text-2xl font-bold text-green-400'>
 								{session.activities.name}
 							</h3>
-							<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
+							<span className='text-sm bg-green-600 text-white px-2 text-nowrap py-1 rounded-full'>
 								{session.activities.credits} Credits
 							</span>
 						</div>
@@ -560,10 +565,11 @@ export default function Dashboard() {
 														{({ active }) => (
 															<a
 																href='#'
-																className={`${active
-																	? 'bg-gray-600 text-gray-100'
-																	: 'text-gray-300'
-																	} block px-4 py-2 text-sm`}>
+																className={`${
+																	active
+																		? 'bg-gray-600 text-gray-100'
+																		: 'text-gray-300'
+																} block px-4 py-2 text-sm`}>
 																{`${user.first_name} ${user.last_name}`}
 															</a>
 														)}
@@ -613,8 +619,8 @@ export default function Dashboard() {
 												typeof addition === 'string'
 													? addition
 													: addition.items
-														.map((item: any) => item.name)
-														.join(', ')
+															.map((item: any) => item.name)
+															.join(', ')
 											)
 											.join(', ')
 									)
@@ -623,16 +629,13 @@ export default function Dashboard() {
 								)}
 							</p>
 						</div>
-
 					</div>
-
 				</motion.div>
 			))
 		)
 	}
 
 	return (
-
 		<div className='min-h-screen bg-gray-700 text-white font-sans'>
 			<ConfirmationModal
 				isOpen={isOpen}
@@ -643,59 +646,64 @@ export default function Dashboard() {
 			<NavbarComponent />
 
 			{/* Navigation Tabs */}
-			<div className='md:hidden sticky top-0 z-20 bg-gray-800 py-2 mb-4'>
+			<div className='lg:hidden sticky top-0 z-20 bg-gray-800 py-2 mb-4'>
 				<div className='flex justify-center space-x-2'>
 					<button
 						onClick={() => setActiveTab('individual')}
-						className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${activeTab === 'individual'
-							? 'bg-green-500 text-white'
-							: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-							}`}>
+						className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+							activeTab === 'individual'
+								? 'bg-green-500 text-white'
+								: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+						}`}>
 						Individual
 					</button>
 					<button
 						onClick={() => setActiveTab('group')}
-						className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${activeTab === 'group'
-							? 'bg-green-500 text-white'
-							: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-							}`}>
+						className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+							activeTab === 'group'
+								? 'bg-green-500 text-white'
+								: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+						}`}>
 						Class
 					</button>
 				</div>
 			</div>
 
 			{/* Sidebar for larger screens */}
-			<div className='hidden md:block fixed left-0 top-0 h-full w-max bg-gray-800 z-30 transform transition-transform duration-300 ease-in-out '>
+			<div className='hidden lg:block fixed left-0 top-0 h-full w-max bg-gray-800 z-30 transform transition-transform duration-300 ease-in-out '>
 				<h2 className='text-2xl font-bold mb-4 mt-16 md:mt-4 ml-1 text-green-500'>
 					Menu
 				</h2>
 				<ul>
 					<li
-						className={`mb-5 p-2 px-6 ${activeTab === 'individual' ? 'bg-green-500' : ''
-							}`}>
+						className={`mb-5 p-2 px-6 ${
+							activeTab === 'individual' ? 'bg-green-500' : ''
+						}`}>
 						<button
 							onClick={() => setActiveTab('individual')}
-							className={`flex items-center ${activeTab === 'group' ? 'hover:text-green-400' : ''
-								} w-full text-left`}>
+							className={`flex items-center ${
+								activeTab === 'group' ? 'hover:text-green-400' : ''
+							} w-full text-left`}>
 							<FaCalendarAlt size={35} className='mr-2' /> Individual
 							Reservations
 						</button>
 					</li>
 					<li
-						className={`mb-10 p-2 px-6 ${activeTab === 'group' ? 'bg-green-500' : ''
-							}`}>
+						className={`mb-10 p-2 px-6 ${
+							activeTab === 'group' ? 'bg-green-500' : ''
+						}`}>
 						<button
 							onClick={() => setActiveTab('group')}
-							className={`flex items-center ${activeTab === 'individual' ? 'hover:text-green-400' : ''
-								} w-full text-left`}>
+							className={`flex items-center ${
+								activeTab === 'individual' ? 'hover:text-green-400' : ''
+							} w-full text-left`}>
 							<FaUsers size={35} className='mr-2' /> Class Reservations
 						</button>
 					</li>
 				</ul>
 			</div>
 
-
-			<div className='md:ml-64 p-4 md:p-8'>
+			<div className='lg:ml-64 p-4 md:p-8'>
 				{/* User Profile Card */}
 				<motion.div
 					initial={{ opacity: 0, y: -50 }}
@@ -848,17 +856,18 @@ export default function Dashboard() {
 													const isActive = now >= startTime && now <= endTime
 													const isStartingSoon =
 														startTime.getTime() - now.getTime() <=
-														15 * 60 * 1000 && startTime > now
+															15 * 60 * 1000 && startTime > now
 
 													return (
 														<li
 															key={index}
-															className={`text-gray-300 p-2 rounded ${isActive
-																? 'shadow-lg shadow-green-400'
-																: isStartingSoon
+															className={`text-gray-300 p-2 rounded ${
+																isActive
+																	? 'shadow-lg shadow-green-400'
+																	: isStartingSoon
 																	? 'shadow-lg shadow-yellow-700'
 																	: ''
-																}`}>
+															}`}>
 															<div className='font-bold'>
 																{session.activityName}
 															</div>
@@ -914,7 +923,6 @@ export default function Dashboard() {
 										)}
 									</div>
 								</motion.div>
-
 							</div>
 							{/* Reservations */}
 
@@ -964,7 +972,7 @@ export default function Dashboard() {
 																<h3 className='text-2xl font-bold text-green-400'>
 																	{reservation.activity.name}
 																</h3>
-																<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
+																<span className='text-sm bg-green-600 text-white px-2 py-1 text-nowrap rounded-full'>
 																	{reservation.activity.credits} Credits
 																</span>
 															</div>
@@ -995,16 +1003,16 @@ export default function Dashboard() {
 																		Additions:
 																	</span>{' '}
 																	{reservation.additions &&
-																		reservation.additions.length > 0
+																	reservation.additions.length > 0
 																		? reservation.additions
-																			.map(addition =>
-																				typeof addition === 'string'
-																					? addition
-																					: addition.items
-																						.map(item => item.name)
-																						.join(', ')
-																			)
-																			.join(', ')
+																				.map(addition =>
+																					typeof addition === 'string'
+																						? addition
+																						: addition.items
+																								.map(item => item.name)
+																								.join(', ')
+																				)
+																				.join(', ')
 																		: 'No additions'}
 																</p>
 															</div>
@@ -1052,8 +1060,6 @@ export default function Dashboard() {
 								)}
 							</div>
 
-
-
 							{/* New Sidebar */}
 						</motion.div>
 					)}
@@ -1082,66 +1088,103 @@ export default function Dashboard() {
 							<FaChevronRight size={20} />
 						</button>
 					</div>
-
-
 				)}
 			</div>
 
 			{user.publicMetadata.role === 'admin' && (
-				<div className=' space-y-8 mx-4 md:ml-64 p-4 md:p-8'>
+				<div className=' space-y-8 mx-4 lg:ml-64 p-4 md:p-8'>
 					<h2 className='text-3xl md:text-4xl font-bold tracking-tight mb-6 text-green-400'>
 						Shop Transactions
 					</h2>
 					{shopTransactions.length === 0 ? (
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className='bg-gray-800 rounded-xl p-8 text-center'>
-                <FaShoppingCart className='text-green-500 text-5xl mb-4 mx-auto' />
-                <p className='text-xl text-gray-300'>
-                    No unclaimed transactions.
-                </p>
-            </motion.div>
-        ) : (
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                {shopTransactions.map((transaction, index) => (
-                    <motion.div
-                        key={transaction.transaction_id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-xl hover:shadow-green-500/30 transition duration-300'>
-                        <div className='p-6 space-y-4'>
-                            <div className='flex justify-between items-center mb-4'>
-                                <h3 className='text-2xl font-bold text-green-400'>
-                                    Transaction ID: {transaction.transaction_id}
-                                </h3>
-                                <span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
-                                    {new Date(transaction.date).toLocaleString()}
-                                </span>
-                            </div>
-                            <div className='space-y-2 text-gray-300'>
-                                <p>User: {transaction.user_name}</p>
-                                <p>Items: {transaction.item_details.map((item: { name: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; quantity: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined }, itemIndex: React.Key | null | undefined) => (
-                                    <span key={itemIndex}>
-                                        {item.name} (x{item.quantity})
-                                    </span>
-                                )).reduce((prev: any, curr: any) => [prev, ', ', curr])}</p>
-                            </div>
-                            <div className='flex justify-end'>
-                                <button
-                                    onClick={() => handleClaimTransaction(transaction.transaction_id)}
-                                    className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
-                                    Claim
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
-        )}
-    </div>
-)}
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							className='bg-gray-800 rounded-xl p-8 text-center'>
+							<FaShoppingCart className='text-green-500 text-5xl mb-4 mx-auto' />
+							<p className='text-xl text-gray-300'>
+								No unclaimed transactions.
+							</p>
+						</motion.div>
+					) : (
+						<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+							{shopTransactions.map((transaction, index) => (
+								<motion.div
+									key={transaction.transaction_id}
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ delay: index * 0.1 }}
+									className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-xl hover:shadow-green-500/30 transition duration-300'>
+									<div className='p-6 space-y-4'>
+										<div className='flex justify-between items-center mb-4'>
+											<h3 className='text-2xl font-bold text-green-400'>
+												Transaction ID: {transaction.transaction_id}
+											</h3>
+											<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
+												{new Date(transaction.date).toLocaleString()}
+											</span>
+										</div>
+										<div className='space-y-2 text-gray-300'>
+											<p>User: {transaction.user_name}</p>
+											<p>
+												Items:{' '}
+												{transaction.item_details
+													.map(
+														(
+															item: {
+																name:
+																	| string
+																	| number
+																	| boolean
+																	| React.ReactElement<
+																			any,
+																			string | React.JSXElementConstructor<any>
+																	  >
+																	| Iterable<React.ReactNode>
+																	| React.ReactPortal
+																	| Promise<React.AwaitedReactNode>
+																	| null
+																	| undefined
+																quantity:
+																	| string
+																	| number
+																	| boolean
+																	| React.ReactElement<
+																			any,
+																			string | React.JSXElementConstructor<any>
+																	  >
+																	| Iterable<React.ReactNode>
+																	| React.ReactPortal
+																	| Promise<React.AwaitedReactNode>
+																	| null
+																	| undefined
+															},
+															itemIndex: React.Key | null | undefined
+														) => (
+															<span key={itemIndex}>
+																{item.name} (x{item.quantity})
+															</span>
+														)
+													)
+													.reduce((prev: any, curr: any) => [prev, ', ', curr])}
+											</p>
+										</div>
+										<div className='flex justify-end'>
+											<button
+												onClick={() =>
+													handleClaimTransaction(transaction.transaction_id)
+												}
+												className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
+												Claim
+											</button>
+										</div>
+									</div>
+								</motion.div>
+							))}
+						</div>
+					)}
+				</div>
+			)}
 
 			{/* Market Modal */}
 			<Modal
@@ -1176,12 +1219,13 @@ export default function Dashboard() {
 								<motion.button
 									whileHover={{ scale: 1.05 }}
 									whileTap={{ scale: 0.95 }}
-									className={`mt-auto w-full py-2 sm:py-3 rounded-full text-white font-semibold text-sm sm:text-base transition-all duration-300 ${selectedItems.find(
-										selectedItem => selectedItem.id === item.id
-									)
-										? 'bg-red-500 hover:bg-red-600'
-										: 'bg-green-500 hover:bg-green-600'
-										}`}
+									className={`mt-auto w-full py-2 sm:py-3 rounded-full text-white font-semibold text-sm sm:text-base transition-all duration-300 ${
+										selectedItems.find(
+											selectedItem => selectedItem.id === item.id
+										)
+											? 'bg-red-500 hover:bg-red-600'
+											: 'bg-green-500 hover:bg-green-600'
+									}`}
 									onClick={() => handleItemSelect(item)}>
 									{selectedItems.find(
 										selectedItem => selectedItem.id === item.id

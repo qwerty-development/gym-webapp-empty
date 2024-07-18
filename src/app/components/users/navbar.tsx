@@ -51,7 +51,7 @@ export default function NavbarComponent() {
 							)}
 						</button>
 					</div>
-					<div className='flex justify-center md:justify-start w-1/3'>
+					<div className='flex justify-center lg:justify-start lg:ml-64 xl:ml-56 2xl:ml-32 w-1/3'>
 						<Link href='/' className='flex-shrink-0'>
 							<Image
 								src='/images/logoinverted.png'
@@ -63,12 +63,12 @@ export default function NavbarComponent() {
 							/>
 						</Link>
 					</div>
-					<div className='hidden md:flex  justify-end items-center space-x-4 flex-grow'>
+					<div className='hidden md:flex  justify-end items-center space-x-2 flex-grow'>
 						{navItems.map(item => (
 							<Link
 								key={item.href}
 								href={item.href}
-								className={`flex items-center justify-center w-[150px] px-7 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-center ${
+								className={`flex items-center justify-center w-min px-7 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-center ${
 									currentPage === item.href
 										? 'bg-green-500 text-white'
 										: 'text-gray-300 hover:bg-green-300 hover:text-white'
