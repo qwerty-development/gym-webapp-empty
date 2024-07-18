@@ -9,7 +9,7 @@ import {
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { FaSearch, FaFilter, FaTrash, FaCheck, FaTimes } from 'react-icons/fa'
+import { FaTrash, FaCheck, FaTimes } from 'react-icons/fa'
 import { supabaseClient } from '../../utils/supabaseClient'
 import { RotateLoader } from 'react-spinners'
 
@@ -40,7 +40,6 @@ export default function TimeSlotListClient({
 	const [bookedFilter, setBookedFilter] = useState(
 		searchParams.get('booked') || 'all'
 	)
-	const [showFilters, setShowFilters] = useState(false)
 
 	useEffect(() => {
 		setTimeSlots(initialTimeSlots)
@@ -61,6 +60,7 @@ export default function TimeSlotListClient({
 		if (filter.endTime) params.set('endTime', filter.endTime)
 
 		params.set('isPrivateTraining', isPrivateTraining.toString())
+		setIsLoading(false)
 		router.push(`/admin/view-reservations?${params.toString()}`)
 	}
 
@@ -252,10 +252,6 @@ export default function TimeSlotListClient({
 		applyFilters()
 	}, [searchTerm, filter, bookedFilter, isPrivateTraining])
 
-	const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		setSearchTerm(event.target.value)
-	}
-
 	const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target
 		setFilter(prev => ({ ...prev, [name]: value }))
@@ -265,21 +261,6 @@ export default function TimeSlotListClient({
 		event: React.ChangeEvent<HTMLSelectElement>
 	) => {
 		setBookedFilter(event.target.value)
-	}
-
-	const handlePrivatePublicToggle = () => {
-		setIsPrivateTraining(prev => !prev)
-	}
-
-	const addOneMinuteToTime = (time: string) => {
-		const [hours, minutes] = time.split(':').map(part => parseInt(part, 10))
-		const totalMinutes = hours * 60 + minutes
-		const adjustedTotalMinutes = totalMinutes + 1
-		const adjustedHours = Math.floor(adjustedTotalMinutes / 60)
-		const adjustedMinutes = adjustedTotalMinutes % 60
-		return `${adjustedHours.toString().padStart(2, '0')}:${adjustedMinutes
-			.toString()
-			.padStart(2, '0')}`
 	}
 
 	const handleCheckboxChange = (index: number) => {
@@ -503,116 +484,91 @@ export default function TimeSlotListClient({
 				</motion.button>
 			</div>
 
-			<div className='flex items-center mb-6'>
-				<input
-					type='text'
-					placeholder='Search...'
-					value={searchTerm}
-					onChange={handleSearchChange}
-					className='w-full p-3 bg-gray-800 border-2 border-green-500 rounded-l-full focus:outline-none focus:ring-2 focus:ring-green-400'
-				/>
-				<motion.button
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					onClick={applyFilters}
-					className='px-6 py-3 bg-green-500 text-white rounded-r-full hover:bg-green-600'>
-					<FaSearch />
-				</motion.button>
-				<motion.button
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					onClick={() => setShowFilters(!showFilters)}
-					className='ml-4 p-3 bg-gray-700 rounded-full hover:bg-gray-600'>
-					<FaFilter />
-				</motion.button>
-			</div>
+			<motion.div
+				initial={{ opacity: 0, y: -20 }}
+				animate={{ opacity: 1, y: 0 }}
+				exit={{ opacity: 0, y: -20 }}
+				className='bg-gray-800 p-6 rounded-lg shadow-lg mb-6'>
+				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+					<input
+						type='text'
+						name='activity'
+						placeholder='Filter by Activity...'
+						value={filter.activity}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<input
+						type='text'
+						name='coach'
+						placeholder='Filter by Coach...'
+						value={filter.coach}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<input
+						type='text'
+						name='user'
+						placeholder='Filter by User...'
+						value={filter.user}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<select
+						onChange={handleBookedFilterChange}
+						value={bookedFilter}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'>
+						<option value='all'>All</option>
+						<option value='booked'>Booked</option>
+						<option value='notBooked'>Not Booked</option>
+					</select>
+					<input
+						type='date'
+						name='date'
+						value={filter.date}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<input
+						type='time'
+						name='startTime'
+						value={filter.startTime}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<input
+						type='time'
+						name='endTime'
+						value={filter.endTime}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+				</div>
+				<div className='flex justify-end mt-4 gap-x-4'>
+					<button
+						onClick={() => {
+							setFilter({
+								activity: '',
+								coach: '',
+								user: '',
+								date: '',
+								startTime: '',
+								endTime: ''
+							})
+							setBookedFilter('all')
+							setSearchTerm('')
+						}}
+						className='bg-red-700 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-red-600'>
+						Clear Filters
+					</button>
+					<button
+						onClick={applyFilters}
+						className='bg-green-400 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-green-700'>
+						Apply Filters
+					</button>
+				</div>
+			</motion.div>
 
-			{showFilters && (
-				<motion.div
-					initial={{ opacity: 0, y: -20 }}
-					animate={{ opacity: 1, y: 0 }}
-					exit={{ opacity: 0, y: -20 }}
-					className='bg-gray-800 p-6 rounded-lg shadow-lg mb-6'>
-					<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-						<input
-							type='text'
-							name='activity'
-							placeholder='Filter by Activity...'
-							value={filter.activity}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<input
-							type='text'
-							name='coach'
-							placeholder='Filter by Coach...'
-							value={filter.coach}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<input
-							type='text'
-							name='user'
-							placeholder='Filter by User...'
-							value={filter.user}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<select
-							onChange={handleBookedFilterChange}
-							value={bookedFilter}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'>
-							<option value='all'>All</option>
-							<option value='booked'>Booked</option>
-							<option value='notBooked'>Not Booked</option>
-						</select>
-						<input
-							type='date'
-							name='date'
-							value={filter.date}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<input
-							type='time'
-							name='startTime'
-							value={filter.startTime}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<input
-							type='time'
-							name='endTime'
-							value={filter.endTime}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-					</div>
-					<div className='flex justify-end mt-4 gap-x-4'>
-						<button
-							onClick={() => {
-								setFilter({
-									activity: '',
-									coach: '',
-									user: '',
-									date: '',
-									startTime: '',
-									endTime: ''
-								})
-								setBookedFilter('all')
-								setSearchTerm('')
-							}}
-							className='bg-red-700 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-red-600'>
-							Clear Filters
-						</button>
-						<button
-							onClick={applyFilters}
-							className='bg-green-400 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-green-700'>
-							Apply Filters
-						</button>
-					</div>
-				</motion.div>
-			)}
 			<motion.button
 				whileHover={{ scale: 1.05 }}
 				whileTap={{ scale: 0.95 }}
