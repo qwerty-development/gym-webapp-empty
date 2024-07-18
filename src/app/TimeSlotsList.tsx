@@ -16,12 +16,17 @@ export interface FilterParams {
 	isPrivateTraining: boolean
 }
 
-async function fetchFilteredTimeSlots(filters: FilterParams) {
+async function fetchFilteredTimeSlots(
+	filters: FilterParams,
+	page: number = 1,
+	pageSize: number = 30
+) {
 	const supabase = supabaseClient()
 	const today = new Date().toISOString().split('T')[0]
 
 	let query = filters.isPrivateTraining
-		? supabase.from('time_slots').select(`
+		? supabase.from('time_slots').select(
+				`
         id,
         activities!inner (name, credits),
         coaches!inner (name),
@@ -31,8 +36,11 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
         user_id,
         booked,
         users!left (user_id, first_name, last_name)
-      `)
-		: supabase.from('group_time_slots').select(`
+      `,
+				{ count: 'exact' }
+		  )
+		: supabase.from('group_time_slots').select(
+				`
         id,
         activities!inner (name, credits, capacity),
         coaches!inner (name),
@@ -41,8 +49,9 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
         end_time,
         user_id,
         booked
-      `)
-
+      `,
+				{ count: 'exact' }
+		  )
 	query = query
 		.gte('date', today)
 		.order('date', { ascending: true })
@@ -52,7 +61,7 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
 		query = query.ilike('activities.name', `%${filters.activity}%`)
 	}
 	if (filters.date) {
-		query = query.filter('date','eq', filters.date)
+		query = query.filter('date', 'eq', filters.date)
 	}
 	if (filters.startTime) {
 		query = query.gte('start_time', filters.startTime)
@@ -61,13 +70,13 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
 		query = query.lte('end_time', filters.endTime)
 	}
 	if (filters.booked !== undefined) {
-		query = query.filter('booked','eq', filters.booked)
+		query = query.filter('booked', 'eq', filters.booked)
 	}
 	if (filters.coach) {
 		query = query.ilike('coaches.name', `%${filters.coach}%`)
 	}
 
-	if (filters.user || filters.searchTerm) {
+	if (filters.user) {
 		const userQuery = supabase
 			.from('users')
 			.select('user_id')
@@ -93,13 +102,11 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
 		}
 	}
 
-	if (filters.searchTerm) {
-		query = query.or(
-			`activities.name.ilike.%${filters.searchTerm}%,coaches.name.ilike.%${filters.searchTerm}%`
-		)
-	}
+	const from = (page - 1) * pageSize
+	const to = from + pageSize - 1
 
-	const { data, error } = await query
+	query = query.range(from, to)
+	const { data, error, count } = await query
 
 	if (error) {
 		console.error('Error fetching time slots:', error.message)
@@ -108,7 +115,7 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
 
 	let transformedData = await Promise.all(
 		data.map(async (slot: any) => {
-			let users:any[] = []
+			let users: any[] = []
 			if (
 				!filters.isPrivateTraining &&
 				slot.user_id &&
@@ -149,18 +156,29 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
 		})
 	)
 
-	return transformedData
+	return { timeSlots: transformedData, totalCount: count ?? 0 }
 }
 export default async function TimeSlotsList({
-	filters
+	filters,
+	page = 1
 }: {
 	filters: FilterParams
+	page: number
 }) {
-	const timeSlots = await fetchFilteredTimeSlots(filters)
+	const pageSize = 30
+	const { timeSlots, totalCount }: any = await fetchFilteredTimeSlots(
+		filters,
+		page,
+		pageSize
+	)
+	const totalPages = Math.ceil(totalCount / pageSize)
+
 	return (
 		<TimeSlotListClient
 			initialTimeSlots={timeSlots}
 			isPrivateTraining={filters.isPrivateTraining}
+			currentPage={page}
+			totalPages={totalPages}
 		/>
 	)
 }

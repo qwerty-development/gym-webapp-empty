@@ -6,17 +6,13 @@ import { redirect } from 'next/navigation'
 import TimeSlotsList, { FilterParams } from '@/app/TimeSlotsList'
 import Loading from './loading'
 
-export default function TimeSlotsPage({
+export default function ViewReservationsPage({
 	searchParams
 }: {
 	searchParams: { [key: string]: string | string[] | undefined }
 }) {
-	if (!checkRoleAdmin('admin')) {
-		redirect('/')
-	}
-
+	const page = parseInt(searchParams.page as string) || 1
 	const filters: FilterParams = {
-		searchTerm: searchParams.searchTerm as string,
 		activity: searchParams.activity as string,
 		coach: searchParams.coach as string,
 		user: searchParams.user as string,
@@ -29,18 +25,10 @@ export default function TimeSlotsPage({
 				: searchParams.booked === 'false'
 				? false
 				: undefined,
-		isPrivateTraining: searchParams.isPrivateTraining !== 'false'
+		isPrivateTraining: searchParams.isPrivateTraining === 'true'
 	}
 
-	// Check if the filters are valid (you may need to implement this function)
-
-	return (
-		<div>
-			<AdminNavbarComponent />
-
-			<TimeSlotsList filters={filters} />
-		</div>
-	)
+	return <TimeSlotsList filters={filters} page={page} />
 }
 
 // Implement this function to validate your filters
