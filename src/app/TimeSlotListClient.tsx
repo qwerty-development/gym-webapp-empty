@@ -9,24 +9,29 @@ import {
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { FaSearch, FaFilter, FaTrash, FaCheck, FaTimes } from 'react-icons/fa'
+import { FaTrash, FaCheck, FaTimes } from 'react-icons/fa'
 import { supabaseClient } from '../../utils/supabaseClient'
+import { RotateLoader } from 'react-spinners'
 
 export default function TimeSlotListClient({
 	initialTimeSlots,
-	isPrivateTraining: initialIsPrivateTraining
+	isPrivateTraining: initialIsPrivateTraining,
+	currentPage,
+	totalPages
 }: {
 	initialTimeSlots: any[]
 	isPrivateTraining: boolean
+	currentPage: number
+	totalPages: number
 }) {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const [isPrivateTraining, setIsPrivateTraining] = useState(
 		initialIsPrivateTraining
 	)
+	const [isLoading, setIsLoading] = useState(false)
 	const [timeSlots, setTimeSlots] = useState(initialTimeSlots)
 	const [selectedslots, setSelectedSlots] = useState<number[]>([])
-	const [searchTerm, setSearchTerm] = useState('')
 	const [filter, setFilter] = useState({
 		activity: searchParams.get('activity') || '',
 		coach: searchParams.get('coach') || '',
@@ -38,16 +43,20 @@ export default function TimeSlotListClient({
 	const [bookedFilter, setBookedFilter] = useState(
 		searchParams.get('booked') || 'all'
 	)
-	const [showFilters, setShowFilters] = useState(false)
 
 	useEffect(() => {
 		setTimeSlots(initialTimeSlots)
 	}, [initialTimeSlots])
 
-	const applyFilters = () => {
+	const handlePageChange = (newPage: number) => {
+		if (newPage >= 1 && newPage <= totalPages) {
+			applyFilters(newPage)
+		}
+	}
+
+	const applyFilters = (page: number = 1) => {
+		setIsLoading(true)
 		const params = new URLSearchParams()
-		if (searchTerm) params.set('searchTerm', searchTerm)
-		else params.delete('searchTerm')
 		if (filter.activity) params.set('activity', filter.activity)
 		if (bookedFilter !== 'all')
 			params.set('booked', bookedFilter === 'booked' ? 'true' : 'false')
@@ -56,10 +65,17 @@ export default function TimeSlotListClient({
 		if (filter.date) params.set('date', filter.date)
 		if (filter.startTime) params.set('startTime', filter.startTime)
 		if (filter.endTime) params.set('endTime', filter.endTime)
-
 		params.set('isPrivateTraining', isPrivateTraining.toString())
+		params.set('page', page.toString())
 		router.push(`/admin/view-reservations?${params.toString()}`)
 	}
+
+	useEffect(() => {
+		applyFilters(currentPage)
+	}, [filter, bookedFilter, isPrivateTraining])
+	useEffect(() => {
+		setIsLoading(false)
+	}, [timeSlots])
 
 	const removeUserFromGroup = async (
 		timeSlotId: any,
@@ -243,11 +259,7 @@ export default function TimeSlotListClient({
 	}
 	useEffect(() => {
 		applyFilters()
-	}, [searchTerm, filter, bookedFilter, isPrivateTraining])
-
-	const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		setSearchTerm(event.target.value)
-	}
+	}, [filter, bookedFilter, isPrivateTraining])
 
 	const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target
@@ -258,21 +270,6 @@ export default function TimeSlotListClient({
 		event: React.ChangeEvent<HTMLSelectElement>
 	) => {
 		setBookedFilter(event.target.value)
-	}
-
-	const handlePrivatePublicToggle = () => {
-		setIsPrivateTraining(prev => !prev)
-	}
-
-	const addOneMinuteToTime = (time: string) => {
-		const [hours, minutes] = time.split(':').map(part => parseInt(part, 10))
-		const totalMinutes = hours * 60 + minutes
-		const adjustedTotalMinutes = totalMinutes + 1
-		const adjustedHours = Math.floor(adjustedTotalMinutes / 60)
-		const adjustedMinutes = adjustedTotalMinutes % 60
-		return `${adjustedHours.toString().padStart(2, '0')}:${adjustedMinutes
-			.toString()
-			.padStart(2, '0')}`
 	}
 
 	const handleCheckboxChange = (index: number) => {
@@ -496,116 +493,90 @@ export default function TimeSlotListClient({
 				</motion.button>
 			</div>
 
-			<div className='flex items-center mb-6'>
-				<input
-					type='text'
-					placeholder='Search...'
-					value={searchTerm}
-					onChange={handleSearchChange}
-					className='w-full p-3 bg-gray-800 border-2 border-green-500 rounded-l-full focus:outline-none focus:ring-2 focus:ring-green-400'
-				/>
-				<motion.button
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					onClick={applyFilters}
-					className='px-6 py-3 bg-green-500 text-white rounded-r-full hover:bg-green-600'>
-					<FaSearch />
-				</motion.button>
-				<motion.button
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					onClick={() => setShowFilters(!showFilters)}
-					className='ml-4 p-3 bg-gray-700 rounded-full hover:bg-gray-600'>
-					<FaFilter />
-				</motion.button>
-			</div>
+			<motion.div
+				initial={{ opacity: 0, y: -20 }}
+				animate={{ opacity: 1, y: 0 }}
+				exit={{ opacity: 0, y: -20 }}
+				className='bg-gray-800 p-6 rounded-lg shadow-lg mb-6'>
+				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+					<input
+						type='text'
+						name='activity'
+						placeholder='Filter by Activity...'
+						value={filter.activity}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<input
+						type='text'
+						name='coach'
+						placeholder='Filter by Coach...'
+						value={filter.coach}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<input
+						type='text'
+						name='user'
+						placeholder='Filter by User...'
+						value={filter.user}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<select
+						onChange={handleBookedFilterChange}
+						value={bookedFilter}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'>
+						<option value='all'>All</option>
+						<option value='booked'>Booked</option>
+						<option value='notBooked'>Not Booked</option>
+					</select>
+					<input
+						type='date'
+						name='date'
+						value={filter.date}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<input
+						type='time'
+						name='startTime'
+						value={filter.startTime}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+					<input
+						type='time'
+						name='endTime'
+						value={filter.endTime}
+						onChange={handleFilterChange}
+						className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					/>
+				</div>
+				<div className='flex justify-end mt-4 gap-x-4'>
+					<button
+						onClick={() => {
+							setFilter({
+								activity: '',
+								coach: '',
+								user: '',
+								date: '',
+								startTime: '',
+								endTime: ''
+							})
+							setBookedFilter('all')
+						}}
+						className='bg-red-700 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-red-600'>
+						Clear Filters
+					</button>
+					<button
+						onClick={() => applyFilters(1)}
+						className='bg-green-400 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-green-700'>
+						Apply Filters
+					</button>
+				</div>
+			</motion.div>
 
-			{showFilters && (
-				<motion.div
-					initial={{ opacity: 0, y: -20 }}
-					animate={{ opacity: 1, y: 0 }}
-					exit={{ opacity: 0, y: -20 }}
-					className='bg-gray-800 p-6 rounded-lg shadow-lg mb-6'>
-					<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-						<input
-							type='text'
-							name='activity'
-							placeholder='Filter by Activity...'
-							value={filter.activity}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<input
-							type='text'
-							name='coach'
-							placeholder='Filter by Coach...'
-							value={filter.coach}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<input
-							type='text'
-							name='user'
-							placeholder='Filter by User...'
-							value={filter.user}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<select
-							onChange={handleBookedFilterChange}
-							value={bookedFilter}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'>
-							<option value='all'>All</option>
-							<option value='booked'>Booked</option>
-							<option value='notBooked'>Not Booked</option>
-						</select>
-						<input
-							type='date'
-							name='date'
-							value={filter.date}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<input
-							type='time'
-							name='startTime'
-							value={filter.startTime}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-						<input
-							type='time'
-							name='endTime'
-							value={filter.endTime}
-							onChange={handleFilterChange}
-							className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
-						/>
-					</div>
-					<div className='flex justify-end mt-4 gap-x-4'>
-						<button
-							onClick={() => {
-								setFilter({
-									activity: '',
-									coach: '',
-									user: '',
-									date: '',
-									startTime: '',
-									endTime: ''
-								})
-								setBookedFilter('all')
-								setSearchTerm('')
-							}}
-							className='bg-red-700 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-red-600'>
-							Clear Filters
-						</button>
-						<button
-							onClick={applyFilters}
-							className='bg-green-400 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-green-700'>
-							Apply Filters
-						</button>
-					</div>
-				</motion.div>
-			)}
 			<motion.button
 				whileHover={{ scale: 1.05 }}
 				whileTap={{ scale: 0.95 }}
@@ -614,106 +585,136 @@ export default function TimeSlotListClient({
 				<FaTrash className='inline-block mr-2' /> Delete Selected
 			</motion.button>
 			{/* Render your time slots table here using the timeSlots state */}
-			<table className='w-full text-sm text-left text-gray-300'>
-				<thead className='text-xs uppercase bg-gray-800'>
-					<tr>
-						<th className='px-4 py-3'>Select</th>
-						<th className='px-4 py-3 text-center '>Cancel</th>
-						<th className='px-4 py-3'>Activity</th>
-						<th className='px-4 py-3'>Coach Name</th>
-						<th className='px-4 py-3'>Date</th>
-						<th className='px-4 py-3'>Start Time</th>
-						<th className='px-4 py-3'>End Time</th>
-						<th className='px-4 py-3'>Name</th>
-						<th className='px-4 py-3'>Booked</th>
-						<th className='px-4 py-3'>Credits</th>
-						{!isPrivateTraining && <th className='px-4 py-3'>Capacity</th>}
-					</tr>
-				</thead>
-				<tbody>
-					{timeSlots.map((slot, index) => (
-						<motion.tr
-							key={index}
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							transition={{ duration: 0.3 }}
-							className='bg-gray-700 border-b border-gray-600 hover:bg-gray-600'>
-							<td className='px-4 py-3'>
-								<input
-									type='checkbox'
-									disabled={slot.booked}
-									onChange={() => handleCheckboxChange(index)}
-									checked={selectedslots.includes(index)}
-									className='form-checkbox h-5 w-5 text-green-500'
-								/>
-							</td>
-							<td className='py-3 flex flex-row justify-center'>
-								{slot.booked ? (
-									<motion.button
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.9 }}
-										onClick={() => cancelBooking(slot)}
-										className='p-2 bg-orange-500 text-white rounded-full text-center hover:bg-orange-600'>
-										<FaTimes className='text-center mx-auto' />
-									</motion.button>
-								) : (
-									<div className='p-2 bg-gray-500 text-white text-center rounded-full opacity-50 cursor-not-allowed'>
-										<FaTimes className='text-center mx-auto' />
-									</div>
-								)}
-							</td>
-							<td className='px-4 py-3'>{slot.activity?.name ?? 'N/A'}</td>
-							<td className='px-4 py-3'>{slot.coach?.name ?? 'N/A'}</td>
-							<td className='px-4 py-3'>{slot.date}</td>
-							<td className='px-4 py-3'>{slot.start_time}</td>
-							<td className='px-4 py-3'>{slot.end_time}</td>
-							<td className='px-4 py-3'>
-								{slot.user && isPrivateTraining
-									? `${slot.user.first_name} ${slot.user.last_name}`
-									: slot.users && slot.users.length > 0
-									? slot.users.map((user: any, userIndex: any) => (
-											<div
-												key={userIndex}
-												className='flex items-center justify-between bg-gray-800 p-2 rounded-md mb-1'>
-												<span>
-													{user
-														? `${user.first_name} ${user.last_name}`
-														: 'N/A'}
-												</span>
-												<motion.button
-													whileHover={{ scale: 1.1 }}
-													whileTap={{ scale: 0.9 }}
-													onClick={() =>
-														removeUserFromGroup(
-															slot.id,
-															user.user_id,
-															slot.activity?.credits
-														)
-													}
-													className='ml-2 p-1 bg-red-700 text-white rounded-full hover:bg-red-600'>
-													<FaTimes size={12} />
-												</motion.button>
+			{isLoading ? (
+				<div className='flex justify-center items-center h-64'>
+					<RotateLoader color={'#4ADE80'} loading={true} size={15} />
+				</div>
+			) : timeSlots.length === 0 ? (
+				<div className='text-center py-10'>
+					<h2 className='text-2xl font-bold mb-4'>No Time Slots Found</h2>
+					<p>Try adjusting your filters or search criteria.</p>
+				</div>
+			) : (
+				<>
+					<table className='w-full text-sm text-left text-gray-300'>
+						<thead className='text-xs uppercase bg-gray-800'>
+							<tr>
+								<th className='px-4 py-3'>Select</th>
+								<th className='px-4 py-3 text-center '>Cancel</th>
+								<th className='px-4 py-3'>Activity</th>
+								<th className='px-4 py-3'>Coach Name</th>
+								<th className='px-4 py-3'>Date</th>
+								<th className='px-4 py-3'>Start Time</th>
+								<th className='px-4 py-3'>End Time</th>
+								<th className='px-4 py-3'>Name</th>
+								<th className='px-4 py-3'>Booked</th>
+								<th className='px-4 py-3'>Credits</th>
+								{!isPrivateTraining && <th className='px-4 py-3'>Capacity</th>}
+							</tr>
+						</thead>
+						<tbody>
+							{timeSlots.map((slot, index) => (
+								<motion.tr
+									key={index}
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									transition={{ duration: 0.3 }}
+									className='bg-gray-700 border-b border-gray-600 hover:bg-gray-600'>
+									<td className='px-4 py-3'>
+										<input
+											type='checkbox'
+											disabled={slot.booked}
+											onChange={() => handleCheckboxChange(index)}
+											checked={selectedslots.includes(index)}
+											className='form-checkbox h-5 w-5 text-green-500'
+										/>
+									</td>
+									<td className='py-3 flex flex-row justify-center'>
+										{slot.booked ? (
+											<motion.button
+												whileHover={{ scale: 1.1 }}
+												whileTap={{ scale: 0.9 }}
+												onClick={() => cancelBooking(slot)}
+												className='p-2 bg-orange-500 text-white rounded-full text-center hover:bg-orange-600'>
+												<FaTimes className='text-center mx-auto' />
+											</motion.button>
+										) : (
+											<div className='p-2 bg-gray-500 text-white text-center rounded-full opacity-50 cursor-not-allowed'>
+												<FaTimes className='text-center mx-auto' />
 											</div>
-									  ))
-									: 'N/A'}
-							</td>
-							<td className='px-4 py-3'>
-								{slot.booked ? (
-									<FaCheck className='text-green-500' />
-								) : (
-									<FaTimes className='text-red-700 text-center' />
-								)}
-							</td>
-							<td className='px-4 py-3'>{slot.activity?.credits ?? 'N/A'}</td>
-							{!isPrivateTraining && (
-								<td className='px-4 py-3'>
-									{slot.activity?.capacity ?? 'N/A'}
-								</td>
-							)}
-						</motion.tr>
-					))}
-				</tbody>
-			</table>
+										)}
+									</td>
+									<td className='px-4 py-3'>{slot.activity?.name ?? 'N/A'}</td>
+									<td className='px-4 py-3'>{slot.coach?.name ?? 'N/A'}</td>
+									<td className='px-4 py-3'>{slot.date}</td>
+									<td className='px-4 py-3'>{slot.start_time}</td>
+									<td className='px-4 py-3'>{slot.end_time}</td>
+									<td className='px-4 py-3'>
+										{slot.user && isPrivateTraining
+											? `${slot.user.first_name} ${slot.user.last_name}`
+											: slot.users && slot.users.length > 0
+											? slot.users.map((user: any, userIndex: any) => (
+													<div
+														key={userIndex}
+														className='flex items-center justify-between bg-gray-800 p-2 rounded-md mb-1'>
+														<span>
+															{user
+																? `${user.first_name} ${user.last_name}`
+																: 'N/A'}
+														</span>
+														<motion.button
+															whileHover={{ scale: 1.1 }}
+															whileTap={{ scale: 0.9 }}
+															onClick={() =>
+																removeUserFromGroup(
+																	slot.id,
+																	user.user_id,
+																	slot.activity?.credits
+																)
+															}
+															className='ml-2 p-1 bg-red-700 text-white rounded-full hover:bg-red-600'>
+															<FaTimes size={12} />
+														</motion.button>
+													</div>
+											  ))
+											: 'N/A'}
+									</td>
+									<td className='px-4 py-3'>
+										{slot.booked ? (
+											<FaCheck className='text-green-500' />
+										) : (
+											<FaTimes className='text-red-700 text-center' />
+										)}
+									</td>
+									<td className='px-4 py-3'>
+										{slot.activity?.credits ?? 'N/A'}
+									</td>
+									{!isPrivateTraining && (
+										<td className='px-4 py-3'>
+											{slot.activity?.capacity ?? 'N/A'}
+										</td>
+									)}
+								</motion.tr>
+							))}
+						</tbody>
+					</table>
+					<div className='mt-4 flex justify-center items-center space-x-2'>
+						<button
+							onClick={() => handlePageChange(currentPage - 1)}
+							disabled={currentPage === 1}
+							className='px-4 py-2 bg-green-600 hover:shadow-xl hover:shadow-green-700 text-white rounded-md disabled:opacity-50'>
+							Previous
+						</button>
+						<span>{`Page ${currentPage} of ${totalPages}`}</span>
+						<button
+							onClick={() => handlePageChange(currentPage + 1)}
+							disabled={currentPage === totalPages}
+							className='px-4 py-2 bg-green-600 hover:shadow-xl hover:shadow-green-700 text-white rounded-md disabled:opacity-50'>
+							Next
+						</button>
+					</div>
+				</>
+			)}
 		</motion.section>
 	)
 }
