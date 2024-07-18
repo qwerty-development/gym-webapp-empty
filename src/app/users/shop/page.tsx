@@ -6,7 +6,8 @@ import {
 	handlePurchase,
 	fetchUserData
 } from '../../../../utils/user-requests'
-import { useUser } from '@clerk/clerk-react'
+import { useUser } from '@clerk/clerk-react' // Assuming you are using Clerk for authentication
+import Bundles from '@/app/components/users/bundles'
 
 interface MarketItem {
 	id: string
@@ -23,7 +24,7 @@ const Shop: React.FC = () => {
 	const [items, setItems] = useState<MarketItem[]>([])
 	const [cart, setCart] = useState<CartItem[]>([])
 	const [isCartOpen, setIsCartOpen] = useState(false)
-	const { user } = useUser()
+	const { user } = useUser() // Clerk hook to get the current user
 
 	useEffect(() => {
 		const getItems = async () => {
@@ -100,19 +101,43 @@ const Shop: React.FC = () => {
 			className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-800'
 			id='__next'>
 			<NavbarComponent />
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:ml-24'>
+			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
 				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-800 mb-8 sm:mb-12 text-center'>
 					Shop
 				</h1>
 
+				{/* Toggle for Small Screens */}
+				<div className='md:hidden sticky top-0 z-20 bg-gray-800 py-2 mb-4'>
+					<div className='flex justify-center space-x-2'>
+						<button
+							className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+								!isBundles
+									? 'bg-green-500 text-white'
+									: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+							}`}
+							onClick={() => setIsBundles(false)}>
+							Items
+						</button>
+						<button
+							className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+								isBundles
+									? 'bg-green-500 text-white'
+									: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+							}`}
+							onClick={() => setIsBundles(true)}>
+							Bundles
+						</button>
+					</div>
+				</div>
+
 				{/* Toggle for Large Screens */}
-				<div className='hidden lg:block fixed left-0 top-0 h-full w-max bg-gray-800 z-30 transform transition-transform duration-300 ease-in-out'>
+				<div className='hidden md:block fixed left-0 top-0 h-full w-max bg-gray-800 z-30 transform transition-transform duration-300 ease-in-out '>
 					<h2 className='text-2xl font-bold mb-4 mt-16 md:mt-4 ml-1 text-green-500'>
 						Menu
 					</h2>
 					<ul>
 						<li
-							className={`mb-5 text-white p-2 px-6 ${
+							className={`mb-5 text-white  p-2 px-6 ${
 								!isBundles ? 'bg-green-500 ' : ''
 							}`}>
 							<button
@@ -144,54 +169,6 @@ const Shop: React.FC = () => {
 					</ul>
 				</div>
 
-				{/* Toggle for Medium Screens */}
-				<div className='hidden md:block lg:hidden sticky top-0 z-20 bg-gray-800 py-2 mb-4'>
-					<div className='flex justify-center space-x-2'>
-						<button
-							className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-								!isBundles
-									? 'bg-green-500 text-white'
-									: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-							}`}
-							onClick={() => setIsBundles(false)}>
-							Items
-						</button>
-						<button
-							className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-								isBundles
-									? 'bg-green-500 text-white'
-									: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-							}`}
-							onClick={() => setIsBundles(true)}>
-							Bundles
-						</button>
-					</div>
-				</div>
-
-				{/* Toggle for Small Screens */}
-				<div className='md:hidden sticky top-0 z-20 bg-gray-800 py-2 mb-4'>
-					<div className='flex justify-center space-x-2'>
-						<button
-							className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-								!isBundles
-									? 'bg-green-500 text-white'
-									: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-							}`}
-							onClick={() => setIsBundles(false)}>
-							Items
-						</button>
-						<button
-							className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-								isBundles
-									? 'bg-green-500 text-white'
-									: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-							}`}
-							onClick={() => setIsBundles(true)}>
-							Bundles
-						</button>
-					</div>
-				</div>
-
 				<div className='relative mt-4'>
 					<button
 						onClick={toggleCart}
@@ -217,12 +194,10 @@ const Shop: React.FC = () => {
 					</button>
 					{isBundles ? (
 						<div>
-							<p className='text-white my-auto mx-auto text-center text-4xl'>
-								COMING SOON!
-							</p>
+							<Bundles />
 						</div>
 					) : (
-						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:ml-10'>
+						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
 							{items.map(item => (
 								<div
 									key={item.id}
