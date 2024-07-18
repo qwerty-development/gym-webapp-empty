@@ -6,7 +6,14 @@ import { UserButton } from '@clerk/nextjs'
 import { useUser } from '@clerk/nextjs'
 import { useWallet } from './WalletContext'
 import Image from 'next/image'
-import { FaBars, FaTimes, FaUser, FaCalendarAlt, FaCog, FaShoppingCart } from 'react-icons/fa'
+import {
+	FaBars,
+	FaTimes,
+	FaUser,
+	FaCalendarAlt,
+	FaCog,
+	FaShoppingCart
+} from 'react-icons/fa'
 import Link from 'next/link'
 
 export default function NavbarComponent() {
@@ -61,15 +68,14 @@ export default function NavbarComponent() {
 							<Link
 								key={item.href}
 								href={item.href}
-								className={`flex items-center justify-center w-[150px] px-7 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-center ${currentPage === item.href
+								className={`flex items-center justify-center w-[150px] px-7 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-center ${
+									currentPage === item.href
 										? 'bg-green-500 text-white'
 										: 'text-gray-300 hover:bg-green-300 hover:text-white'
-									}`}>
+								}`}>
 								<item.icon className='mr-2' />
 								{item.label}
 							</Link>
-
-
 						))}
 					</div>
 					<div className='flex items-center justify-end w-1/3'>
@@ -101,10 +107,11 @@ export default function NavbarComponent() {
 								<Link
 									key={item.href}
 									href={item.href}
-									className={`flex items-center justify-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${currentPage === item.href
-										? 'bg-green-500 text-white'
-										: 'text-gray-300 hover:bg-green-300 hover:text-white'
-										}`}
+									className={`flex items-center justify-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+										currentPage === item.href
+											? 'bg-green-500 text-white'
+											: 'text-gray-300 hover:bg-green-300 hover:text-white'
+									}`}
 									onClick={() => setIsMenuOpen(false)}>
 									<item.icon className='mr-2' />
 									{item.label}
