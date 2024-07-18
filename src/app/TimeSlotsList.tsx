@@ -1,5 +1,6 @@
 // app/TimeSlotsList.tsx
 import { supabaseClient } from '../../utils/supabaseClient'
+import { notFound } from 'next/navigation'
 
 import TimeSlotListClient from './TimeSlotListClient'
 
@@ -190,6 +191,7 @@ export default async function TimeSlotsList({
 	filters: FilterParams
 }) {
 	const timeSlots = await fetchFilteredTimeSlots(filters)
+
 	return (
 		<TimeSlotListClient
 			initialTimeSlots={timeSlots}
