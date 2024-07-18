@@ -21,7 +21,7 @@ export default function NavbarComponent() {
 
 	const navItems = [
 		{ href: '/users/dashboard', label: 'Dashboard', icon: FaUser },
-		{ href: '/users/bookasession', label: 'Book a session', icon: FaCalendarAlt },
+		{ href: '/users/bookasession', label: 'Book', icon: FaCalendarAlt },
 		{ href: '/users/shop', label: 'Shop', icon: FaShoppingCart },
 		...(user?.publicMetadata?.role === 'admin'
 			? [{ href: '/admin/manage-users', label: 'Admin', icon: FaCog }]
@@ -56,22 +56,23 @@ export default function NavbarComponent() {
 							/>
 						</Link>
 					</div>
-					<div className='hidden md:flex justify-end items-center space-x-4'>
+					<div className='hidden md:flex  justify-end items-center space-x-4 flex-grow'>
 						{navItems.map(item => (
 							<Link
 								key={item.href}
 								href={item.href}
-								className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-									currentPage === item.href
+								className={`flex items-center justify-center w-[150px] px-7 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-center ${currentPage === item.href
 										? 'bg-green-500 text-white'
 										: 'text-gray-300 hover:bg-green-300 hover:text-white'
-								}`}>
+									}`}>
 								<item.icon className='mr-2' />
 								{item.label}
 							</Link>
+
+
 						))}
 					</div>
-					<div className='flex items-center justify-end w-1/3  '>
+					<div className='flex items-center justify-end w-1/3'>
 						<div className='bg-gray-800 text-green-400 px-3 py-1 rounded-full mr-3 text-sm border text-nowrap border-green-500'>
 							{walletBalance} credits
 						</div>
@@ -100,11 +101,10 @@ export default function NavbarComponent() {
 								<Link
 									key={item.href}
 									href={item.href}
-									className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-										currentPage === item.href
-											? 'bg-green-500 text-white'
-											: 'text-gray-300 hover:bg-green-300 hover:text-white'
-									}`}
+									className={`flex items-center justify-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${currentPage === item.href
+										? 'bg-green-500 text-white'
+										: 'text-gray-300 hover:bg-green-300 hover:text-white'
+										}`}
 									onClick={() => setIsMenuOpen(false)}>
 									<item.icon className='mr-2' />
 									{item.label}
