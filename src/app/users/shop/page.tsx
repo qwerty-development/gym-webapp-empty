@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import NavbarComponent from '../../components/users/navbar';
 import { fetchMarketItems, handlePurchase, fetchUserData } from '../../../../utils/user-requests';
 import { useUser } from '@clerk/clerk-react'; // Assuming you are using Clerk for authentication
+import Bundles from '@/app/components/users/bundles';
 
 interface MarketItem {
     id: string;
@@ -153,7 +154,8 @@ const Shop: React.FC = () => {
                     </button>
                     {isBundles ? (
                         <div>
-                            <p className='text-white my-auto mx-auto text-center text-4xl'>COMING SOON!</p>
+                            <Bundles/>
+
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
