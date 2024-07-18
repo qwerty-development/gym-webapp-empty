@@ -28,7 +28,14 @@ export default function ViewReservationsPage({
 		isPrivateTraining: searchParams.isPrivateTraining === 'true'
 	}
 
-	return <TimeSlotsList filters={filters} page={page} />
+	return (
+		<div>
+			<AdminNavbarComponent />
+			<Suspense fallback={<Loading />}>
+				<TimeSlotsList filters={filters} page={page} />
+			</Suspense>
+		</div>
+	)
 }
 
 // Implement this function to validate your filters
