@@ -48,7 +48,7 @@ const individualtiers = [
         id: 'tier-basic',
         href: '#',
         price: { monthly: '200', annually: '$12' },
-        description: 'Everything necessary to get started.',
+        description: '10 classes',
         features: ['5 products', 'Up to 1,000 subscribers', 'Basic analytics', '48-hour support response time'],
     },
     {
@@ -56,7 +56,7 @@ const individualtiers = [
         id: 'tier-essential',
         href: '#',
         price: { monthly: '350', annually: '$24' },
-        description: 'Everything in Basic, plus essential tools for growing your business.',
+        description: '10 classes',
         features: [
             '25 products',
             'Up to 10,000 subscribers',
@@ -70,7 +70,7 @@ const individualtiers = [
         id: 'tier-growth',
         href: '#',
         price: { monthly: '300', annually: '$48' },
-        description: 'Everything in Essential, plus collaboration tools and deeper insights.',
+        description: '10 classes',
         features: [
             'Unlimited products',
             'Unlimited subscribers',
@@ -152,12 +152,15 @@ export default function Bundles() {
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <h1 className='text-3xl text-green-500 font-bold'>Individual</h1>
                     <div className="mt-20  flow-root">
-                        <div className="isolate -mt-16 grid max-w-sm bg-gray-300 rounded-3xl grid-cols-1 gap-y-16 divide-y divide-gray-100 sm:mx-auto lg:-mx-8 lg:mt-0 lg:max-w-none lg:grid-cols-3 lg:divide-x lg:divide-y-0 xl:-mx-4">
+                        <div className="isolate  grid max-w-sm bg-gray-300 rounded-3xl grid-cols-1  divide-y divide-gray-100 sm:mx-auto lg:-mx-8 lg:mt-0 lg:max-w-none lg:grid-cols-3 lg:divide-x lg:divide-y-0 xl:-mx-4">
                             {individualtiers.map((tier) => (
-                                <div key={tier.id} className="pt-16 mt-12 lg:px-8 lg:pt-0 xl:px-14">
-                                    <h3 id={tier.id} className="text-base font-semibold leading-7 text-gray-900">
-                                        {tier.name}
+                                <div key={tier.id} className=" mx-6 mb-12  lg:px-8 lg:pt-0 xl:px-14">
+                                    <h3 id={tier.id} className="text-base mt-12 font-semibold leading-7 text-gray-900">
+                                        {tier.name} 
                                     </h3>
+                                    <p className='mt-2'>
+                                        {tier.description}
+                                    </p>
                                     <p className="mt-6 flex items-baseline gap-x-1">
                                         <span className="text-4xl font-bold tracking-tight text-gray-900">{tier.price.monthly} credits</span>
                                         <span className="text-sm font-semibold leading-6 text-gray-600"></span>
@@ -165,7 +168,7 @@ export default function Bundles() {
                                     <a
                                         href={tier.href}
                                         aria-describedby={tier.id}
-                                        className="mt-10 mb-12 block rounded-md bg-green-500 px-3 py-2 text-center text-sm font-semibold leading-6 text-white shadow-sm hover:bg-green-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
+                                        className="mt-10 mb-3 block rounded-md bg-green-500 px-3 py-2 text-center text-sm font-semibold leading-6 text-white shadow-sm hover:bg-green-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
                                     >
                                         Buy plan
                                     </a>
