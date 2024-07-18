@@ -91,9 +91,9 @@ const Shop: React.FC = () => {
     };
 
     return (
-        <div className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-800' id='__next'>
+        <div className='min-h-screen  bg-gradient-to-br from-gray-900 to-gray-800' id='__next'>
             <NavbarComponent />
-            <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
+            <div className='max-w-7xl  mx-auto px-4 sm:px-6 lg:px-8 py-12'>
                 <h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-800 mb-8 sm:mb-12 text-center'>
                     Shop
                 </h1>
@@ -117,7 +117,7 @@ const Shop: React.FC = () => {
                 </div>
 
                 {/* Toggle for Large Screens */}
-                <div className="hidden md:block fixed left-0 top-0 h-full w-max bg-gray-800 z-30 transform transition-transform duration-300 ease-in-out ">
+                <div className="hidden md:block fixed left-0 top-0 h-full w-1/6 bg-gray-800 z-30 transform transition-transform duration-300 ease-in-out ">
                     <h2 className="text-2xl font-bold mb-4 mt-16 md:mt-4 ml-1 text-green-500">Menu</h2>
                     <ul>
                         <li className={`mb-5 text-white  p-2 px-6 ${!isBundles ? 'bg-green-500 ' : ''}`}>
