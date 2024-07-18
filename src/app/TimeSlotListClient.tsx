@@ -4,7 +4,6 @@ import {
 	updateTimeSlot,
 	updateUserCreditsCancellation,
 	deleteGroupTimeSlot,
-	fetchGroupTimeSlots,
 	cancelGroupBooking
 } from '@/../utils/admin-requests'
 import { useState, useEffect } from 'react'
@@ -60,21 +59,6 @@ export default function TimeSlotListClient({
 
 		params.set('isPrivateTraining', isPrivateTraining.toString())
 		router.push(`/admin/view-reservations?${params.toString()}`)
-		// const newSearchParams = new URLSearchParams(searchParams)
-		// if (searchTerm) newSearchParams.set('searchTerm', searchTerm)
-		// else newSearchParams.delete('searchTerm')
-
-		// Object.entries(filter).forEach(([key, value]) => {
-		// 	if (value) newSearchParams.set(key, value)
-		// 	else newSearchParams.delete(key)
-		// })
-
-		// if (bookedFilter !== 'all') newSearchParams.set('booked', bookedFilter)
-		// else newSearchParams.delete('booked')
-
-		// newSearchParams.set('isPrivateTraining', isPrivateTraining.toString())
-
-		// router.push(`/admin/view-reservations?${newSearchParams.toString()}`)
 	}
 
 	const removeUserFromGroup = async (

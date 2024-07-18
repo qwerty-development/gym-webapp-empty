@@ -21,25 +21,25 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
 
 	let query = filters.isPrivateTraining
 		? supabase.from('time_slots').select(`
-          id,
-          activities (name, credits),
-          coaches (name),
-          date,
-          start_time,
-          end_time,
-          users (user_id, first_name, last_name),
-          booked
-        `)
+        id,
+        activities (name, credits),
+        coaches (name),
+        date,
+        start_time,
+        end_time,
+        users (user_id, first_name, last_name),
+        booked
+      `)
 		: supabase.from('group_time_slots').select(`
-          id,
-          activities (name, credits, capacity),
-          coaches (name),
-          date,
-          start_time,
-          end_time,
-          user_id,
-          booked
-        `)
+        id,
+        activities (name, credits, capacity),
+        coaches (name),
+        date,
+        start_time,
+        end_time,
+        user_id,
+        booked
+      `)
 
 	query = query
 		.gte('date', today)
@@ -48,9 +48,6 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
 
 	if (filters.activity) {
 		query = query.ilike('activities.name', `%${filters.activity}%`)
-	}
-	if (filters.coach) {
-		query = query.ilike('coaches.name', `%${filters.coach}%`)
 	}
 	if (filters.date) {
 		query = query.filter('date', 'eq', filters.date)
@@ -128,7 +125,44 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
 		}))
 	}
 
-	// Apply search term filter on the server side
+	// Apply coach filter
+	if (filters.coach) {
+		transformedData = transformedData.filter(
+			(slot: any) =>
+				slot.coach &&
+				slot.coach.name.toLowerCase().includes(filters.coach!.toLowerCase())
+		)
+	}
+
+	// Apply user filter for private training
+	if (filters.isPrivateTraining && filters.user) {
+		transformedData = transformedData.filter(
+			(slot: any) =>
+				slot.user &&
+				(slot.user.first_name
+					.toLowerCase()
+					.includes(filters.user!.toLowerCase()) ||
+					slot.user.last_name
+						.toLowerCase()
+						.includes(filters.user!.toLowerCase()))
+		)
+	}
+
+	// Apply user filter for group training
+	if (!filters.isPrivateTraining && filters.user) {
+		transformedData = transformedData.filter((slot: any) =>
+			slot.users.some(
+				(user: any) =>
+					user &&
+					(user.first_name
+						.toLowerCase()
+						.includes(filters.user!.toLowerCase()) ||
+						user.last_name.toLowerCase().includes(filters.user!.toLowerCase()))
+			)
+		)
+	}
+
+	// Apply search term filter
 	if (filters.searchTerm) {
 		const searchTerm = filters.searchTerm.toLowerCase()
 		transformedData = transformedData.filter(
@@ -150,7 +184,6 @@ async function fetchFilteredTimeSlots(filters: FilterParams) {
 
 	return transformedData
 }
-
 export default async function TimeSlotsList({
 	filters
 }: {
