@@ -115,7 +115,9 @@ export default function TimeSlotListClient({
 		// Fetch user data
 		const { data: userData, error: userError } = await supabase
 			.from('users')
-			.select('wallet, isFree, first_name, last_name, email, public_token')
+			.select(
+				'wallet, isFree, first_name, last_name, email, public_token, semiPrivate_token'
+			)
 			.eq('user_id', userId)
 			.single()
 
@@ -124,6 +126,18 @@ export default function TimeSlotListClient({
 				`Error fetching user data for user ${userId}:`,
 				userError?.message || 'User not found'
 			)
+			return
+		}
+
+		// Fetch activity data
+		const { data: activityData, error: activityError } = await supabase
+			.from('activities')
+			.select('name, semi_private')
+			.eq('id', existingSlot.activity_id)
+			.single()
+
+		if (activityError) {
+			console.error('Error fetching activity data:', activityError.message)
 			return
 		}
 
@@ -146,9 +160,14 @@ export default function TimeSlotListClient({
 
 		let totalRefund = 0
 		let newPublicTokenBalance = userData.public_token
+		let newSemiPrivateTokenBalance = userData.semiPrivate_token
 
 		if (bookedWithToken) {
-			newPublicTokenBalance += 1
+			if (activityData.semi_private) {
+				newSemiPrivateTokenBalance += 1
+			} else {
+				newPublicTokenBalance += 1
+			}
 		} else if (!userData.isFree) {
 			totalRefund += credits + additionsTotalPrice
 		} else {
@@ -187,27 +206,15 @@ export default function TimeSlotListClient({
 			return
 		}
 
-		// Update user's wallet or public token balance
-		if (bookedWithToken) {
-			await supabase
-				.from('users')
-				.update({ public_token: newPublicTokenBalance })
-				.eq('user_id', userId)
-		} else if (totalRefund > 0) {
-			await updateUserCreditsCancellation(userId, totalRefund)
-		}
-
-		// Fetch activity data
-		const { data: activityData, error: activityError } = await supabase
-			.from('activities')
-			.select('name')
-			.eq('id', existingSlot.activity_id)
-			.single()
-
-		if (activityError) {
-			console.error('Error fetching activity data:', activityError.message)
-			return
-		}
+		// Update user's wallet or token balance
+		await supabase
+			.from('users')
+			.update({
+				wallet: userData.wallet + totalRefund,
+				public_token: newPublicTokenBalance,
+				semiPrivate_token: newSemiPrivateTokenBalance
+			})
+			.eq('user_id', userId)
 
 		// Fetch coach data
 		const { data: coachData, error: coachError } = await supabase
@@ -231,7 +238,11 @@ export default function TimeSlotListClient({
 			end_time: existingSlot.end_time,
 			coach_name: coachData.name,
 			coach_email: coachData.email,
-			refund_type: bookedWithToken ? 'public token' : 'credits',
+			refund_type: bookedWithToken
+				? activityData.semi_private
+					? 'semi-private token'
+					: 'public token'
+				: 'credits',
 			refund_amount: bookedWithToken ? 1 : totalRefund
 		}
 

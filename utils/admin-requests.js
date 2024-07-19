@@ -610,7 +610,7 @@ export const cancelGroupBooking = async timeSlotId => {
 
 	const { data: activityData, error: activityError } = await supabase
 		.from('activities')
-		.select('credits, name')
+		.select('credits, name, semi_private')
 		.eq('id', existingSlot.activity_id)
 		.single()
 
@@ -643,7 +643,9 @@ export const cancelGroupBooking = async timeSlotId => {
 	for (const userId of existingSlot.user_id) {
 		const { data: userData, error: userError } = await supabase
 			.from('users')
-			.select('wallet, isFree, first_name, last_name, email, public_token')
+			.select(
+				'wallet, isFree, first_name, last_name, email, public_token, semiPrivate_token'
+			)
 			.eq('user_id', userId)
 			.single()
 
@@ -658,9 +660,14 @@ export const cancelGroupBooking = async timeSlotId => {
 		const bookedWithToken = existingSlot.booked_with_token.includes(userId)
 		let totalRefund = 0
 		let newPublicTokenBalance = userData.public_token
+		let newSemiPrivateTokenBalance = userData.semiPrivate_token
 
 		if (bookedWithToken) {
-			newPublicTokenBalance += 1
+			if (activityData.semi_private) {
+				newSemiPrivateTokenBalance += 1
+			} else {
+				newPublicTokenBalance += 1
+			}
 		} else if (!userData.isFree) {
 			totalRefund += activityCredits
 		}
@@ -683,7 +690,8 @@ export const cancelGroupBooking = async timeSlotId => {
 			.from('users')
 			.update({
 				wallet: newWalletBalance,
-				public_token: newPublicTokenBalance
+				public_token: newPublicTokenBalance,
+				semiPrivate_token: newSemiPrivateTokenBalance
 			})
 			.eq('user_id', userId)
 
@@ -704,7 +712,11 @@ export const cancelGroupBooking = async timeSlotId => {
 			end_time: existingSlot.end_time,
 			coach_name: coachData.name,
 			coach_email: coachData.email,
-			refund_type: bookedWithToken ? 'public token' : 'credits',
+			refund_type: bookedWithToken
+				? activityData.semi_private
+					? 'semi-private token'
+					: 'public token'
+				: 'credits',
 			refund_amount: bookedWithToken ? 1 : totalRefund
 		}
 
