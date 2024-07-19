@@ -177,7 +177,7 @@ export const cancelReservation = async (
 		const { data: reservationData, error: reservationError } = await supabase
 			.from('time_slots')
 			.select(
-				'activity_id, user_id, booked, coach_id, date, start_time, end_time, additions'
+				'activity_id, user_id, booked, coach_id, date, start_time, end_time, additions, booked_with_token'
 			)
 			.eq('id', reservationId)
 			.single()
@@ -197,7 +197,7 @@ export const cancelReservation = async (
 		// Fetch user data
 		const { data: userData, error: userError } = await supabase
 			.from('users')
-			.select('wallet, first_name, last_name, email, isFree')
+			.select('wallet, first_name, last_name, email, isFree, private_token')
 			.eq('user_id', userId)
 			.single()
 
@@ -207,8 +207,9 @@ export const cancelReservation = async (
 			)
 		}
 
-		// Initialize total refund amount
-		let totalRefund = 0
+		// Initialize refund variables
+		let totalCreditRefund = 0
+		let tokenRefund = 0
 
 		const { data: activityData, error: activityError } = await supabase
 			.from('activities')
@@ -223,9 +224,12 @@ export const cancelReservation = async (
 				}`
 			)
 		}
-		// If user is not free, fetch the activity credits and add to total refund
-		if (!userData.isFree) {
-			totalRefund += activityData.credits
+
+		// Determine refund type based on how the session was booked
+		if (reservationData.booked_with_token) {
+			tokenRefund = 1
+		} else if (!userData.isFree) {
+			totalCreditRefund += activityData.credits
 		}
 
 		// Fetch the additions and calculate their total price
@@ -244,7 +248,7 @@ export const cancelReservation = async (
 			(total, item) => total + item.price,
 			0
 		)
-		totalRefund += additionsTotalPrice
+		totalCreditRefund += additionsTotalPrice
 
 		// Update the time slot to cancel the reservation
 		const { error: updateError } = await supabase
@@ -252,7 +256,8 @@ export const cancelReservation = async (
 			.update({
 				user_id: null,
 				booked: false,
-				additions: []
+				additions: [],
+				booked_with_token: false
 			})
 			.eq('id', reservationId)
 
@@ -260,18 +265,20 @@ export const cancelReservation = async (
 			throw new Error(`Error canceling reservation: ${updateError.message}`)
 		}
 
-		// Update the user's wallet
-		const newWalletBalance = userData.wallet + totalRefund
+		// Update the user's wallet and/or tokens
+		const newWalletBalance = userData.wallet + totalCreditRefund
+		const newTokenBalance = userData.private_token + tokenRefund
 
-		const { error: walletUpdateError } = await supabase
+		const { error: userUpdateError } = await supabase
 			.from('users')
-			.update({ wallet: newWalletBalance })
+			.update({
+				wallet: newWalletBalance,
+				private_token: newTokenBalance
+			})
 			.eq('user_id', userId)
 
-		if (walletUpdateError) {
-			throw new Error(
-				`Error updating user wallet: ${walletUpdateError.message}`
-			)
+		if (userUpdateError) {
+			throw new Error(`Error updating user data: ${userUpdateError.message}`)
 		}
 
 		// Fetch coach data
@@ -294,7 +301,9 @@ export const cancelReservation = async (
 			start_time: reservationData.start_time,
 			end_time: reservationData.end_time,
 			coach_name: coachData.name,
-			coach_email: coachData.email
+			coach_email: coachData.email,
+			refund_type: reservationData.booked_with_token ? 'token' : 'credits',
+			refund_amount: reservationData.booked_with_token ? 1 : totalCreditRefund
 		}
 
 		// Send cancellation email to admin
