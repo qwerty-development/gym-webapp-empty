@@ -1243,10 +1243,10 @@ export const bookTimeSlotForClientGroup = async ({
 }) => {
 	const supabase = await supabaseClient()
 
-	// Fetch activity details to get the credits cost and capacity
+	// Fetch activity details to get the credits cost, capacity, and semi-private status
 	const { data: activityData, error: activityError } = await supabase
 		.from('activities')
-		.select('credits, name, capacity')
+		.select('credits, name, capacity, semi_private')
 		.eq('id', activityId)
 		.single()
 
@@ -1262,7 +1262,9 @@ export const bookTimeSlotForClientGroup = async ({
 	// Fetch user data
 	const { data: userData, error: userError } = await supabase
 		.from('users')
-		.select('wallet, first_name, last_name, email, isFree, public_token')
+		.select(
+			'wallet, first_name, last_name, email, isFree, public_token, semiPrivate_token'
+		)
 		.eq('user_id', userId)
 		.single()
 
@@ -1274,16 +1276,20 @@ export const bookTimeSlotForClientGroup = async ({
 	let bookingMethod = 'credits'
 	let newWalletBalance = userData.wallet
 	let newPublicTokenBalance = userData.public_token
+	let newSemiPrivateTokenBalance = userData.semiPrivate_token
 
-	if (userData.public_token > 0) {
-		bookingMethod = 'token'
+	if (activityData.semi_private && userData.semiPrivate_token > 0) {
+		bookingMethod = 'semiPrivateToken'
+		newSemiPrivateTokenBalance -= 1
+	} else if (!activityData.semi_private && userData.public_token > 0) {
+		bookingMethod = 'publicToken'
 		newPublicTokenBalance -= 1
 	} else if (userData.isFree || userData.wallet >= activityData.credits) {
 		if (!userData.isFree) {
 			newWalletBalance -= activityData.credits
 		}
 	} else {
-		return { error: 'Not enough credits or public tokens to book the session.' }
+		return { error: 'Not enough credits or tokens to book the session.' }
 	}
 
 	// Check if the time slot is already booked
@@ -1333,7 +1339,7 @@ export const bookTimeSlotForClientGroup = async ({
 		slotId = existingSlot.id
 	}
 
-	if (bookingMethod === 'token') {
+	if (bookingMethod === 'publicToken' || bookingMethod === 'semiPrivateToken') {
 		booked_with_token.push(userId)
 	}
 
@@ -1381,12 +1387,13 @@ export const bookTimeSlotForClientGroup = async ({
 		return { error: timeSlotError.message }
 	}
 
-	// Update user's account (wallet or public tokens)
+	// Update user's account (wallet, public tokens, or semi-private tokens)
 	const { error: updateError } = await supabase
 		.from('users')
 		.update({
 			wallet: newWalletBalance,
-			public_token: newPublicTokenBalance
+			public_token: newPublicTokenBalance,
+			semiPrivate_token: newSemiPrivateTokenBalance
 		})
 		.eq('user_id', userId)
 
@@ -1413,7 +1420,9 @@ export const bookTimeSlotForClientGroup = async ({
 		user_email: userData.email,
 		activity_name: activityData.name,
 		activity_price:
-			bookingMethod === 'token'
+			bookingMethod === 'semiPrivateToken'
+				? '1 semi-private token'
+				: bookingMethod === 'publicToken'
 				? '1 public token'
 				: userData.isFree
 				? 0
@@ -1425,7 +1434,9 @@ export const bookTimeSlotForClientGroup = async ({
 		coach_email: coachData.email,
 		user_wallet: newWalletBalance,
 		user_public_tokens: newPublicTokenBalance,
-		booking_method: bookingMethod
+		user_semi_private_tokens: newSemiPrivateTokenBalance,
+		booking_method: bookingMethod,
+		is_semi_private: activityData.semi_private
 	}
 
 	// Send email notification to user
@@ -1450,7 +1461,13 @@ export const bookTimeSlotForClientGroup = async ({
 
 	return {
 		success: true,
-		message: `Group session booked successfully using ${bookingMethod}.`,
+		message: `Group session booked successfully using ${
+			bookingMethod === 'semiPrivateToken'
+				? 'semi-private token'
+				: bookingMethod === 'publicToken'
+				? 'public token'
+				: 'credits'
+		}.`,
 		timeSlot: timeSlotData
 	}
 }
