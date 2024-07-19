@@ -768,110 +768,131 @@ export const bookTimeSlot = async ({
 		return { error: activityError?.message || 'Activity not found.' }
 	}
 
-	if (userData.isFree || userData.wallet >= activityData.credits) {
-		// Proceed with booking the time slot
-		const { data: timeSlotData, error: timeSlotError } = await supabase
-			.from('time_slots')
-			.update({ user_id: userId, booked: true })
-			.match({
-				activity_id: activityId,
-				coach_id: coachId,
-				date: date,
-				start_time: startTime,
-				end_time: endTime
-			})
+	let bookingMethod = 'credits'
+	let newWalletBalance = userData.wallet
+	let newTokenBalance = userData.private_token
 
-		if (timeSlotError) {
-			console.error('Error booking time slot:', timeSlotError.message)
-			return { error: timeSlotError.message }
-		}
-
-		// Deduct credits from user's account if the user is not free
-		let newWalletBalance = userData.wallet
+	if (userData.private_token > 0) {
+		bookingMethod = 'token'
+		newTokenBalance -= 1
+	} else if (userData.isFree || userData.wallet >= activityData.credits) {
 		if (!userData.isFree) {
 			newWalletBalance -= activityData.credits
-			const { error: updateError } = await supabase
-				.from('users')
-				.update({ wallet: newWalletBalance })
-				.eq('user_id', userId)
-
-			if (updateError) {
-				console.error('Error updating user credits:', updateError.message)
-				return { error: updateError.message }
-			}
-		}
-
-		const { data: coachData, error: coachError } = await supabase
-			.from('coaches')
-			.select('*')
-			.eq('id', coachId)
-			.single()
-
-		if (coachError || !coachData) {
-			console.error('Error fetching coach data:', coachError?.message)
-			return { error: coachError?.message || 'Coach not found.' }
-		}
-
-		// Prepare email data
-		const emailData = {
-			user_name: userData.first_name + ' ' + userData.last_name,
-			user_email: userData.email,
-			activity_name: activityData.name,
-			activity_price: userData.isFree ? 0 : activityData.credits,
-			activity_date: date,
-			start_time: startTime,
-			end_time: endTime,
-			coach_name: coachData.name,
-			coach_email: coachData.email,
-			user_wallet: newWalletBalance
-		}
-
-		// Send email notification to admin
-		try {
-			const responseAdmin = await fetch('/api/send-admin-email', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(emailData)
-			})
-
-			const resultAdmin = await responseAdmin.json()
-			if (responseAdmin.ok) {
-				console.log('Admin email sent successfully')
-			} else {
-				console.error(`Failed to send admin email: ${resultAdmin.error}`)
-			}
-		} catch (error) {
-			console.error('Error sending admin email:', error)
-		}
-
-		// Send email notification to user
-		try {
-			const responseUser = await fetch('/api/send-user-email', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(emailData)
-			})
-
-			const resultUser = await responseUser.json()
-			if (responseUser.ok) {
-				console.log('User email sent successfully')
-			} else {
-				console.error(`Failed to send user email: ${resultUser.error}`)
-			}
-		} catch (error) {
-			console.error('Error sending user email:', error)
-		}
-
-		return {
-			data: timeSlotData,
-			message: 'Session booked successfully.'
 		}
 	} else {
-		return { error: 'Not enough credits to book the session.' }
+		return { error: 'Not enough credits or tokens to book the session.' }
+	}
+
+	// Proceed with booking the time slot
+	const { data: timeSlotData, error: timeSlotError } = await supabase
+		.from('time_slots')
+		.update({
+			user_id: userId,
+			booked: true,
+			booked_with_token: bookingMethod === 'token'
+		})
+		.match({
+			activity_id: activityId,
+			coach_id: coachId,
+			date: date,
+			start_time: startTime,
+			end_time: endTime
+		})
+
+	if (timeSlotError) {
+		console.error('Error booking time slot:', timeSlotError.message)
+		return { error: timeSlotError.message }
+	}
+
+	// Update user's account (wallet or tokens)
+	const { error: updateError } = await supabase
+		.from('users')
+		.update({
+			wallet: newWalletBalance,
+			private_token: newTokenBalance
+		})
+		.eq('user_id', userId)
+
+	if (updateError) {
+		console.error('Error updating user data:', updateError.message)
+		return { error: updateError.message }
+	}
+
+	const { data: coachData, error: coachError } = await supabase
+		.from('coaches')
+		.select('*')
+		.eq('id', coachId)
+		.single()
+
+	if (coachError || !coachData) {
+		console.error('Error fetching coach data:', coachError?.message)
+		return { error: coachError?.message || 'Coach not found.' }
+	}
+
+	// Prepare email data
+	const emailData = {
+		user_name: userData.first_name + ' ' + userData.last_name,
+		user_email: userData.email,
+		activity_name: activityData.name,
+		activity_price:
+			bookingMethod === 'token'
+				? '1 token'
+				: userData.isFree
+				? 0
+				: activityData.credits,
+		activity_date: date,
+		start_time: startTime,
+		end_time: endTime,
+		coach_name: coachData.name,
+		coach_email: coachData.email,
+		user_wallet: newWalletBalance,
+		user_tokens: newTokenBalance,
+		booking_method: bookingMethod
+	}
+
+	// Send email notification to admin
+	try {
+		const responseAdmin = await fetch('/api/send-admin-email', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		const resultAdmin = await responseAdmin.json()
+		if (responseAdmin.ok) {
+			console.log('Admin email sent successfully')
+		} else {
+			console.error(`Failed to send admin email: ${resultAdmin.error}`)
+		}
+	} catch (error) {
+		console.error('Error sending admin email:', error)
+	}
+
+	// Send email notification to user
+	try {
+		const responseUser = await fetch('/api/send-user-email', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		const resultUser = await responseUser.json()
+		if (responseUser.ok) {
+			console.log('User email sent successfully')
+		} else {
+			console.error(`Failed to send user email: ${resultUser.error}`)
+		}
+	} catch (error) {
+		console.error('Error sending user email:', error)
+	}
+
+	return {
+		data: timeSlotData,
+		message: `Session booked successfully using ${bookingMethod}.`
 	}
 }
 
