@@ -1073,7 +1073,7 @@ export const updateUserisFree = async (userId, isFree) => {
 
 // admin-requests.js
 
-export const bookTimeSlot = async ({
+export const bookTimeSlotForClient = async ({
 	activityId,
 	coachId,
 	date,
@@ -1083,55 +1083,34 @@ export const bookTimeSlot = async ({
 }) => {
 	const supabase = await supabaseClient()
 
-	// Check if the time slot is already booked
-	const { data: existingSlot, error: existingSlotError } = await supabase
-		.from('time_slots')
-		.select('booked')
-		.match({
-			activity_id: activityId,
-			coach_id: coachId,
-			date: date,
-			start_time: startTime,
-			end_time: endTime
-		})
-		.single()
-
-	if (existingSlotError) {
-		console.error(
-			'Error checking time slot availability:',
-			existingSlotError.message
-		)
-		return { error: existingSlotError.message }
-	}
-
-	if (existingSlot && existingSlot.booked) {
-		return { error: 'Time slot is already booked.' }
-	}
-
-	// Fetch user data
-	const { data: userData, error: userError } = await supabase
-		.from('users')
-		.select('*')
-		.eq('user_id', userId)
-		.single()
-
-	if (userError || !userData) {
-		console.error('Error fetching user data:', userError?.message)
-		return { error: userError?.message || 'User not found.' }
-	}
-
-	// Fetch activity data
+	// Fetch activity details to get the credits cost
 	const { data: activityData, error: activityError } = await supabase
 		.from('activities')
-		.select('*')
+		.select('credits, name')
 		.eq('id', activityId)
 		.single()
 
 	if (activityError || !activityData) {
 		console.error('Error fetching activity data:', activityError?.message)
-		return { error: activityError?.message || 'Activity not found.' }
+		return {
+			error:
+				'Failed to fetch activity data: ' +
+				(activityError?.message || 'Activity not found')
+		}
 	}
 
+	// Fetch user data
+	const { data: userData, error: userError } = await supabase
+		.from('users')
+		.select('wallet, first_name, last_name, email, isFree, private_token')
+		.eq('user_id', userId)
+		.single()
+
+	if (userError || !userData) {
+		return { error: 'User not found' }
+	}
+
+	// Determine booking method and update user's account
 	let bookingMethod = 'credits'
 	let newWalletBalance = userData.wallet
 	let newTokenBalance = userData.private_token
@@ -1144,11 +1123,27 @@ export const bookTimeSlot = async ({
 			newWalletBalance -= activityData.credits
 		}
 	} else {
-		return { error: 'Not enough credits or tokens to book the session.' }
+		return { error: 'Not enough credits or tokens' }
+	}
+
+	// Update user's account (wallet or tokens)
+	const { error: updateUserError } = await supabase
+		.from('users')
+		.update({
+			wallet: newWalletBalance,
+			private_token: newTokenBalance
+		})
+		.eq('user_id', userId)
+
+	if (updateUserError) {
+		console.error('Error updating user data:', updateUserError.message)
+		return {
+			error: 'Failed to update user data: ' + updateUserError.message
+		}
 	}
 
 	// Proceed with booking the time slot
-	const { data: timeSlotData, error: timeSlotError } = await supabase
+	const { error: bookingError, data: bookingData } = await supabase
 		.from('time_slots')
 		.update({
 			user_id: userId,
@@ -1163,25 +1158,12 @@ export const bookTimeSlot = async ({
 			end_time: endTime
 		})
 
-	if (timeSlotError) {
-		console.error('Error booking time slot:', timeSlotError.message)
-		return { error: timeSlotError.message }
+	if (bookingError) {
+		console.error('Error booking time slot:', bookingError.message)
+		return { error: bookingError.message }
 	}
 
-	// Update user's account (wallet or tokens)
-	const { error: updateError } = await supabase
-		.from('users')
-		.update({
-			wallet: newWalletBalance,
-			private_token: newTokenBalance
-		})
-		.eq('user_id', userId)
-
-	if (updateError) {
-		console.error('Error updating user data:', updateError.message)
-		return { error: updateError.message }
-	}
-
+	// Fetch coach name
 	const { data: coachData, error: coachError } = await supabase
 		.from('coaches')
 		.select('*')
@@ -1214,26 +1196,6 @@ export const bookTimeSlot = async ({
 		booking_method: bookingMethod
 	}
 
-	// Send email notification to admin
-	try {
-		const responseAdmin = await fetch('/api/send-admin-email', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(emailData)
-		})
-
-		const resultAdmin = await responseAdmin.json()
-		if (responseAdmin.ok) {
-			console.log('Admin email sent successfully')
-		} else {
-			console.error(`Failed to send admin email: ${resultAdmin.error}`)
-		}
-	} catch (error) {
-		console.error('Error sending admin email:', error)
-	}
-
 	// Send email notification to user
 	try {
 		const responseUser = await fetch('/api/send-user-email', {
@@ -1255,8 +1217,9 @@ export const bookTimeSlot = async ({
 	}
 
 	return {
-		data: timeSlotData,
-		message: `Session booked successfully using ${bookingMethod}.`
+		success: true,
+		message: `Session booked successfully using ${bookingMethod}.`,
+		timeSlot: bookingData
 	}
 }
 
