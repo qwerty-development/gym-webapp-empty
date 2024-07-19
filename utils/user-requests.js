@@ -918,7 +918,7 @@ export const bookTimeSlotGroup = async ({
 	// Check if the time slot is already booked
 	const { data: existingSlot, error: existingSlotError } = await supabase
 		.from('group_time_slots')
-		.select('id, booked, user_id, count')
+		.select('id, booked, user_id, count, booked_with_token')
 		.eq('activity_id', activityId)
 		.eq('coach_id', coachId)
 		.eq('date', date)
@@ -935,7 +935,7 @@ export const bookTimeSlotGroup = async ({
 	}
 
 	if (existingSlot && existingSlot.booked) {
-		return { error: 'Time slot is already booked.' }
+		return { error: 'Time slot is already fully booked.' }
 	}
 
 	if (
@@ -946,7 +946,7 @@ export const bookTimeSlotGroup = async ({
 		return { error: 'You are already enrolled in this class.' }
 	}
 
-	// Fetch user's current credits
+	// Fetch user data
 	const { data: userData, error: userError } = await supabase
 		.from('users')
 		.select('*')
@@ -954,7 +954,7 @@ export const bookTimeSlotGroup = async ({
 		.single()
 
 	if (userError || !userData) {
-		console.error('Error fetching user credits:', userError?.message)
+		console.error('Error fetching user data:', userError?.message)
 		return { error: userError?.message || 'User not found.' }
 	}
 
@@ -970,148 +970,172 @@ export const bookTimeSlotGroup = async ({
 		return { error: activityError?.message || 'Activity not found.' }
 	}
 
-	if (userData.isFree || userData.wallet >= activityData.credits) {
-		let newCount = 1
-		let user_id = [userId]
-		let isBooked = false
-		let slotId
+	let bookingMethod = 'credits'
+	let newWalletBalance = userData.wallet
+	let newPublicTokenBalance = userData.public_token
 
-		if (existingSlot) {
-			newCount = existingSlot.count + 1
-			user_id = existingSlot.user_id
-				? [...existingSlot.user_id, userId]
-				: [userId]
-			isBooked = newCount === activityData.capacity
-			slotId = existingSlot.id
-		}
-
-		const upsertData = {
-			activity_id: activityId,
-			coach_id: coachId,
-			date: date,
-			start_time: startTime,
-			end_time: endTime,
-			user_id,
-			count: newCount,
-			booked: isBooked
-		}
-
-		let timeSlotData, timeSlotError
-
-		if (slotId) {
-			// Update existing slot
-			;({ data: timeSlotData, error: timeSlotError } = await supabase
-				.from('group_time_slots')
-				.update(upsertData)
-				.eq('id', slotId))
-		} else {
-			// Insert new slot
-			;({ data: timeSlotData, error: timeSlotError } = await supabase
-				.from('group_time_slots')
-				.insert(upsertData)
-				.single())
-
-			// Ensure no duplicates by deleting any older entries
-			await supabase
-				.from('group_time_slots')
-				.delete()
-				.eq('activity_id', activityId)
-				.eq('coach_id', coachId)
-				.eq('date', date)
-				.eq('start_time', startTime)
-				.eq('end_time', endTime)
-				.neq('id')
-		}
-
-		if (timeSlotError) {
-			console.error('Error booking group time slot:', timeSlotError.message)
-			return { error: timeSlotError.message }
-		}
-
-		let newWalletBalance = userData.wallet
+	if (userData.public_token > 0) {
+		bookingMethod = 'token'
+		newPublicTokenBalance -= 1
+	} else if (userData.isFree || userData.wallet >= activityData.credits) {
 		if (!userData.isFree) {
 			newWalletBalance -= activityData.credits
-			const { error: updateError } = await supabase
-				.from('users')
-				.update({ wallet: newWalletBalance })
-				.eq('user_id', userId)
-			if (updateError) {
-				console.error('Error updating user credits:', updateError.message)
-				return { error: updateError.message }
-			}
-		}
-
-		const { data: coachData, error: coachError } = await supabase
-			.from('coaches')
-			.select('*')
-			.eq('id', coachId)
-			.single()
-
-		if (coachError || !coachData) {
-			console.error('Error fetching coach data:', coachError?.message)
-			return { error: coachError?.message || 'Coach not found.' }
-		}
-
-		// Prepare email data
-		const emailData = {
-			user_name: userData.first_name + ' ' + userData.last_name,
-			user_email: userData.email,
-			activity_name: activityData.name,
-			activity_price: activityData.credits,
-			activity_date: date,
-			start_time: startTime,
-			end_time: endTime,
-			coach_name: coachData.name,
-			coach_email: coachData.email,
-			user_wallet: newWalletBalance
-		}
-
-		// Send email notification to admin
-		try {
-			const responseAdmin = await fetch('/api/send-admin-email', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(emailData)
-			})
-
-			const resultAdmin = await responseAdmin.json()
-			if (responseAdmin.ok) {
-				console.log('Admin email sent successfully')
-			} else {
-				console.error(`Failed to send admin email: ${resultAdmin.error}`)
-			}
-		} catch (error) {
-			console.error('Error sending admin email:', error)
-		}
-
-		// Send email notification to user
-		try {
-			const responseUser = await fetch('/api/send-user-email', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(emailData)
-			})
-
-			const resultUser = await responseUser.json()
-			if (responseUser.ok) {
-				console.log('User email sent successfully')
-			} else {
-				console.error(`Failed to send user email: ${resultUser.error}`)
-			}
-		} catch (error) {
-			console.error('Error sending user email:', error)
-		}
-
-		return {
-			data: timeSlotData,
-			message: 'Session booked and credits deducted.'
 		}
 	} else {
-		return { error: 'Not enough credits to book the session.' }
+		return { error: 'Not enough credits or public tokens to book the session.' }
+	}
+
+	let newCount = 1
+	let user_id = [userId]
+	let isBooked = false
+	let slotId
+	let booked_with_token = []
+
+	if (existingSlot) {
+		newCount = existingSlot.count + 1
+		user_id = existingSlot.user_id
+			? [...existingSlot.user_id, userId]
+			: [userId]
+		isBooked = newCount === activityData.capacity
+		slotId = existingSlot.id
+		booked_with_token = existingSlot.booked_with_token || []
+	}
+
+	if (bookingMethod === 'token') {
+		booked_with_token.push(userId)
+	}
+
+	const upsertData = {
+		activity_id: activityId,
+		coach_id: coachId,
+		date: date,
+		start_time: startTime,
+		end_time: endTime,
+		user_id,
+		count: newCount,
+		booked: isBooked,
+		booked_with_token
+	}
+
+	let timeSlotData, timeSlotError
+
+	if (slotId) {
+		// Update existing slot
+		;({ data: timeSlotData, error: timeSlotError } = await supabase
+			.from('group_time_slots')
+			.update(upsertData)
+			.eq('id', slotId))
+	} else {
+		// Insert new slot
+		;({ data: timeSlotData, error: timeSlotError } = await supabase
+			.from('group_time_slots')
+			.insert(upsertData)
+			.single())
+
+		// Ensure no duplicates by deleting any older entries
+		await supabase
+			.from('group_time_slots')
+			.delete()
+			.eq('activity_id', activityId)
+			.eq('coach_id', coachId)
+			.eq('date', date)
+			.eq('start_time', startTime)
+			.eq('end_time', endTime)
+			.neq('id', timeSlotData.id)
+	}
+
+	if (timeSlotError) {
+		console.error('Error booking group time slot:', timeSlotError.message)
+		return { error: timeSlotError.message }
+	}
+
+	// Update user's account (wallet or tokens)
+	const { error: updateError } = await supabase
+		.from('users')
+		.update({
+			wallet: newWalletBalance,
+			public_token: newPublicTokenBalance
+		})
+		.eq('user_id', userId)
+
+	if (updateError) {
+		console.error('Error updating user data:', updateError.message)
+		return { error: updateError.message }
+	}
+
+	const { data: coachData, error: coachError } = await supabase
+		.from('coaches')
+		.select('*')
+		.eq('id', coachId)
+		.single()
+
+	if (coachError || !coachData) {
+		console.error('Error fetching coach data:', coachError?.message)
+		return { error: coachError?.message || 'Coach not found.' }
+	}
+
+	// Prepare email data
+	const emailData = {
+		user_name: userData.first_name + ' ' + userData.last_name,
+		user_email: userData.email,
+		activity_name: activityData.name,
+		activity_price:
+			bookingMethod === 'token' ? '1 public token' : activityData.credits,
+		activity_date: date,
+		start_time: startTime,
+		end_time: endTime,
+		coach_name: coachData.name,
+		coach_email: coachData.email,
+		user_wallet: newWalletBalance,
+		user_public_tokens: newPublicTokenBalance,
+		booking_method: bookingMethod
+	}
+
+	// Send email notification to admin
+	try {
+		const responseAdmin = await fetch('/api/send-admin-email', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		const resultAdmin = await responseAdmin.json()
+		if (responseAdmin.ok) {
+			console.log('Admin email sent successfully')
+		} else {
+			console.error(`Failed to send admin email: ${resultAdmin.error}`)
+		}
+	} catch (error) {
+		console.error('Error sending admin email:', error)
+	}
+
+	// Send email notification to user
+	try {
+		const responseUser = await fetch('/api/send-user-email', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		const resultUser = await responseUser.json()
+		if (responseUser.ok) {
+			console.log('User email sent successfully')
+		} else {
+			console.error(`Failed to send user email: ${resultUser.error}`)
+		}
+	} catch (error) {
+		console.error('Error sending user email:', error)
+	}
+
+	return {
+		data: timeSlotData,
+		message: `Group session booked successfully using ${
+			bookingMethod === 'token' ? 'public token' : 'credits'
+		}.`
 	}
 }
 
