@@ -1073,7 +1073,7 @@ export const updateUserisFree = async (userId, isFree) => {
 
 // admin-requests.js
 
-export const bookTimeSlotForClient = async ({
+export const bookTimeSlot = async ({
 	activityId,
 	coachId,
 	date,
@@ -1083,58 +1083,78 @@ export const bookTimeSlotForClient = async ({
 }) => {
 	const supabase = await supabaseClient()
 
-	// Fetch activity details to get the credits cost
-	const { data: activityData, error: activityError } = await supabase
-		.from('activities')
-		.select('credits, name')
-		.eq('id', activityId)
+	// Check if the time slot is already booked
+	const { data: existingSlot, error: existingSlotError } = await supabase
+		.from('time_slots')
+		.select('booked')
+		.match({
+			activity_id: activityId,
+			coach_id: coachId,
+			date: date,
+			start_time: startTime,
+			end_time: endTime
+		})
 		.single()
 
-	if (activityError || !activityData) {
-		console.error('Error fetching activity data:', activityError?.message)
-		return {
-			error:
-				'Failed to fetch activity data: ' +
-				(activityError?.message || 'Activity not found')
-		}
+	if (existingSlotError) {
+		console.error(
+			'Error checking time slot availability:',
+			existingSlotError.message
+		)
+		return { error: existingSlotError.message }
+	}
+
+	if (existingSlot && existingSlot.booked) {
+		return { error: 'Time slot is already booked.' }
 	}
 
 	// Fetch user data
 	const { data: userData, error: userError } = await supabase
 		.from('users')
-		.select('wallet, first_name, last_name, email, isFree')
+		.select('*')
 		.eq('user_id', userId)
 		.single()
 
 	if (userError || !userData) {
-		return { error: 'User not found' }
+		console.error('Error fetching user data:', userError?.message)
+		return { error: userError?.message || 'User not found.' }
 	}
 
-	// Check if the user is free or has enough credits
-	let newWalletBalance = userData.wallet
-	if (!userData.isFree) {
-		if (userData.wallet < activityData.credits) {
-			return { error: 'Not enough credits' }
-		}
-		// Deduct credits from user's wallet
-		newWalletBalance -= activityData.credits
-		const { error: updateWalletError } = await supabase
-			.from('users')
-			.update({ wallet: newWalletBalance })
-			.eq('user_id', userId)
+	// Fetch activity data
+	const { data: activityData, error: activityError } = await supabase
+		.from('activities')
+		.select('*')
+		.eq('id', activityId)
+		.single()
 
-		if (updateWalletError) {
-			console.error('Error updating user wallet:', updateWalletError.message)
-			return {
-				error: 'Failed to update user wallet: ' + updateWalletError.message
-			}
+	if (activityError || !activityData) {
+		console.error('Error fetching activity data:', activityError?.message)
+		return { error: activityError?.message || 'Activity not found.' }
+	}
+
+	let bookingMethod = 'credits'
+	let newWalletBalance = userData.wallet
+	let newTokenBalance = userData.private_token
+
+	if (userData.private_token > 0) {
+		bookingMethod = 'token'
+		newTokenBalance -= 1
+	} else if (userData.isFree || userData.wallet >= activityData.credits) {
+		if (!userData.isFree) {
+			newWalletBalance -= activityData.credits
 		}
+	} else {
+		return { error: 'Not enough credits or tokens to book the session.' }
 	}
 
 	// Proceed with booking the time slot
-	const { error: bookingError, data: bookingData } = await supabase
+	const { data: timeSlotData, error: timeSlotError } = await supabase
 		.from('time_slots')
-		.update({ user_id: userId, booked: true })
+		.update({
+			user_id: userId,
+			booked: true,
+			booked_with_token: bookingMethod === 'token'
+		})
 		.match({
 			activity_id: activityId,
 			coach_id: coachId,
@@ -1143,12 +1163,25 @@ export const bookTimeSlotForClient = async ({
 			end_time: endTime
 		})
 
-	if (bookingError) {
-		console.error('Error booking time slot:', bookingError.message)
-		return { error: bookingError.message }
+	if (timeSlotError) {
+		console.error('Error booking time slot:', timeSlotError.message)
+		return { error: timeSlotError.message }
 	}
 
-	// Fetch coach name
+	// Update user's account (wallet or tokens)
+	const { error: updateError } = await supabase
+		.from('users')
+		.update({
+			wallet: newWalletBalance,
+			private_token: newTokenBalance
+		})
+		.eq('user_id', userId)
+
+	if (updateError) {
+		console.error('Error updating user data:', updateError.message)
+		return { error: updateError.message }
+	}
+
 	const { data: coachData, error: coachError } = await supabase
 		.from('coaches')
 		.select('*')
@@ -1165,13 +1198,40 @@ export const bookTimeSlotForClient = async ({
 		user_name: userData.first_name + ' ' + userData.last_name,
 		user_email: userData.email,
 		activity_name: activityData.name,
-		activity_price: userData.isFree ? 0 : activityData.credits,
+		activity_price:
+			bookingMethod === 'token'
+				? '1 token'
+				: userData.isFree
+				? 0
+				: activityData.credits,
 		activity_date: date,
 		start_time: startTime,
 		end_time: endTime,
 		coach_name: coachData.name,
 		coach_email: coachData.email,
-		user_wallet: newWalletBalance
+		user_wallet: newWalletBalance,
+		user_tokens: newTokenBalance,
+		booking_method: bookingMethod
+	}
+
+	// Send email notification to admin
+	try {
+		const responseAdmin = await fetch('/api/send-admin-email', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		const resultAdmin = await responseAdmin.json()
+		if (responseAdmin.ok) {
+			console.log('Admin email sent successfully')
+		} else {
+			console.error(`Failed to send admin email: ${resultAdmin.error}`)
+		}
+	} catch (error) {
+		console.error('Error sending admin email:', error)
 	}
 
 	// Send email notification to user
@@ -1195,9 +1255,8 @@ export const bookTimeSlotForClient = async ({
 	}
 
 	return {
-		success: true,
-		message: 'Session booked successfully, credits deducted if applicable.',
-		timeSlot: bookingData
+		data: timeSlotData,
+		message: `Session booked successfully using ${bookingMethod}.`
 	}
 }
 
