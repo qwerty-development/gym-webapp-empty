@@ -184,7 +184,8 @@ export const cancelReservation = async (
 
 		if (reservationError || !reservationData) {
 			throw new Error(
-				`Error fetching reservation: ${reservationError?.message || 'Reservation not found'
+				`Error fetching reservation: ${
+					reservationError?.message || 'Reservation not found'
 				}`
 			)
 		}
@@ -217,7 +218,8 @@ export const cancelReservation = async (
 
 		if (activityError || !activityData) {
 			throw new Error(
-				`Error fetching activity credits: ${activityError?.message || 'Activity not found'
+				`Error fetching activity credits: ${
+					activityError?.message || 'Activity not found'
 				}`
 			)
 		}
@@ -357,7 +359,8 @@ export const cancelReservationGroup = async (
 
 		if (reservationError || !reservationData) {
 			throw new Error(
-				`Error fetching reservation: ${reservationError?.message || 'Reservation not found'
+				`Error fetching reservation: ${
+					reservationError?.message || 'Reservation not found'
 				}`
 			)
 		}
@@ -389,7 +392,8 @@ export const cancelReservationGroup = async (
 
 		if (activityError || !activityData) {
 			throw new Error(
-				`Error fetching activity credits: ${activityError?.message || 'Activity not found'
+				`Error fetching activity credits: ${
+					activityError?.message || 'Activity not found'
 				}`
 			)
 		}
@@ -966,13 +970,13 @@ export const bookTimeSlotGroup = async ({
 
 		if (slotId) {
 			// Update existing slot
-			; ({ data: timeSlotData, error: timeSlotError } = await supabase
+			;({ data: timeSlotData, error: timeSlotError } = await supabase
 				.from('group_time_slots')
 				.update(upsertData)
 				.eq('id', slotId))
 		} else {
 			// Insert new slot
-			; ({ data: timeSlotData, error: timeSlotError } = await supabase
+			;({ data: timeSlotData, error: timeSlotError } = await supabase
 				.from('group_time_slots')
 				.insert(upsertData)
 				.single())
@@ -1178,6 +1182,178 @@ export const payForItems = async ({
 	}
 }
 
+const classestiers = [
+	{
+		name: '"I train from time to time"',
+		id: 'tier-freelancer',
+		href: '#',
+		priceMonthly: '25 credits',
+		description: '1 class',
+		features: [
+			'5 products',
+			'Up to 1,000 subscribers',
+			'Basic analytics',
+			'48-hour support response time'
+		],
+		mostPopular: false
+	},
+	{
+		name: '"I train everyday"',
+		id: 'tier-startup',
+		href: '#',
+		priceMonthly: '100 credits',
+		description: '5 classes',
+		features: [
+			'25 products',
+			'Up to 10,000 subscribers',
+			'Advanced analytics',
+			'24-hour support response time',
+			'Marketing automations'
+		],
+		mostPopular: true
+	},
+	{
+		name: 'Eat, sleep, gym, repeat',
+		id: 'tier-enterprise',
+		href: '#',
+		priceMonthly: '150 credits',
+		description: '10 classes',
+		features: [
+			'Unlimited products',
+			'Unlimited subscribers',
+			'Advanced analytics',
+			'1-hour, dedicated support response time',
+			'Marketing automations'
+		],
+		mostPopular: false
+	}
+]
+
+const individualtiers = [
+	{
+		name: 'Workout of the day',
+		id: 'tier-basic',
+		href: '#',
+		price: { monthly: '200', annually: '$12' },
+		description: '10 classes',
+		features: [
+			'5 products',
+			'Up to 1,000 subscribers',
+			'Basic analytics',
+			'48-hour support response time'
+		]
+	},
+	{
+		name: 'Private training',
+		id: 'tier-essential',
+		href: '#',
+		price: { monthly: '350', annually: '$24' },
+		description: '10 classes',
+		features: [
+			'25 products',
+			'Up to 10,000 subscribers',
+			'Advanced analytics',
+			'24-hour support response time',
+			'Marketing automations'
+		]
+	},
+	{
+		name: 'Semi-Private',
+		id: 'tier-growth',
+		href: '#',
+		price: { monthly: '300', annually: '$48' },
+		description: '10 classes',
+		features: [
+			'Unlimited products',
+			'Unlimited subscribers',
+			'Advanced analytics',
+			'1-hour, dedicated support response time',
+			'Marketing automations',
+			'Custom reporting tools'
+		]
+	}
+]
+export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
+	const supabase = await supabaseClient()
+
+	// Fetch user's current data
+	const { data: userData, error: userError } = await supabase
+		.from('users')
+		.select('*')
+		.eq('user_id', userId)
+		.single()
+
+	if (userError || !userData) {
+		console.error('Error fetching user data:', userError?.message)
+		return { error: userError?.message || 'User not found.' }
+	}
+
+	// Determine the bundle details
+	let bundlePrice, tokenType, tokenAmount
+	if (bundleType === 'classes') {
+		const bundle = classestiers.find(tier => tier.name === bundleName)
+		if (!bundle) {
+			return { error: 'Invalid bundle name for classes.' }
+		}
+		bundlePrice = parseInt(bundle.priceMonthly)
+		tokenType = 'public_token'
+		tokenAmount = parseInt(bundle.description.split(' ')[0]) // Extract number of classes
+	} else if (bundleType === 'individual') {
+		const bundle = individualtiers.find(tier => tier.name === bundleName)
+		if (!bundle) {
+			return { error: 'Invalid bundle name for individual training.' }
+		}
+		bundlePrice = parseInt(bundle.price.monthly)
+		switch (bundleName) {
+			case 'Workout of the day':
+				tokenType = 'workoutDay_token'
+				break
+			case 'Private training':
+				tokenType = 'private_token'
+				break
+			case 'Semi-Private':
+				tokenType = 'semiPrivate_token'
+				break
+			default:
+				return { error: 'Invalid individual bundle type.' }
+		}
+		tokenAmount = parseInt(bundle.description.split(' ')[0]) // Extract number of classes
+	} else {
+		return { error: 'Invalid bundle type.' }
+	}
+
+	// Check if the user has enough credits
+	if (userData.wallet < bundlePrice) {
+		return { error: 'Not enough credits to purchase the bundle.' }
+	}
+
+	// Deduct credits and add tokens
+	const newWalletBalance = userData.wallet - bundlePrice
+	const newTokenBalance = userData[tokenType] + tokenAmount
+
+	// Update user data
+	const { error: updateError } = await supabase
+		.from('users')
+		.update({
+			wallet: newWalletBalance,
+			[tokenType]: newTokenBalance
+		})
+		.eq('user_id', userId)
+
+	if (updateError) {
+		console.error('Error updating user data:', updateError.message)
+		return { error: updateError.message }
+	}
+
+	return {
+		data: {
+			newWalletBalance,
+			[tokenType]: newTokenBalance
+		},
+		message: 'Bundle purchased successfully.'
+	}
+}
+
 export const payForGroupItems = async ({
 	userId,
 	activityId,
@@ -1278,71 +1454,70 @@ export const payForGroupItems = async ({
 	}
 }
 
-
 export const fetchMarketItems = async () => {
-	const supabase = await supabaseClient();
+	const supabase = await supabaseClient()
 	const { data, error } = await supabase
 		.from('market')
-		.select('id, name, price');
+		.select('id, name, price')
 
 	if (error) {
-		console.error('Error fetching market items:', error.message);
-		return [];
+		console.error('Error fetching market items:', error.message)
+		return []
 	}
 
-	return data;
-};
+	return data
+}
 
-export const fetchUserData = async (userId) => {
-	const supabase = supabaseClient();
+export const fetchUserData = async userId => {
+	const supabase = supabaseClient()
 	const { data, error } = await supabase
 		.from('users')
 		.select('wallet')
 		.eq('user_id', userId)
-		.single();
+		.single()
 
 	if (error) {
-		console.error('Error fetching user data:', error.message);
-		return null;
+		console.error('Error fetching user data:', error.message)
+		return null
 	}
 
-	return data;
-};
+	return data
+}
 
 export const handlePurchase = async (userId, cart, totalPrice) => {
-	const supabase = supabaseClient();
+	const supabase = supabaseClient()
 
 	// Check user's wallet balance
 	const { data: userData, error: userError } = await supabase
 		.from('users')
 		.select('wallet')
 		.eq('user_id', userId)
-		.single();
+		.single()
 
 	if (userError) {
-		console.error('Error fetching user wallet:', userError.message);
-		return false;
+		console.error('Error fetching user wallet:', userError.message)
+		return false
 	}
 
 	if (userData.wallet < totalPrice) {
-		alert('You do not have enough credits to make this purchase.');
-		return false;
+		alert('You do not have enough credits to make this purchase.')
+		return false
 	}
 
 	// Update user's wallet
 	const { error: updateError } = await supabase
 		.from('users')
 		.update({ wallet: userData.wallet - totalPrice })
-		.eq('user_id', userId);
+		.eq('user_id', userId)
 
 	if (updateError) {
-		console.error('Error updating user wallet:', updateError.message);
-		return false;
+		console.error('Error updating user wallet:', updateError.message)
+		return false
 	}
 
 	// Transform cart items to an array of UUIDs
-	const items = cart.flatMap(item => Array(item.quantity).fill(item.id));
-	console.log('Items to insert:', items); // Log the items array to verify
+	const items = cart.flatMap(item => Array(item.quantity).fill(item.id))
+	console.log('Items to insert:', items) // Log the items array to verify
 
 	// Record transaction
 	const { error: transactionError } = await supabase
@@ -1351,28 +1526,27 @@ export const handlePurchase = async (userId, cart, totalPrice) => {
 			user_id: userId,
 			items: items,
 			date: new Date(),
-			claimed: false,
-		});
+			claimed: false
+		})
 
 	if (transactionError) {
-		console.error('Error recording transaction:', transactionError.message);
-		return false;
+		console.error('Error recording transaction:', transactionError.message)
+		return false
 	}
 
-	return true;
-};
-
+	return true
+}
 
 export const fetchShopTransactions = async () => {
-	const supabase = supabaseClient();
+	const supabase = supabaseClient()
 	const { data: transactions, error } = await supabase
 		.from('market_transactions')
 		.select('*')
-		.eq('claimed', false);
+		.eq('claimed', false)
 
 	if (error) {
-		console.error('Error fetching shop transactions:', error.message);
-		return [];
+		console.error('Error fetching shop transactions:', error.message)
+		return []
 	}
 
 	// Fetch user data for each transaction
@@ -1382,58 +1556,55 @@ export const fetchShopTransactions = async () => {
 			.select('first_name, last_name')
 			.eq('user_id', transaction.user_id)
 			.single()
-	);
+	)
 
-	const userResults = await Promise.all(userPromises);
+	const userResults = await Promise.all(userPromises)
 
 	// Fetch item data for each transaction
 	const itemPromises = transactions.map(transaction => {
-		const itemIds = transaction.items;
-		return supabase
-			.from('market')
-			.select('id, name')
-			.in('id', itemIds);
-	});
+		const itemIds = transaction.items
+		return supabase.from('market').select('id, name').in('id', itemIds)
+	})
 
-	const itemResults = await Promise.all(itemPromises);
+	const itemResults = await Promise.all(itemPromises)
 
 	// Combine transactions with user and item data
 	const enhancedTransactions = transactions.map((transaction, index) => {
-		const user = userResults[index].data;
-		const items = itemResults[index].data;
+		const user = userResults[index].data
+		const items = itemResults[index].data
 
 		// Count item quantities
 		const itemCounts = transaction.items.reduce((acc, itemId) => {
-			acc[itemId] = (acc[itemId] || 0) + 1;
-			return acc;
-		}, {});
+			acc[itemId] = (acc[itemId] || 0) + 1
+			return acc
+		}, {})
 
 		const itemDetails = items.map(item => ({
 			name: item.name,
 			quantity: itemCounts[item.id] || 0
-		}));
+		}))
 
 		return {
 			...transaction,
 			user_name: `${user.first_name} ${user.last_name}`,
 			item_details: itemDetails
-		};
-	});
+		}
+	})
 
-	return enhancedTransactions;
-};
+	return enhancedTransactions
+}
 
-export const claimTransaction = async (transactionId) => {
-	const supabase = supabaseClient();
+export const claimTransaction = async transactionId => {
+	const supabase = supabaseClient()
 	const { error } = await supabase
 		.from('market_transactions')
 		.update({ claimed: true })
-		.eq('transaction_id', transactionId);
+		.eq('transaction_id', transactionId)
 
 	if (error) {
-		console.error('Error claiming transaction:', error.message);
-		return false;
+		console.error('Error claiming transaction:', error.message)
+		return false
 	}
 
-	return true;
-};
+	return true
+}
