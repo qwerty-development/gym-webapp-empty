@@ -932,7 +932,7 @@ export default function Dashboard() {
 										? 'Individual Reservations'
 										: 'Group Reservations'}
 								</h2>
-								{/* {user.publicMetadata.role === 'admin' ? (
+								{user.publicMetadata.role === 'admin' ? (
 									// Admin view
 									<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
 										{renderAdminSessions(
@@ -941,7 +941,7 @@ export default function Dashboard() {
 												: adminGroupSessions
 										)}
 									</div>
-								) : ( */}
+								) : (
 									// Non-admin view
 									<>
 										{(activeTab === 'individual'

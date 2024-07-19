@@ -321,7 +321,9 @@ export default function TimeSlotListClient({
 					const { data: reservationData, error: reservationError } =
 						await supabase
 							.from('time_slots')
-							.select('additions, coach_id, date, start_time, end_time')
+							.select(
+								'additions, coach_id, date, start_time, end_time, booked_with_token, activity_id'
+							)
 							.eq('id', reservation.id)
 							.single()
 
@@ -344,14 +346,16 @@ export default function TimeSlotListClient({
 					}
 
 					const additionsTotalPrice = additionsData.reduce(
-						(total: any, item: any) => total + item.price,
+						(total, item) => total + item.price,
 						0
 					)
 
 					// Fetch user data
 					const { data: userData, error: userError } = await supabase
 						.from('users')
-						.select('isFree, first_name, last_name, email')
+						.select(
+							'isFree, first_name, last_name, email, wallet, private_token'
+						)
 						.eq('user_id', reservation.user?.user_id)
 						.single()
 
@@ -363,28 +367,65 @@ export default function TimeSlotListClient({
 						)
 					}
 
-					let totalRefund = additionsTotalPrice
-					if (!userData.isFree) {
-						totalRefund += reservation.activity?.credits || 0
+					// Fetch activity data
+					const { data: activityData, error: activityError } = await supabase
+						.from('activities')
+						.select('credits')
+						.eq('id', reservationData.activity_id)
+						.single()
+
+					if (activityError || !activityData) {
+						throw new Error(
+							`Error fetching activity data: ${
+								activityError?.message || 'Activity not found'
+							}`
+						)
+					}
+
+					let totalCreditRefund = additionsTotalPrice
+					let tokenRefund = 0
+
+					if (reservationData.booked_with_token) {
+						tokenRefund = 1
+					} else if (!userData.isFree) {
+						totalCreditRefund += activityData.credits
 					}
 
 					const updatedSlot = {
 						...reservation,
 						user_id: null,
 						booked: false,
-						additions: [] // Clear additions after cancellation
+						additions: [],
+						booked_with_token: false
 					}
 
-					const { success, error } = await updateTimeSlot(updatedSlot)
-					if (!success) {
-						throw new Error(`Failed to cancel booking: ${error}`)
+					// Update the time slot
+					const { error: updateError } = await supabase
+						.from('time_slots')
+						.update(updatedSlot)
+						.eq('id', reservation.id)
+
+					if (updateError) {
+						throw new Error(`Failed to cancel booking: ${updateError.message}`)
 					}
 
-					// Update user credits
-					await updateUserCreditsCancellation(
-						reservation.user?.user_id,
-						totalRefund
-					)
+					// Update user's wallet and tokens
+					const newWalletBalance = userData.wallet + totalCreditRefund
+					const newTokenBalance = userData.private_token + tokenRefund
+
+					const { error: userUpdateError } = await supabase
+						.from('users')
+						.update({
+							wallet: newWalletBalance,
+							private_token: newTokenBalance
+						})
+						.eq('user_id', reservation.user?.user_id)
+
+					if (userUpdateError) {
+						throw new Error(
+							`Error updating user data: ${userUpdateError.message}`
+						)
+					}
 
 					// Fetch coach data
 					const { data: coachData, error: coachError } = await supabase
@@ -406,7 +447,13 @@ export default function TimeSlotListClient({
 						start_time: reservationData.start_time,
 						end_time: reservationData.end_time,
 						coach_name: coachData.name,
-						coach_email: coachData.email
+						coach_email: coachData.email,
+						refund_type: reservationData.booked_with_token
+							? 'token'
+							: 'credits',
+						refund_amount: reservationData.booked_with_token
+							? tokenRefund
+							: totalCreditRefund
 					}
 
 					// Send cancellation email to admin
@@ -443,8 +490,10 @@ export default function TimeSlotListClient({
 
 					console.log('Booking cancelled successfully.')
 					router.refresh()
+					return true
 				} catch (error) {
-					console.error('Error cancelling booking:')
+					console.error('Error cancelling booking:', error)
+					return false
 				}
 			} else {
 				const { success, error } = await cancelGroupBooking(reservation.id)
