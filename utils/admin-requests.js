@@ -591,7 +591,7 @@ export const cancelGroupBooking = async timeSlotId => {
 	const { data: existingSlot, error: existingSlotError } = await supabase
 		.from('group_time_slots')
 		.select(
-			'user_id, count, activity_id, additions, coach_id, date, start_time, end_time'
+			'user_id, count, activity_id, additions, coach_id, date, start_time, end_time, booked_with_token'
 		)
 		.eq('id', timeSlotId)
 		.single()
@@ -643,7 +643,7 @@ export const cancelGroupBooking = async timeSlotId => {
 	for (const userId of existingSlot.user_id) {
 		const { data: userData, error: userError } = await supabase
 			.from('users')
-			.select('wallet, isFree, first_name, last_name, email')
+			.select('wallet, isFree, first_name, last_name, email, public_token')
 			.eq('user_id', userId)
 			.single()
 
@@ -655,8 +655,13 @@ export const cancelGroupBooking = async timeSlotId => {
 			continue
 		}
 
+		const bookedWithToken = existingSlot.booked_with_token.includes(userId)
 		let totalRefund = 0
-		if (!userData.isFree) {
+		let newPublicTokenBalance = userData.public_token
+
+		if (bookedWithToken) {
+			newPublicTokenBalance += 1
+		} else if (!userData.isFree) {
 			totalRefund += activityCredits
 		}
 
@@ -674,15 +679,18 @@ export const cancelGroupBooking = async timeSlotId => {
 
 		const newWalletBalance = userData.wallet + totalRefund
 
-		const { error: walletUpdateError } = await supabase
+		const { error: userUpdateError } = await supabase
 			.from('users')
-			.update({ wallet: newWalletBalance })
+			.update({
+				wallet: newWalletBalance,
+				public_token: newPublicTokenBalance
+			})
 			.eq('user_id', userId)
 
-		if (walletUpdateError) {
+		if (userUpdateError) {
 			console.error(
-				`Error updating wallet for user ${userId}:`,
-				walletUpdateError.message
+				`Error updating user data for user ${userId}:`,
+				userUpdateError.message
 			)
 		}
 
@@ -696,7 +704,8 @@ export const cancelGroupBooking = async timeSlotId => {
 			end_time: existingSlot.end_time,
 			coach_name: coachData.name,
 			coach_email: coachData.email,
-			refund_amount: totalRefund
+			refund_type: bookedWithToken ? 'public token' : 'credits',
+			refund_amount: bookedWithToken ? 1 : totalRefund
 		}
 
 		// Send cancellation email to user
@@ -727,7 +736,8 @@ export const cancelGroupBooking = async timeSlotId => {
 			user_id: [],
 			count: 0,
 			booked: false,
-			additions: []
+			additions: [],
+			booked_with_token: []
 		})
 		.eq('id', timeSlotId)
 

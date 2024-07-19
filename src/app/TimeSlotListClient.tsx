@@ -95,7 +95,7 @@ export default function TimeSlotListClient({
 		const { data: existingSlot, error: existingSlotError } = await supabase
 			.from('group_time_slots')
 			.select(
-				'user_id, count, booked, additions, activity_id, coach_id, date, start_time, end_time'
+				'user_id, count, booked, additions, activity_id, coach_id, date, start_time, end_time, booked_with_token'
 			)
 			.eq('id', timeSlotId)
 			.single()
@@ -115,7 +115,7 @@ export default function TimeSlotListClient({
 		// Fetch user data
 		const { data: userData, error: userError } = await supabase
 			.from('users')
-			.select('wallet, isFree, first_name, last_name, email')
+			.select('wallet, isFree, first_name, last_name, email, public_token')
 			.eq('user_id', userId)
 			.single()
 
@@ -126,6 +126,9 @@ export default function TimeSlotListClient({
 			)
 			return
 		}
+
+		// Check if the user booked with a token
+		const bookedWithToken = existingSlot.booked_with_token.includes(userId)
 
 		// Calculate total additions refund for the user
 		const userAdditions = existingSlot.additions.filter(
@@ -142,7 +145,11 @@ export default function TimeSlotListClient({
 		)
 
 		let totalRefund = 0
-		if (!userData.isFree) {
+		let newPublicTokenBalance = userData.public_token
+
+		if (bookedWithToken) {
+			newPublicTokenBalance += 1
+		} else if (!userData.isFree) {
 			totalRefund += credits + additionsTotalPrice
 		} else {
 			totalRefund += additionsTotalPrice
@@ -159,13 +166,19 @@ export default function TimeSlotListClient({
 		)
 		const updatedCount = updatedUserIds.length
 
+		// Remove the user from booked_with_token array if present
+		const updatedBookedWithToken = existingSlot.booked_with_token.filter(
+			(id: any) => id !== userId
+		)
+
 		const { data, error } = await supabase
 			.from('group_time_slots')
 			.update({
 				user_id: updatedUserIds,
 				count: updatedCount,
 				booked: false,
-				additions: updatedAdditions
+				additions: updatedAdditions,
+				booked_with_token: updatedBookedWithToken
 			})
 			.eq('id', timeSlotId)
 
@@ -174,8 +187,13 @@ export default function TimeSlotListClient({
 			return
 		}
 
-		// Refund the credits to the user
-		if (totalRefund > 0) {
+		// Update user's wallet or public token balance
+		if (bookedWithToken) {
+			await supabase
+				.from('users')
+				.update({ public_token: newPublicTokenBalance })
+				.eq('user_id', userId)
+		} else if (totalRefund > 0) {
 			await updateUserCreditsCancellation(userId, totalRefund)
 		}
 
@@ -212,7 +230,9 @@ export default function TimeSlotListClient({
 			start_time: existingSlot.start_time,
 			end_time: existingSlot.end_time,
 			coach_name: coachData.name,
-			coach_email: coachData.email
+			coach_email: coachData.email,
+			refund_type: bookedWithToken ? 'public token' : 'credits',
+			refund_amount: bookedWithToken ? 1 : totalRefund
 		}
 
 		// Send removal email to admin
