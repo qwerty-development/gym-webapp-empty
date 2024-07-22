@@ -14,14 +14,37 @@ import {
 	FaClock,
 	FaStore,
 	FaUserPlus,
-	FaHome
+	FaHome,
+	FaDollarSign,
+	FaChevronDown,
+	FaChevronUp,
+	FaArrowCircleRight,
+	FaArrowAltCircleLeft,
+	FaPenNib,
+	FaAmericanSignLanguageInterpreting,
+	FaDeviantart,
+	FaDev,
+	FaRegEdit,
+	FaWizardsOfTheCoast,
+	FaExpandArrowsAlt,
+	FaRegCaretSquareDown,
+	FaTv
 } from 'react-icons/fa'
 import Link from 'next/link'
 
+type NavItem = {
+	label: string
+	icon: React.ComponentType<{ className?: string }>
+	href?: string
+	submenu?: NavItem[]
+}
+
 export default function AdminNavbarComponent() {
-	const [currentPage, setCurrentPage] = useState('')
-	const [walletBalance, setWalletBalance] = useState(null)
-	const [isMenuOpen, setIsMenuOpen] = useState(false)
+	const [currentPage, setCurrentPage] = useState<string>('')
+	const [walletBalance, setWalletBalance] = useState<number | null>(null)
+	const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
+	const [openSubMenu, setOpenSubMenu] = useState<{ [key: string]: boolean }>({})
+
 	const { userId, getToken, isSignedIn } = useAuth()
 
 	useEffect(() => {
@@ -46,20 +69,41 @@ export default function AdminNavbarComponent() {
 		fetchWallet()
 	}, [isSignedIn, getToken, userId])
 
-	const navItems = [
-		{ href: '/admin/manage-users', label: 'Users', icon: FaUsers },
+	const toggleSubMenu = (menu: string) => {
+		setOpenSubMenu((prev) => ({
+			...prev,
+			[menu]: !prev[menu]
+		}))
+	}
+
+	const navItems: NavItem[] = [
 		{
-			href: '/admin/add-activities-and-coaches',
-			label: 'Coaches & Activities',
-			icon: FaCalendarPlus
+			label: 'Accounting',
+			icon: FaDollarSign,
+			submenu: [
+				{ href: '/admin/accounting/dashboard', label: 'Dashboard', icon: FaTv },
+				{ href: '/admin/accounting/transactions', label: 'Transactions', icon: FaRegCaretSquareDown }
+			]
+		},
+		{
+			label: 'Manage',
+			icon: FaRegEdit,
+			submenu: [
+				{ href: '/admin/add-activities-and-coaches', label: 'Coaches & Activities', icon: FaCalendarPlus },
+				{ href: '/admin/add-timeslots', label: 'Time Slots', icon: FaClock },
+				{ href: '/admin/add-market-items', label: 'Shop', icon: FaStore }
+			]
 		},
 		{
 			href: '/admin/view-reservations',
 			label: 'Reservations',
 			icon: FaClipboardList
 		},
-		{ href: '/admin/add-timeslots', label: 'Add Time Slots', icon: FaClock },
-		{ href: '/admin/add-market-items', label: 'Items', icon: FaStore },
+		{
+			href: '/admin/manage-users',
+			label: 'Users',
+			icon: FaUsers
+		},
 		{
 			href: '/admin/book-for-client',
 			label: 'Book for Client',
@@ -96,18 +140,47 @@ export default function AdminNavbarComponent() {
 						</Link>
 					</div>
 					<div className='hidden lg:flex justify-end items-center space-x-4'>
-						{navItems.map(item => (
-							<Link
-								key={item.href}
-								href={item.href}
-								className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-									currentPage === item.href
-										? 'bg-green-500 text-white'
-										: 'text-gray-300 hover:bg-green-300 hover:text-white'
-								}`}>
-								<item.icon className='mr-2 text-lg' />
-								<span className='whitespace-nowrap'>{item.label}</span>
-							</Link>
+						{navItems.map((item, index) => (
+							<div key={index} className='relative'>
+								{item.submenu ? (
+									<div>
+										<button
+											onClick={() => toggleSubMenu(item.label)}
+											className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${openSubMenu[item.label]
+												? 'bg-green-500 text-white'
+												: 'text-gray-300 hover:bg-green-300 hover:text-white'
+												}`}>
+											<item.icon className='mr-2 text-lg' />
+											<span>{item.label}</span>
+											{openSubMenu[item.label] ? <FaChevronUp className='ml-2' /> : <FaChevronDown className='ml-2' />}
+										</button>
+										{openSubMenu[item.label] && (
+											<div className='absolute z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5'>
+												{item.submenu.map((subItem, subIndex) => (
+													<Link
+														key={subIndex}
+														href={subItem.href!}
+														className={`block px-4 py-2 flex items-center text-sm text-gray-700 hover:bg-green-300 hover:text-white ${currentPage === subItem.href ? 'bg-green-500 text-white' : ''
+															}`}>
+														<subItem.icon className='mr-2 text-lg' />
+														{subItem.label}
+													</Link>
+												))}
+											</div>
+										)}
+									</div>
+								) : (
+									<Link
+										href={item.href!}
+										className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${currentPage === item.href
+											? 'bg-green-500 text-white'
+											: 'text-gray-300 hover:bg-green-300 hover:text-white'
+											}`}>
+										<item.icon className='mr-2 text-lg' />
+										<span className='whitespace-nowrap'>{item.label}</span>
+									</Link>
+								)}
+							</div>
 						))}
 					</div>
 					<div className='flex items-center justify-end w-1/3'>
@@ -136,19 +209,48 @@ export default function AdminNavbarComponent() {
 						exit={{ opacity: 0, height: 0 }}
 						className='lg:hidden'>
 						<div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
-							{navItems.map(item => (
-								<Link
-									key={item.href}
-									href={item.href}
-									className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-										currentPage === item.href
-											? 'bg-green-500 text-white'
-											: 'text-gray-300 hover:bg-green-300 hover:text-white'
-									}`}
-									onClick={() => setIsMenuOpen(false)}>
-									<item.icon className='mr-2 text-lg' />
-									<span className='whitespace-nowrap'>{item.label}</span>
-								</Link>
+							{navItems.map((item, index) => (
+								<div key={index} className='relative'>
+									{item.submenu ? (
+										<div>
+											<button
+												onClick={() => toggleSubMenu(item.label)}
+												className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${openSubMenu[item.label]
+													? 'bg-green-500 text-white'
+													: 'text-gray-300 hover:bg-green-300 hover:text-white'
+													}`}>
+												<item.icon className='mr-2 text-lg' />
+												<span>{item.label}</span>
+												{openSubMenu[item.label] ? <FaChevronUp className='ml-2' /> : <FaChevronDown className='ml-2' />}
+											</button>
+											{openSubMenu[item.label] && (
+												<div className='mt-2 ml-6 space-y-1'>
+													{item.submenu.map((subItem, subIndex) => (
+														<Link
+															key={subIndex} href={subItem.href!}
+															className={`block px-3 py-2 text-base font-medium text-gray-300 hover:bg-green-300 hover:text-white ${currentPage === subItem.href ? 'bg-green-500 text-white' : ''
+																}`}
+															onClick={() => setIsMenuOpen(false)}>
+															<subItem.icon className='mr-2 text-lg' />
+															{subItem.label}
+														</Link>
+													))}
+												</div>
+											)}
+										</div>
+									) : (
+										<Link
+											href={item.href!}
+											className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${currentPage === item.href
+												? 'bg-green-500 text-white'
+												: 'text-gray-300 hover:bg-green-300 hover:text-white'
+												}`}
+											onClick={() => setIsMenuOpen(false)}>
+											<item.icon className='mr-2 text-lg' />
+											<span className='whitespace-nowrap'>{item.label}</span>
+										</Link>
+									)}
+								</div>
 							))}
 						</div>
 					</motion.div>
