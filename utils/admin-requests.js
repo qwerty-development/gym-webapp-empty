@@ -9,6 +9,9 @@ export const addActivity = async activity => {
 		activity.group = true
 	}
 
+	// Set semi_private based on the new field
+	activity.semi_private = activity.semi_private || false
+
 	const { data, error } = await supabase
 		.from('activities')
 		.insert([{ ...activity, coach_id: activity.coach_id }])

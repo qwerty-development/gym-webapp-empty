@@ -37,8 +37,9 @@ type Activity = {
 	name: string
 	credits: number
 	coach_id: number
-	capacity: number
+	capacity: number | null
 	group: boolean
+	semi_private: boolean
 }
 
 type GroupActivity = {
@@ -51,6 +52,7 @@ type GroupActivity = {
 }
 
 const CoachesandActivitiesAdminPage = () => {
+	const [newActivitySemiPrivate, setNewActivitySemiPrivate] = useState(false)
 	const [coaches, setCoaches] = useState<Coach[]>([])
 	const [activities, setActivities] = useState<Activity[]>([])
 	const [groupactivities, setGroupActivities] = useState<Activity[]>([])
@@ -146,12 +148,14 @@ const CoachesandActivitiesAdminPage = () => {
 			name: newActivityName,
 			credits: parseInt(newActivityCredits, 10),
 			coach_id: selectedCoachId || 0,
-			capacity: newActvityCapacity || null
+			capacity: newActvityCapacity || null,
+			semi_private: newActivitySemiPrivate
 		})
 		if (activity) setActivities([...activities, activity])
 		setNewActivityName('')
 		setNewActivityCredits('')
 		setNewActivityCapacity('')
+		setNewActivitySemiPrivate(false)
 		fetchActivities().then(setActivities)
 		refreshData()
 		setButtonLoading(false)
@@ -185,6 +189,9 @@ const CoachesandActivitiesAdminPage = () => {
 			'Enter new credits for activity (leave empty to skip):'
 		)
 		const capacityInput = prompt('Enter new capacity (leave empty to skip):')
+		const semiPrivateInput = prompt(
+			'Is this a semi-private activity? (yes/no, leave empty to skip):'
+		)
 
 		const updatedActivity = { id: activityId } as any
 
@@ -201,12 +208,11 @@ const CoachesandActivitiesAdminPage = () => {
 				return
 			}
 		}
-
 		if (capacityInput !== null && capacityInput.trim() !== '') {
 			let newCapacity = parseInt(capacityInput, 10)
 			if (!isNaN(newCapacity)) {
 				if (newCapacity === 1 || newCapacity === 0) {
-					newCapacity === null
+					newCapacity = 0
 					updatedActivity.group = false
 				} else {
 					updatedActivity.group = true
@@ -216,6 +222,10 @@ const CoachesandActivitiesAdminPage = () => {
 				console.error('Invalid capacity input.')
 				return
 			}
+		}
+
+		if (semiPrivateInput !== null && semiPrivateInput.trim() !== '') {
+			updatedActivity.semi_private = semiPrivateInput.toLowerCase() === 'yes'
 		}
 
 		try {
@@ -454,13 +464,25 @@ const CoachesandActivitiesAdminPage = () => {
 							className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 						/>
 						{!isPrivateTraining && (
-							<input
-								type='number'
-								value={newActvityCapacity}
-								onChange={e => setNewActivityCapacity(e.target.value)}
-								placeholder='Capacity'
-								className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
-							/>
+							<>
+								<input
+									type='number'
+									value={newActvityCapacity}
+									onChange={e => setNewActivityCapacity(e.target.value)}
+									placeholder='Capacity'
+									className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+								/>
+								<div className='flex items-center'>
+									<input
+										type='checkbox'
+										id='semi-private'
+										checked={newActivitySemiPrivate}
+										onChange={e => setNewActivitySemiPrivate(e.target.checked)}
+										className='mr-2'
+									/>
+									<label htmlFor='semi-private'>Semi-Private</label>
+								</div>
+							</>
 						)}
 						<select
 							value={selectedCoachId || ''}
@@ -513,9 +535,14 @@ const CoachesandActivitiesAdminPage = () => {
 													?.name || 'None'}
 											</p>
 											{!isPrivateTraining && (
-												<p className='text-gray-300'>
-													Capacity: {activity.capacity}
-												</p>
+												<>
+													<p className='text-gray-300'>
+														Capacity: {activity.capacity}
+													</p>
+													<p className='text-gray-300'>
+														Semi-Private: {activity.semi_private ? 'Yes' : 'No'}
+													</p>
+												</>
 											)}
 										</div>
 										<div className='flex justify-end space-x-2 mt-4'>
