@@ -1574,7 +1574,18 @@ export const fetchMarketItems = async () => {
 
 	return data
 }
+export const fetchUserTokens = async id => {
+	const supabase = await supabaseClient()
+	const { data, error } = await supabase
+		.from('users')
+		.select('private_token, semiPrivate_token, public_token, workoutDay_token')
+		.eq('user_id', id)
+		.single()
 
+	if (error) throw error
+
+	return data
+}
 export const fetchUserData = async userId => {
 	const supabase = supabaseClient()
 	const { data, error } = await supabase
