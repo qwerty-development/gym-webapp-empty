@@ -13,7 +13,8 @@ import {
 	payForItems,
 	payForGroupItems,
 	claimTransaction,
-	fetchShopTransactions
+	fetchShopTransactions,
+	fetchUserTokens
 } from '../../../../../utils/user-requests'
 import {
 	fetchTotalUsers,
@@ -41,6 +42,7 @@ import Link from 'next/link'
 import useConfirmationModal from '../../../../../utils/useConfirmationModel'
 import ConfirmationModal from '@/app/components/users/ConfirmationModal'
 import { FaChevronLeft, FaChevronRight, FaChevronDown } from 'react-icons/fa'
+import TokenBalance from '@/app/components/users/TokenBalance'
 
 type Reservation = {
 	id: number
@@ -108,6 +110,12 @@ export default function Dashboard() {
 	const [adminIndividualSessions, setAdminIndividualSessions] = useState<any[]>(
 		[]
 	)
+	const [userTokens, setUserTokens] = useState({
+		private: 0,
+		semiPrivate: 0,
+		public: 0,
+		workoutDay: 0
+	})
 	const [adminGroupSessions, setAdminGroupSessions] = useState<any[]>([])
 	const [isCancelling, setIsCancelling] = useState(false)
 	const [totalUsers, setTotalUsers] = useState(0)
@@ -292,8 +300,18 @@ export default function Dashboard() {
 
 				const fetchedActivities = await fetchAllActivities()
 				if (fetchedActivities) {
-					setIsLoading(false)
 					setActivities(fetchedActivities)
+				}
+
+				const userToken = await fetchUserTokens(user.id)
+				if (userToken) {
+					setIsLoading(false)
+					setUserTokens({
+						private: userToken.private_token,
+						semiPrivate: userToken.semiPrivate_token,
+						public: userToken.public_token,
+						workoutDay: userToken.workoutDay_token
+					})
 				}
 			}
 		}
@@ -808,20 +826,8 @@ export default function Dashboard() {
 										initial={{ opacity: 0, x: 20 }}
 										animate={{ opacity: 1, x: 0 }}
 										transition={{ delay: 0.2 }}
-										className='hidden md:block bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-green-500 '>
-										<h3 className='text-2xl font-bold text-green-400 mb-4'>
-											Popular Activities
-										</h3>
-										<ul className='space-y-2'>
-											{activities.slice(0, 5).map((activity, index) => (
-												<li
-													key={activity.id}
-													className='text-gray-300 flex items-center'>
-													<span className='w-2 h-2 bg-green-500 rounded-full mr-2'></span>
-													{activity.name}
-												</li>
-											))}
-										</ul>
+										className='hidden md:block'>
+										<TokenBalance userTokens={userTokens} />
 									</motion.div>
 								)}
 								{user.publicMetadata.role === 'admin' && (
