@@ -1333,6 +1333,36 @@ const individualtiers = [
 		]
 	}
 ]
+// New function to insert a bundle purchase record
+// Modified function to insert a bundle purchase record
+async function insertBundlePurchaseRecord(
+	supabase,
+	userId,
+	amount,
+
+	tokenAmount,
+	tokenType
+) {
+	if (tokenType === 'public') {
+		tokenType = 'class'
+	}
+	const formattedBundleName = ` ${tokenAmount} ${tokenType} tokens`
+	const { data, error } = await supabase.from('bundle_purchase').insert({
+		user_id: userId,
+		amount: amount,
+		bundle_name: formattedBundleName
+	})
+
+	if (error) {
+		console.error('Error inserting bundle purchase record:', error.message)
+		return {
+			error: 'Failed to insert bundle purchase record: ' + error.message
+		}
+	}
+
+	return { data }
+}
+
 export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
 	const supabase = await supabaseClient()
 
@@ -1356,7 +1386,7 @@ export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
 			return { error: 'Invalid bundle name for classes.' }
 		}
 		bundlePrice = parseInt(bundle.priceMonthly)
-		tokenType = 'public_token'
+		tokenType = 'public'
 		tokenAmount = parseInt(bundle.description.split(' ')[0]) // Extract number of classes
 	} else if (bundleType === 'individual') {
 		const bundle = individualtiers.find(tier => tier.name === bundleName)
@@ -1364,20 +1394,20 @@ export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
 			return { error: 'Invalid bundle name for individual training.' }
 		}
 		bundlePrice = parseInt(bundle.price.monthly)
+		tokenAmount = parseInt(bundle.description.split(' ')[0]) // Extract number of classes
 		switch (bundleName) {
 			case 'Workout of the day':
-				tokenType = 'workoutDay_token'
+				tokenType = 'workoutDay'
 				break
 			case 'Private training':
-				tokenType = 'private_token'
+				tokenType = 'private'
 				break
 			case 'Semi-Private':
-				tokenType = 'semiPrivate_token'
+				tokenType = 'semiPrivate'
 				break
 			default:
 				return { error: 'Invalid individual bundle type.' }
 		}
-		tokenAmount = parseInt(bundle.description.split(' ')[0]) // Extract number of classes
 	} else {
 		return { error: 'Invalid bundle type.' }
 	}
@@ -1389,14 +1419,14 @@ export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
 
 	// Deduct credits and add tokens
 	const newWalletBalance = userData.wallet - bundlePrice
-	const newTokenBalance = userData[tokenType] + tokenAmount
+	const newTokenBalance = userData[`${tokenType}_token`] + tokenAmount
 
 	// Update user data
 	const { error: updateError } = await supabase
 		.from('users')
 		.update({
 			wallet: newWalletBalance,
-			[tokenType]: newTokenBalance
+			[`${tokenType}_token`]: newTokenBalance
 		})
 		.eq('user_id', userId)
 
@@ -1405,10 +1435,27 @@ export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
 		return { error: updateError.message }
 	}
 
+	// Insert bundle purchase record
+	const { error: purchaseRecordError } = await insertBundlePurchaseRecord(
+		supabase,
+		userId,
+		bundlePrice,
+		tokenAmount,
+		tokenType
+	)
+
+	if (purchaseRecordError) {
+		console.error(
+			'Error inserting bundle purchase record:',
+			purchaseRecordError.message
+		)
+		// Note: We're not returning here to ensure the purchase is still considered successful
+	}
+
 	return {
 		data: {
 			newWalletBalance,
-			[tokenType]: newTokenBalance
+			[`${tokenType}_token`]: newTokenBalance
 		},
 		message: 'Bundle purchased successfully.'
 	}
