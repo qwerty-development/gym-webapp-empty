@@ -480,7 +480,7 @@ const CoachesandActivitiesAdminPage = () => {
 										onChange={e => setNewActivitySemiPrivate(e.target.checked)}
 										className='mr-2'
 									/>
-									<label htmlFor='semi-private'>Semi-Private</label>
+									<label htmlFor='semi-private text-nowrap'>Semi-Private</label>
 								</div>
 							</>
 						)}
