@@ -1027,13 +1027,28 @@ export const fetchUsers = async searchQuery => {
 
 // src/app/api/update-user-credits/route.js
 
+// New function to insert a refill record
+async function insertRefillRecord(supabase, userId, amount) {
+	const { data, error } = await supabase.from('credit_refill').insert({
+		user_id: userId,
+		amount: amount
+	})
+
+	if (error) {
+		console.error('Error inserting refill record:', error.message)
+		return { error: 'Failed to insert refill record: ' + error.message }
+	}
+
+	return { data }
+}
+
 export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 	const supabase = await supabaseClient()
 
 	// Fetch user details
 	const { data: userData, error: userError } = await supabase
 		.from('users')
-		.select('wallet, first_name, last_name, email')
+		.select('wallet, first_name, last_name, email, user_id')
 		.eq('id', userId)
 		.single()
 
@@ -1041,6 +1056,9 @@ export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 		console.error('Error fetching user data:', userError?.message)
 		return { error: 'User not found' }
 	}
+
+	// Calculate the amount of credits added
+	const creditsAdded = wallet - userData.wallet
 
 	// Update user's wallet
 	const { data, error } = await supabase
@@ -1053,12 +1071,24 @@ export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 		return { error: 'Failed to update user wallet: ' + error.message }
 	}
 
+	// Insert refill record
+	const { error: refillError } = await insertRefillRecord(
+		supabase,
+		userData.user_id,
+		newCredits
+	)
+
+	if (refillError) {
+		console.error('Error inserting refill record:', refillError.message)
+		// Note: We're not returning here, as we want to continue with the email sending process
+	}
+
 	// Prepare email data
 	const emailData = {
 		user_name: userData.first_name + ' ' + userData.last_name,
 		user_email: userData.email,
 		user_wallet: wallet,
-		creditsAdded: wallet - userData.wallet, // Assuming creditsAdded is the difference
+		creditsAdded,
 		sale,
 		newCredits
 	}
