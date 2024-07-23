@@ -48,6 +48,7 @@
     "shopify-buy": "^2.21.1"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-big-calendar": "^1.8.9",
