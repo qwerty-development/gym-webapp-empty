@@ -1625,19 +1625,27 @@ export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
 	}
 
 	// Insert bundle purchase record
-	const { error: purchaseRecordError } = await insertBundlePurchaseRecord(
-		supabase,
-		userId,
-		bundlePrice,
-		tokenAmount,
-		tokenType
-	)
+	const transactionRecords = [
+		{
+			user_id: userId,
+			name: `Purchased ${bundleName} bundle`,
+			type: 'bundle purchase',
+			amount: `-${bundlePrice} credits`
+		},
+		{
+			user_id: userId,
+			name: `Received tokens for ${bundleName} bundle`,
+			type: 'bundle purchase',
+			amount: `+${tokenAmount} ${tokenType} token${tokenAmount > 1 ? 's' : ''}`
+		}
+	]
 
-	if (purchaseRecordError) {
-		console.error(
-			'Error inserting bundle purchase record:',
-			purchaseRecordError.message
-		)
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert(transactionRecords)
+
+	if (transactionError) {
+		console.error('Error recording transactions:', transactionError.message)
 		// Note: We're not returning here to ensure the purchase is still considered successful
 	}
 
@@ -1841,19 +1849,40 @@ export const handlePurchase = async (userId, cart, totalPrice) => {
 	const items = cart.flatMap(item => Array(item.quantity).fill(item.id))
 	console.log('Items to insert:', items) // Log the items array to verify
 
-	// Record transaction
-	const { error: transactionError } = await supabase
+	// Record transaction in market_transactions table
+	const { error: marketTransactionError } = await supabase
 		.from('market_transactions')
 		.insert({
 			user_id: userId,
 			items: items,
 			date: new Date(),
-			claimed: false
+			claimed: false,
+			price: totalPrice
 		})
+
+	if (marketTransactionError) {
+		console.error(
+			'Error recording market transaction:',
+			marketTransactionError.message
+		)
+		return false
+	}
+
+	// Record transaction in the new transactions table
+	const transactionData = {
+		user_id: userId,
+		name: `Market purchase: ${cart.length} item${cart.length > 1 ? 's' : ''}`,
+		type: 'market transaction',
+		amount: `-${totalPrice} credits`
+	}
+
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert(transactionData)
 
 	if (transactionError) {
 		console.error('Error recording transaction:', transactionError.message)
-		return false
+		// Note: We don't return false here as the purchase was successful
 	}
 
 	return true
