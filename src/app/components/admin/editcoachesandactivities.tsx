@@ -61,7 +61,7 @@ const CoachesandActivitiesAdminPage = () => {
 	const [newActivityName, setNewActivityName] = useState('')
 	const [newActivityCredits, setNewActivityCredits] = useState('')
 	const [newActvityCapacity, setNewActivityCapacity] = useState('')
-	const [selectedCoachId, setSelectedCoachId] = useState<number | null>(null)
+
 	const [updateTrigger, setUpdateTrigger] = useState(false)
 	const [showUpdateForm, setShowUpdateForm] = useState(false) // State for showing the update form
 	const [updateCoachId, setUpdateCoachId] = useState<number | null>(null) // State for the coach being updated
@@ -147,7 +147,6 @@ const CoachesandActivitiesAdminPage = () => {
 		const activity = await addActivity({
 			name: newActivityName,
 			credits: parseInt(newActivityCredits, 10),
-			coach_id: selectedCoachId || 0,
 			capacity: newActvityCapacity || null,
 			semi_private: newActivitySemiPrivate
 		})
@@ -172,14 +171,6 @@ const CoachesandActivitiesAdminPage = () => {
 			toast.error('Error deleting activity check time slots first')
 		}
 		setButtonLoading(false)
-	}
-
-	const handleCoachSelection = (
-		event: React.ChangeEvent<HTMLSelectElement>
-	) => {
-		const coachId = parseInt(event.target.value, 10)
-		setSelectedCoachId(coachId)
-		fetchCoaches().then(setCoaches)
 	}
 
 	const handleUpdateActivity = async (activityId: number) => {
@@ -484,17 +475,7 @@ const CoachesandActivitiesAdminPage = () => {
 								</div>
 							</>
 						)}
-						<select
-							value={selectedCoachId || ''}
-							onChange={handleCoachSelection}
-							className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'>
-							<option value=''>Select Coach</option>
-							{coaches.map(coach => (
-								<option key={coach.id} value={coach.id}>
-									{coach.name}
-								</option>
-							))}
-						</select>
+
 						<motion.button
 							disabled={buttonLoading}
 							onClick={handleAddActivity}
@@ -529,11 +510,7 @@ const CoachesandActivitiesAdminPage = () => {
 											<p className='text-gray-300 mb-2'>
 												Credits: {activity.credits}
 											</p>
-											<p className='text-gray-300 mb-2'>
-												Coach:{' '}
-												{coaches.find(coach => coach.id === activity.coach_id)
-													?.name || 'None'}
-											</p>
+
 											{!isPrivateTraining && (
 												<>
 													<p className='text-gray-300'>

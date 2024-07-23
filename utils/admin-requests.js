@@ -12,9 +12,7 @@ export const addActivity = async activity => {
 	// Set semi_private based on the new field
 	activity.semi_private = activity.semi_private || false
 
-	const { data, error } = await supabase
-		.from('activities')
-		.insert([{ ...activity, coach_id: activity.coach_id }])
+	const { data, error } = await supabase.from('activities').insert([activity])
 
 	if (error) {
 		console.error('Error adding new activity:', error.message)
@@ -1716,16 +1714,17 @@ export const modifyMarketItem = async (id, name, price) => {
  * @returns {Promise<{ data: number | null, error: string | null }>}
  */
 export const getActiveTotalCredits = async () => {
-	const { data, error } = await supabaseClient()
-		.from('users')
-		.select('wallet')
+	const { data, error } = await supabaseClient().from('users').select('wallet')
 
 	if (error) {
 		console.error('Error fetching active total credits:', error.message)
 		return { data: null, error: error.message }
 	}
 
-	const totalActiveCredits = data.reduce((total, row) => total + (row.wallet || 0), 0)
+	const totalActiveCredits = data.reduce(
+		(total, row) => total + (row.wallet || 0),
+		0
+	)
 	return { data: totalActiveCredits, error: null }
 }
 
@@ -1744,7 +1743,10 @@ export const getTotalSpendActivities = async (startDate, endDate) => {
 		.lte('created_at', endDate)
 
 	if (error) {
-		console.error('Error fetching total credits spent on activities:', error.message)
+		console.error(
+			'Error fetching total credits spent on activities:',
+			error.message
+		)
 		return { data: null, error: error.message }
 	}
 
@@ -1772,13 +1774,17 @@ export const getTotalSpendActivitiesGroup = async (startDate, endDate) => {
 		.lte('created_at', endDate)
 
 	if (error) {
-		console.error('Error fetching total credits spent on group activities:', error.message)
+		console.error(
+			'Error fetching total credits spent on group activities:',
+			error.message
+		)
 		return { data: null, error: error.message }
 	}
 
 	const groupedData = data.reduce((acc, row) => {
 		const date = row.created_at.split('T')[0]
-		acc[date] = (acc[date] || 0) + ((row.activities.credits || 0) * (row.count || 0))
+		acc[date] =
+			(acc[date] || 0) + (row.activities.credits || 0) * (row.count || 0)
 		return acc
 	}, {})
 
