@@ -679,8 +679,9 @@ export const cancelGroupBooking = async timeSlotId => {
 		const userAddition = existingSlot.additions.find(
 			addition => addition.user_id === userId
 		)
+		let additionsTotalPrice = 0
 		if (userAddition) {
-			const additionsTotalPrice = userAddition.items.reduce(
+			additionsTotalPrice = userAddition.items.reduce(
 				(total, item) => total + item.price,
 				0
 			)
@@ -705,6 +706,53 @@ export const cancelGroupBooking = async timeSlotId => {
 			)
 		}
 
+		// Create transaction for class session cancellation
+		const sessionTransactionData = {
+			user_id: userId,
+			name: `Cancelled ${
+				activityData.semi_private ? 'semi-private' : 'public'
+			} class session: ${activityData.name}`,
+			type: 'class session',
+			amount: bookedWithToken
+				? activityData.semi_private
+					? '+1 semi-private token'
+					: '+1 public token'
+				: `+${activityCredits} credits`
+		}
+
+		const { error: sessionTransactionError } = await supabase
+			.from('transactions')
+			.insert(sessionTransactionData)
+
+		if (sessionTransactionError) {
+			console.error(
+				'Error recording session transaction:',
+				sessionTransactionError.message
+			)
+		}
+
+		// Create transaction for market items refund if applicable
+		if (additionsTotalPrice > 0) {
+			const marketTransactionData = {
+				user_id: userId,
+				name: `Refunded market items for cancelled ${
+					activityData.semi_private ? 'semi-private' : 'public'
+				} class session: ${activityData.name}`,
+				type: 'market transaction',
+				amount: `+${additionsTotalPrice} credits`
+			}
+
+			const { error: marketTransactionError } = await supabase
+				.from('transactions')
+				.insert(marketTransactionData)
+
+			if (marketTransactionError) {
+				console.error(
+					'Error recording market transaction:',
+					marketTransactionError.message
+				)
+			}
+		}
 		// Prepare email data for each user
 		const emailData = {
 			user_name: `${userData.first_name} ${userData.last_name}`,
