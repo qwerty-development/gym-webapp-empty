@@ -469,7 +469,12 @@ export default function TimeSlotListClient({
 					}
 
 					const updatedSlot = {
-						...reservation,
+						id: reservation.id,
+						start_time: reservationData.start_time,
+						end_time: reservationData.end_time,
+						date: reservationData.date,
+						activity_id: reservationData.activity_id,
+						coach_id: reservationData.coach_id,
 						user_id: null,
 						booked: false,
 						additions: [],
@@ -502,6 +507,49 @@ export default function TimeSlotListClient({
 						throw new Error(
 							`Error updating user data: ${userUpdateError.message}`
 						)
+					}
+
+					const sessionTransactionData = {
+						user_id: reservation.user?.user_id,
+						name: `Cancelled individual session: ${reservation.activity?.name}`,
+						type: 'individual session',
+						amount: reservationData.booked_with_token
+							? '+1 private token'
+							: userData.isFree
+							? '0 credits (free session)'
+							: `+${activityData.credits} credits`
+					}
+
+					const { error: sessionTransactionError } = await supabase
+						.from('transactions')
+						.insert(sessionTransactionData)
+
+					if (sessionTransactionError) {
+						console.error(
+							'Error recording session cancellation transaction:',
+							sessionTransactionError.message
+						)
+					}
+
+					// Add transaction record for refunded additions (if any)
+					if (additionsTotalPrice > 0) {
+						const marketTransactionData = {
+							user_id: reservation.user?.user_id,
+							name: `Refunded market items for cancelled session: ${reservation.activity?.name}`,
+							type: 'market transaction',
+							amount: `+${additionsTotalPrice} credits`
+						}
+
+						const { error: marketTransactionError } = await supabase
+							.from('transactions')
+							.insert(marketTransactionData)
+
+						if (marketTransactionError) {
+							console.error(
+								'Error recording market refund transaction:',
+								marketTransactionError.message
+							)
+						}
 					}
 
 					// Fetch coach data
