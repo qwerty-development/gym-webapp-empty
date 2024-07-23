@@ -569,10 +569,10 @@ export const fetchTimeSlots = async () => {
 		end_time: slot.end_time,
 		user: slot.users
 			? {
-				user_id: slot.users.user_id,
-				first_name: slot.users.first_name,
-				last_name: slot.users.last_name
-			}
+					user_id: slot.users.user_id,
+					first_name: slot.users.first_name,
+					last_name: slot.users.last_name
+			  }
 			: null,
 		booked: slot.booked
 	}))
@@ -679,8 +679,9 @@ export const cancelGroupBooking = async timeSlotId => {
 		const userAddition = existingSlot.additions.find(
 			addition => addition.user_id === userId
 		)
+		let additionsTotalPrice = 0
 		if (userAddition) {
-			const additionsTotalPrice = userAddition.items.reduce(
+			additionsTotalPrice = userAddition.items.reduce(
 				(total, item) => total + item.price,
 				0
 			)
@@ -705,6 +706,53 @@ export const cancelGroupBooking = async timeSlotId => {
 			)
 		}
 
+		// Create transaction for class session cancellation
+		const sessionTransactionData = {
+			user_id: userId,
+			name: `Cancelled ${
+				activityData.semi_private ? 'semi-private' : 'public'
+			} class session: ${activityData.name}`,
+			type: 'class session',
+			amount: bookedWithToken
+				? activityData.semi_private
+					? '+1 semi-private token'
+					: '+1 public token'
+				: `+${activityCredits} credits`
+		}
+
+		const { error: sessionTransactionError } = await supabase
+			.from('transactions')
+			.insert(sessionTransactionData)
+
+		if (sessionTransactionError) {
+			console.error(
+				'Error recording session transaction:',
+				sessionTransactionError.message
+			)
+		}
+
+		// Create transaction for market items refund if applicable
+		if (additionsTotalPrice > 0) {
+			const marketTransactionData = {
+				user_id: userId,
+				name: `Refunded market items for cancelled ${
+					activityData.semi_private ? 'semi-private' : 'public'
+				} class session: ${activityData.name}`,
+				type: 'market transaction',
+				amount: `+${additionsTotalPrice} credits`
+			}
+
+			const { error: marketTransactionError } = await supabase
+				.from('transactions')
+				.insert(marketTransactionData)
+
+			if (marketTransactionError) {
+				console.error(
+					'Error recording market transaction:',
+					marketTransactionError.message
+				)
+			}
+		}
 		// Prepare email data for each user
 		const emailData = {
 			user_name: `${userData.first_name} ${userData.last_name}`,
@@ -842,10 +890,10 @@ export const fetchGroupTimeSlots = async () => {
 		id: slot.id,
 		activity: slot.activities
 			? {
-				name: slot.activities.name,
-				credits: slot.activities.credits,
-				capacity: slot.activities.capacity
-			}
+					name: slot.activities.name,
+					credits: slot.activities.credits,
+					capacity: slot.activities.capacity
+			  }
 			: null,
 		coach: slot.coaches ? { name: slot.coaches.name } : null,
 		date: slot.date,
@@ -1009,8 +1057,8 @@ export const fetchUsers = async searchQuery => {
 	if (searchQuery) {
 		query = query.or(
 			`username.ilike.%${searchQuery}%,` +
-			`first_name.ilike.%${searchQuery}%,` +
-			`last_name.ilike.%${searchQuery}%`
+				`first_name.ilike.%${searchQuery}%,` +
+				`last_name.ilike.%${searchQuery}%`
 		)
 	}
 
@@ -1080,7 +1128,37 @@ export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 
 	if (refillError) {
 		console.error('Error inserting refill record:', refillError.message)
-		// Note: We're not returning here, as we want to continue with the email sending process
+		// Note: We're not returning here, as we want to continue with the process
+	}
+
+	// Add transaction records
+	const transactions = [
+		{
+			user_id: userData.user_id,
+			name: 'Credit refill',
+			type: 'credit refill',
+			amount: `+${creditsAdded} credits`
+		}
+	]
+
+	// If there was a sale, add a transaction for the free tokens
+	if (sale && sale > 0) {
+		const freeTokens = Math.floor(newCredits * (sale / 100))
+		transactions.push({
+			user_id: userData.user_id,
+			name: 'Free tokens from credit refill sale',
+			type: 'credit refill',
+			amount: `+${freeTokens} tokens`
+		})
+	}
+
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert(transactions)
+
+	if (transactionError) {
+		console.error('Error recording transactions:', transactionError.message)
+		// Note: We don't return here as the credit update was successful
 	}
 
 	// Prepare email data
@@ -1169,13 +1247,18 @@ export const bookTimeSlotForClient = async ({
 	let bookingMethod = 'credits'
 	let newWalletBalance = userData.wallet
 	let newTokenBalance = userData.private_token
+	let transactionAmount = ''
 
 	if (userData.private_token > 0) {
 		bookingMethod = 'token'
 		newTokenBalance -= 1
+		transactionAmount = '-1 private token'
 	} else if (userData.isFree || userData.wallet >= activityData.credits) {
 		if (!userData.isFree) {
 			newWalletBalance -= activityData.credits
+			transactionAmount = `-${activityData.credits} credits`
+		} else {
+			transactionAmount = '0 credits (free user)'
 		}
 	} else {
 		return { error: 'Not enough credits or tokens' }
@@ -1218,6 +1301,21 @@ export const bookTimeSlotForClient = async ({
 		return { error: bookingError.message }
 	}
 
+	// Add transaction record
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert({
+			user_id: userId,
+			name: `Booked individual session: ${activityData.name}`,
+			type: 'individual session',
+			amount: transactionAmount
+		})
+
+	if (transactionError) {
+		console.error('Error recording transaction:', transactionError.message)
+		// Note: We don't return here as the booking was successful
+	}
+
 	// Fetch coach name
 	const { data: coachData, error: coachError } = await supabase
 		.from('coaches')
@@ -1239,8 +1337,8 @@ export const bookTimeSlotForClient = async ({
 			bookingMethod === 'token'
 				? '1 token'
 				: userData.isFree
-					? 0
-					: activityData.credits,
+				? 0
+				: activityData.credits,
 		activity_date: date,
 		start_time: startTime,
 		end_time: endTime,
@@ -1322,16 +1420,22 @@ export const bookTimeSlotForClientGroup = async ({
 	let newWalletBalance = userData.wallet
 	let newPublicTokenBalance = userData.public_token
 	let newSemiPrivateTokenBalance = userData.semiPrivate_token
+	let transactionAmount = ''
 
 	if (activityData.semi_private && userData.semiPrivate_token > 0) {
 		bookingMethod = 'semiPrivateToken'
 		newSemiPrivateTokenBalance -= 1
+		transactionAmount = '-1 semi-private token'
 	} else if (!activityData.semi_private && userData.public_token > 0) {
 		bookingMethod = 'publicToken'
 		newPublicTokenBalance -= 1
+		transactionAmount = '-1 public token'
 	} else if (userData.isFree || userData.wallet >= activityData.credits) {
 		if (!userData.isFree) {
 			newWalletBalance -= activityData.credits
+			transactionAmount = `-${activityData.credits} credits`
+		} else {
+			transactionAmount = '0 credits (free user)'
 		}
 	} else {
 		return { error: 'Not enough credits or tokens to book the session.' }
@@ -1404,13 +1508,13 @@ export const bookTimeSlotForClientGroup = async ({
 
 	if (slotId) {
 		// Update existing slot
-		; ({ data: timeSlotData, error: timeSlotError } = await supabase
+		;({ data: timeSlotData, error: timeSlotError } = await supabase
 			.from('group_time_slots')
 			.update(upsertData)
 			.eq('id', slotId))
 	} else {
 		// Insert new slot
-		; ({ data: timeSlotData, error: timeSlotError } = await supabase
+		;({ data: timeSlotData, error: timeSlotError } = await supabase
 			.from('group_time_slots')
 			.insert(upsertData)
 			.single())
@@ -1447,6 +1551,23 @@ export const bookTimeSlotForClientGroup = async ({
 		return { error: updateError.message }
 	}
 
+	// Add transaction record
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert({
+			user_id: userId,
+			name: `Booked ${
+				activityData.semi_private ? 'semi-private' : 'public'
+			} class session: ${activityData.name}`,
+			type: 'class session',
+			amount: transactionAmount
+		})
+
+	if (transactionError) {
+		console.error('Error recording transaction:', transactionError.message)
+		// Note: We don't return here as the booking was successful
+	}
+
 	// Fetch coach name
 	const { data: coachData, error: coachError } = await supabase
 		.from('coaches')
@@ -1468,10 +1589,10 @@ export const bookTimeSlotForClientGroup = async ({
 			bookingMethod === 'semiPrivateToken'
 				? '1 semi-private token'
 				: bookingMethod === 'publicToken'
-					? '1 public token'
-					: userData.isFree
-						? 0
-						: activityData.credits,
+				? '1 public token'
+				: userData.isFree
+				? 0
+				: activityData.credits,
 		activity_date: date,
 		start_time: startTime,
 		end_time: endTime,
@@ -1506,12 +1627,13 @@ export const bookTimeSlotForClientGroup = async ({
 
 	return {
 		success: true,
-		message: `Group session booked successfully using ${bookingMethod === 'semiPrivateToken'
-			? 'semi-private token'
-			: bookingMethod === 'publicToken'
+		message: `Group session booked successfully using ${
+			bookingMethod === 'semiPrivateToken'
+				? 'semi-private token'
+				: bookingMethod === 'publicToken'
 				? 'public token'
 				: 'credits'
-			}.`,
+		}.`,
 		timeSlot: timeSlotData
 	}
 }

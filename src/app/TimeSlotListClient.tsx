@@ -161,17 +161,27 @@ export default function TimeSlotListClient({
 		let totalRefund = 0
 		let newPublicTokenBalance = userData.public_token
 		let newSemiPrivateTokenBalance = userData.semiPrivate_token
+		let classTransactionAmount = ''
+		let additionsTransactionAmount = ''
 
 		if (bookedWithToken) {
 			if (activityData.semi_private) {
 				newSemiPrivateTokenBalance += 1
+				classTransactionAmount = '+1 semi-private token'
 			} else {
 				newPublicTokenBalance += 1
+				classTransactionAmount = '+1 public token'
 			}
 		} else if (!userData.isFree) {
-			totalRefund += credits + additionsTotalPrice
+			totalRefund += credits
+			classTransactionAmount = `+${credits} credits`
 		} else {
+			classTransactionAmount = '0 credits (free user)'
+		}
+
+		if (additionsTotalPrice > 0) {
 			totalRefund += additionsTotalPrice
+			additionsTransactionAmount = `+${additionsTotalPrice} credits`
 		}
 
 		// Remove user's additions from the additions array
@@ -216,6 +226,42 @@ export default function TimeSlotListClient({
 			})
 			.eq('user_id', userId)
 
+		const { error: classTransactionError } = await supabase
+			.from('transactions')
+			.insert({
+				user_id: userId,
+				name: `Cancelled ${
+					activityData.semi_private ? 'semi-private' : 'public'
+				} class session: ${activityData.name}`,
+				type: 'class session',
+				amount: classTransactionAmount
+			})
+
+		if (classTransactionError) {
+			console.error(
+				'Error recording class session transaction:',
+				classTransactionError.message
+			)
+		}
+
+		// Add transaction record for additions refund if applicable
+		if (additionsTotalPrice > 0) {
+			const { error: additionsTransactionError } = await supabase
+				.from('transactions')
+				.insert({
+					user_id: userId,
+					name: `Refunded additions for cancelled class: ${activityData.name}`,
+					type: 'class session',
+					amount: additionsTransactionAmount
+				})
+
+			if (additionsTransactionError) {
+				console.error(
+					'Error recording additions refund transaction:',
+					additionsTransactionError.message
+				)
+			}
+		}
 		// Fetch coach data
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
@@ -423,7 +469,12 @@ export default function TimeSlotListClient({
 					}
 
 					const updatedSlot = {
-						...reservation,
+						id: reservation.id,
+						start_time: reservationData.start_time,
+						end_time: reservationData.end_time,
+						date: reservationData.date,
+						activity_id: reservationData.activity_id,
+						coach_id: reservationData.coach_id,
 						user_id: null,
 						booked: false,
 						additions: [],
@@ -456,6 +507,49 @@ export default function TimeSlotListClient({
 						throw new Error(
 							`Error updating user data: ${userUpdateError.message}`
 						)
+					}
+
+					const sessionTransactionData = {
+						user_id: reservation.user?.user_id,
+						name: `Cancelled individual session: ${reservation.activity?.name}`,
+						type: 'individual session',
+						amount: reservationData.booked_with_token
+							? '+1 private token'
+							: userData.isFree
+							? '0 credits (free session)'
+							: `+${activityData.credits} credits`
+					}
+
+					const { error: sessionTransactionError } = await supabase
+						.from('transactions')
+						.insert(sessionTransactionData)
+
+					if (sessionTransactionError) {
+						console.error(
+							'Error recording session cancellation transaction:',
+							sessionTransactionError.message
+						)
+					}
+
+					// Add transaction record for refunded additions (if any)
+					if (additionsTotalPrice > 0) {
+						const marketTransactionData = {
+							user_id: reservation.user?.user_id,
+							name: `Refunded market items for cancelled session: ${reservation.activity?.name}`,
+							type: 'market transaction',
+							amount: `+${additionsTotalPrice} credits`
+						}
+
+						const { error: marketTransactionError } = await supabase
+							.from('transactions')
+							.insert(marketTransactionData)
+
+						if (marketTransactionError) {
+							console.error(
+								'Error recording market refund transaction:',
+								marketTransactionError.message
+							)
+						}
 					}
 
 					// Fetch coach data

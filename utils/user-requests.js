@@ -281,6 +281,47 @@ export const cancelReservation = async (
 			throw new Error(`Error updating user data: ${userUpdateError.message}`)
 		}
 
+		const sessionTransactionData = {
+			user_id: userId,
+			name: `Cancelled individual session: ${activityData.name}`,
+			type: 'individual session',
+			amount: reservationData.booked_with_token
+				? '+1 private token'
+				: `+${activityData.credits} credits`
+		}
+
+		const { error: sessionTransactionError } = await supabase
+			.from('transactions')
+			.insert(sessionTransactionData)
+
+		if (sessionTransactionError) {
+			console.error(
+				'Error recording session transaction:',
+				sessionTransactionError.message
+			)
+		}
+
+		// Add transaction record for market item refunds
+		if (additionsTotalPrice > 0) {
+			const marketTransactionData = {
+				user_id: userId,
+				name: `Refunded market items for cancelled session: ${activityData.name}`,
+				type: 'market transaction',
+				amount: `+${additionsTotalPrice} credits`
+			}
+
+			const { error: marketTransactionError } = await supabase
+				.from('transactions')
+				.insert(marketTransactionData)
+
+			if (marketTransactionError) {
+				console.error(
+					'Error recording market transaction:',
+					marketTransactionError.message
+				)
+			}
+		}
+
 		// Fetch coach data
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
@@ -487,6 +528,57 @@ export const cancelReservationGroup = async (
 			throw new Error(`Error updating user data: ${userUpdateError.message}`)
 		}
 
+		let sessionTransactionAmount = ''
+		if (refundType === 'credits') {
+			sessionTransactionAmount = `+${activityData.credits} credits`
+		} else if (refundType === 'semiPrivateToken') {
+			sessionTransactionAmount = '+1 semi-private token'
+		} else if (refundType === 'publicToken') {
+			sessionTransactionAmount = '+1 public token'
+		}
+
+		const sessionTransactionData = {
+			user_id: userId,
+			name: `Cancelled ${
+				activityData.semi_private ? 'semi-private' : 'public'
+			} class session: ${activityData.name}`,
+			type: 'class session',
+			amount: sessionTransactionAmount
+		}
+
+		const { error: sessionTransactionError } = await supabase
+			.from('transactions')
+			.insert(sessionTransactionData)
+
+		if (sessionTransactionError) {
+			console.error(
+				'Error recording session transaction:',
+				sessionTransactionError.message
+			)
+		}
+
+		// Add transaction record for market item refunds
+		if (additionsTotalPrice > 0) {
+			const marketTransactionData = {
+				user_id: userId,
+				name: `Refunded market items for cancelled ${
+					activityData.semi_private ? 'semi-private' : 'public'
+				} class session: ${activityData.name}`,
+				type: 'market transaction',
+				amount: `+${additionsTotalPrice} credits`
+			}
+
+			const { error: marketTransactionError } = await supabase
+				.from('transactions')
+				.insert(marketTransactionData)
+
+			if (marketTransactionError) {
+				console.error(
+					'Error recording market transaction:',
+					marketTransactionError.message
+				)
+			}
+		}
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
 			.select('*')
@@ -808,13 +900,18 @@ export const bookTimeSlot = async ({
 	let bookingMethod = 'credits'
 	let newWalletBalance = userData.wallet
 	let newTokenBalance = userData.private_token
+	let transactionAmount = ''
 
 	if (userData.private_token > 0) {
 		bookingMethod = 'token'
 		newTokenBalance -= 1
+		transactionAmount = '-1 private token'
 	} else if (userData.isFree || userData.wallet >= activityData.credits) {
 		if (!userData.isFree) {
 			newWalletBalance -= activityData.credits
+			transactionAmount = `-${activityData.credits} credits`
+		} else {
+			transactionAmount = '0 credits (free user)'
 		}
 	} else {
 		return { error: 'Not enough credits or tokens to book the session.' }
@@ -853,6 +950,21 @@ export const bookTimeSlot = async ({
 	if (updateError) {
 		console.error('Error updating user data:', updateError.message)
 		return { error: updateError.message }
+	}
+
+	// Add transaction record
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert({
+			user_id: userId,
+			name: `Booked individual session: ${activityData.name}`,
+			type: 'individual session',
+			amount: transactionAmount
+		})
+
+	if (transactionError) {
+		console.error('Error recording transaction:', transactionError.message)
+		// Note: We don't return here as the booking was successful
 	}
 
 	const { data: coachData, error: coachError } = await supabase
@@ -1002,16 +1114,22 @@ export const bookTimeSlotGroup = async ({
 	let newWalletBalance = userData.wallet
 	let newPublicTokenBalance = userData.public_token
 	let newSemiPrivateTokenBalance = userData.semiPrivate_token
+	let transactionAmount = ''
 
 	if (activityData.semi_private && userData.semiPrivate_token > 0) {
 		bookingMethod = 'semiPrivateToken'
 		newSemiPrivateTokenBalance -= 1
+		transactionAmount = '-1 semi-private token'
 	} else if (!activityData.semi_private && userData.public_token > 0) {
 		bookingMethod = 'publicToken'
 		newPublicTokenBalance -= 1
+		transactionAmount = '-1 public token'
 	} else if (userData.isFree || userData.wallet >= activityData.credits) {
 		if (!userData.isFree) {
 			newWalletBalance -= activityData.credits
+			transactionAmount = `-${activityData.credits} credits`
+		} else {
+			transactionAmount = '0 credits (free user)'
 		}
 	} else {
 		return { error: 'Not enough credits or tokens to book the session.' }
@@ -1096,6 +1214,23 @@ export const bookTimeSlotGroup = async ({
 		return { error: updateError.message }
 	}
 
+	// Add transaction record
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert({
+			user_id: userId,
+			name: `Booked ${
+				activityData.semi_private ? 'semi-private' : 'public'
+			} class session: ${activityData.name}`,
+			type: 'class session',
+			amount: transactionAmount
+		})
+
+	if (transactionError) {
+		console.error('Error recording transaction:', transactionError.message)
+		// Note: We don't return here as the booking was successful
+	}
+
 	const { data: coachData, error: coachError } = await supabase
 		.from('coaches')
 		.select('*')
@@ -1128,6 +1263,45 @@ export const bookTimeSlotGroup = async ({
 		user_semi_private_tokens: newSemiPrivateTokenBalance,
 		booking_method: bookingMethod,
 		is_semi_private: activityData.semi_private
+	}
+
+	try {
+		const responseAdmin = await fetch('/api/send-admin-email', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		const resultAdmin = await responseAdmin.json()
+		if (responseAdmin.ok) {
+			console.log('Admin email sent successfully')
+		} else {
+			console.error(`Failed to send admin email: ${resultAdmin.error}`)
+		}
+	} catch (error) {
+		console.error('Error sending admin email:', error)
+	}
+
+	// Send email notification to user
+	try {
+		const responseUser = await fetch('/api/send-user-email', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(emailData)
+		})
+
+		const resultUser = await responseUser.json()
+		if (responseUser.ok) {
+			console.log('User email sent successfully')
+		} else {
+			console.error(`Failed to send user email: ${resultUser.error}`)
+		}
+	} catch (error) {
+		console.error('Error sending user email:', error)
 	}
 
 	// Send email notifications (admin and user)
@@ -1234,6 +1408,21 @@ export const payForItems = async ({
 	if (additionsError) {
 		console.error('Error updating time slot additions:', additionsError.message)
 		return { error: additionsError.message }
+	}
+
+	const itemNames = selectedItems.map(item => item.name).join(', ')
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert({
+			user_id: userId,
+			name: `Purchased items for individual session: ${itemNames}`,
+			type: 'market transaction',
+			amount: `-${totalPrice} credits`
+		})
+
+	if (transactionError) {
+		console.error('Error recording transaction:', transactionError.message)
+		// Note: We don't return here as the purchase was successful
 	}
 
 	return {
@@ -1436,19 +1625,27 @@ export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
 	}
 
 	// Insert bundle purchase record
-	const { error: purchaseRecordError } = await insertBundlePurchaseRecord(
-		supabase,
-		userId,
-		bundlePrice,
-		tokenAmount,
-		tokenType
-	)
+	const transactionRecords = [
+		{
+			user_id: userId,
+			name: `Purchased ${bundleName} bundle`,
+			type: 'bundle purchase',
+			amount: `-${bundlePrice} credits`
+		},
+		{
+			user_id: userId,
+			name: `Received tokens for ${bundleName} bundle`,
+			type: 'bundle purchase',
+			amount: `+${tokenAmount} ${tokenType} token${tokenAmount > 1 ? 's' : ''}`
+		}
+	]
 
-	if (purchaseRecordError) {
-		console.error(
-			'Error inserting bundle purchase record:',
-			purchaseRecordError.message
-		)
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert(transactionRecords)
+
+	if (transactionError) {
+		console.error('Error recording transactions:', transactionError.message)
 		// Note: We're not returning here to ensure the purchase is still considered successful
 	}
 
@@ -1555,6 +1752,21 @@ export const payForGroupItems = async ({
 		return { error: additionsError.message }
 	}
 
+	const itemNames = selectedItems.map(item => item.name).join(', ')
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert({
+			user_id: userId,
+			name: `Purchased items for group session: ${itemNames}`,
+			type: 'market transaction',
+			amount: `-${totalPrice} credits`
+		})
+
+	if (transactionError) {
+		console.error('Error recording transaction:', transactionError.message)
+		// Note: We don't return here as the purchase was successful
+	}
+
 	return {
 		data: { ...timeSlotData, additions: newAdditions },
 		message: 'Items added to group time slot and credits deducted.'
@@ -1637,20 +1849,40 @@ export const handlePurchase = async (userId, cart, totalPrice) => {
 	const items = cart.flatMap(item => Array(item.quantity).fill(item.id))
 	console.log('Items to insert:', items) // Log the items array to verify
 
-	// Record transaction
-	const { error: transactionError } = await supabase
+	// Record transaction in market_transactions table
+	const { error: marketTransactionError } = await supabase
 		.from('market_transactions')
 		.insert({
 			user_id: userId,
 			items: items,
 			date: new Date(),
 			claimed: false,
-			price:totalPrice
+			price: totalPrice
 		})
+
+	if (marketTransactionError) {
+		console.error(
+			'Error recording market transaction:',
+			marketTransactionError.message
+		)
+		return false
+	}
+
+	// Record transaction in the new transactions table
+	const transactionData = {
+		user_id: userId,
+		name: `Market purchase: ${cart.length} item${cart.length > 1 ? 's' : ''}`,
+		type: 'market transaction',
+		amount: `-${totalPrice} credits`
+	}
+
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert(transactionData)
 
 	if (transactionError) {
 		console.error('Error recording transaction:', transactionError.message)
-		return false
+		// Note: We don't return false here as the purchase was successful
 	}
 
 	return true
