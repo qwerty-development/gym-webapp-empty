@@ -1644,7 +1644,8 @@ export const handlePurchase = async (userId, cart, totalPrice) => {
 			user_id: userId,
 			items: items,
 			date: new Date(),
-			claimed: false
+			claimed: false,
+			price:totalPrice
 		})
 
 	if (transactionError) {

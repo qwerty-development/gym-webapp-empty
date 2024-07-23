@@ -1507,10 +1507,10 @@ export const bookTimeSlotForClientGroup = async ({
 	return {
 		success: true,
 		message: `Group session booked successfully using ${bookingMethod === 'semiPrivateToken'
-				? 'semi-private token'
-				: bookingMethod === 'publicToken'
-					? 'public token'
-					: 'credits'
+			? 'semi-private token'
+			: bookingMethod === 'publicToken'
+				? 'public token'
+				: 'credits'
 			}.`,
 		timeSlot: timeSlotData
 	}
@@ -1588,77 +1588,158 @@ export const modifyMarketItem = async (id, name, price) => {
 // utils/admin-requests.js
 
 /**
- * Fetch the active total credits.
+ * Fetch the active total credits within a date range.
+
+/**
  * @returns {Promise<{ data: number | null, error: string | null }>}
  */
 export const getActiveTotalCredits = async () => {
-    const { data, error } = await supabaseClient()
-        .from('users') // Replace with your actual table name if different
-        .select('wallet')
+	const { data, error } = await supabaseClient()
+		.from('users')
+		.select('wallet')
 
-    if (error) {
-        console.error('Error fetching active total credits:', error.message)
-        return { data: null, error: error.message }
-    }
+	if (error) {
+		console.error('Error fetching active total credits:', error.message)
+		return { data: null, error: error.message }
+	}
 
-    const totalActiveCredits = data.reduce((total, row) => total + (row.wallet || 0), 0)
-    return { data: totalActiveCredits, error: null }
+	const totalActiveCredits = data.reduce((total, row) => total + (row.wallet || 0), 0)
+	return { data: totalActiveCredits, error: null }
 }
 
 /**
- * Fetch the total spend on activities.
- * @returns {Promise<{ data: number | null, error: string | null }>}
+ * Fetch the total spend on activities within a date range.
+ * @param {string} startDate
+ * @param {string} endDate
+ * @returns {Promise<{ data: Record<string, number> | null, error: string | null }>}
  */
-export const getTotalSpendActivities = async () => {
-    const { data, error } = await supabaseClient()
-        .from('time_slots')
-        .select('activities!inner(credits)')
-        .eq('booked', true)
+export const getTotalSpendActivities = async (startDate, endDate) => {
+	const { data, error } = await supabaseClient()
+		.from('time_slots')
+		.select('activities!inner(credits), created_at')
+		.eq('booked', true)
+		.gte('created_at', startDate)
+		.lte('created_at', endDate)
 
-    if (error) {
-        console.error('Error fetching total credits spent on activities:', error.message)
-        return { data: null, error: error.message }
-    }
+	if (error) {
+		console.error('Error fetching total credits spent on activities:', error.message)
+		return { data: null, error: error.message }
+	}
 
-    const totalCreditsForActivities = data.reduce((total, row) => total + row.activities.credits, 0)
-    return { data: totalCreditsForActivities, error: null }
+	const groupedData = data.reduce((acc, row) => {
+		const date = row.created_at.split('T')[0]
+		acc[date] = (acc[date] || 0) + row.activities.credits
+		return acc
+	}, {})
+
+	return { data: groupedData, error: null }
 }
 
 /**
- * Fetch the total spend on group activities.
-// utils/admin-requests.js
-
-/**
- * @returns {Promise<{ data: number | null, error: string | null }>}
+ * Fetch the total spend on group activities within a date range.
+ * @param {string} startDate
+ * @param {string} endDate
+ * @returns {Promise<{ data: Record<string, number> | null, error: string | null }>}
  */
-export const getTotalSpendActivitiesGroup = async () => {
-    const { data, error } = await supabaseClient()
-        .from('group_time_slots')
-        .select('activities!inner(credits), count')
-        .gt('count', 0)
+export const getTotalSpendActivitiesGroup = async (startDate, endDate) => {
+	const { data, error } = await supabaseClient()
+		.from('group_time_slots')
+		.select('activities!inner(credits), count, created_at')
+		.gt('count', 0)
+		.gte('created_at', startDate)
+		.lte('created_at', endDate)
 
-    if (error) {
-        console.error('Error fetching total credits spent on group activities:', error.message)
-        return { data: null, error: error.message }
-    }
+	if (error) {
+		console.error('Error fetching total credits spent on group activities:', error.message)
+		return { data: null, error: error.message }
+	}
 
-    const totalCreditsForActivitiesGroup = data.reduce((total, row) => {
-        return total + ((row.activities.credits || 0) * (row.count || 0))
-    }, 0)
+	const groupedData = data.reduce((acc, row) => {
+		const date = row.created_at.split('T')[0]
+		acc[date] = (acc[date] || 0) + ((row.activities.credits || 0) * (row.count || 0))
+		return acc
+	}, {})
 
-    return { data: totalCreditsForActivitiesGroup, error: null }
+	return { data: groupedData, error: null }
 }
 
-export const getTotalBundlePurchaseAmount = async () => {
-    const { data, error } = await supabaseClient()
-        .from('bundle_purchase')
-        .select('amount')
+/**
+ * Fetch the total bundle purchase amount within a date range.
+ * @param {string} startDate
+ * @param {string} endDate
+ * @returns {Promise<{ data: Record<string, number> | null, error: string | null }>}
+ */
+export const getTotalBundlePurchaseAmount = async (startDate, endDate) => {
+	const { data, error } = await supabaseClient()
+		.from('bundle_purchase')
+		.select('amount, purchased_at')
+		.gte('purchased_at', startDate)
+		.lte('purchased_at', endDate)
 
-    if (error) {
-        console.error('Error fetching total bundle purchase amount:', error.message)
-        return { data: null, error: error.message }
-    }
+	if (error) {
+		console.error('Error fetching total bundle purchase amount:', error.message)
+		return { data: null, error: error.message }
+	}
 
-    const totalBundlePurchaseAmount = data.reduce((total, row) => total + (row.amount || 0), 0)
-    return { data: totalBundlePurchaseAmount, error: null }
+	const groupedData = data.reduce((acc, row) => {
+		const date = row.purchased_at.split('T')[0]
+		acc[date] = (acc[date] || 0) + (row.amount || 0)
+		return acc
+	}, {})
+
+	return { data: groupedData, error: null }
+}
+
+/**
+ * Fetch the total shop purchase amount within a date range.
+ * @param {string} startDate
+ * @param {string} endDate
+ * @returns {Promise<{ data: Record<string, number> | null, error: string | null }>}
+ */
+export const getTotalShopPurchaseAmount = async (startDate, endDate) => {
+	const { data, error } = await supabaseClient()
+		.from('market_transactions')
+		.select('price, date')
+		.gte('date', startDate)
+		.lte('date', endDate)
+
+	if (error) {
+		console.error('Error fetching total shop purchase amount:', error.message)
+		return { data: null, error: error.message }
+	}
+
+	const groupedData = data.reduce((acc, row) => {
+		const date = row.date.split('T')[0]
+		acc[date] = (acc[date] || 0) + (row.price || 0)
+		return acc
+	}, {})
+
+	return { data: groupedData, error: null }
+}
+
+/**
+ * Fetch the total credits refilled within a date range.
+ * @param {string} startDate
+ * @param {string} endDate
+ * @returns {Promise<{ data: Record<string, number> | null, error: string | null }>}
+ */
+export const getTotalCreditsRefilled = async (startDate, endDate) => {
+	const { data, error } = await supabaseClient()
+		.from('credit_refill')
+		.select('amount, refilled_at')
+		.gte('refilled_at', startDate)
+		.lte('refilled_at', endDate)
+
+	if (error) {
+		console.error('Error fetching total credits refilled:', error.message)
+		return { data: null, error: error.message }
+	}
+
+	const groupedData = data.reduce((acc, row) => {
+		const date = row.refilled_at.split('T')[0]
+		acc[date] = (acc[date] || 0) + (row.amount || 0)
+		return acc
+	}, {})
+
+	return { data: groupedData, error: null }
 }
