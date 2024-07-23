@@ -80,7 +80,7 @@ export default function AccountingDashboard() {
             }
             return dates;
         };
-        
+
 
         const dateRange = generateDateRange(new Date(startDate), new Date(endDate));
 
@@ -140,8 +140,8 @@ export default function AccountingDashboard() {
 
         switch (range) {
             case 'today':
-                start = new Date(today.setHours(0, 0, 0, 0) ).toISOString();
-                end = new Date(today.setHours(23, 59, 59, 999)+1).toISOString();
+                start = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+                end = new Date(today.setHours(23, 59, 59, 999) + 1).toISOString();
                 break;
             case 'week':
                 start = new Date(today.setDate(today.getDate() - today.getDay())).toISOString();
@@ -283,19 +283,20 @@ export default function AccountingDashboard() {
             <div className="mt-12">
                 <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
+                        <CartesianGrid strokeDasharray="1" />
                         <XAxis dataKey="date" />
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="totalCredits" stroke="#8884d8" />
-                        <Line type="monotone" dataKey="totalSpend" stroke="#82ca9d" />
-                        <Line type="monotone" dataKey="totalSpendGroup" stroke="#ffc658" />
-                        <Line type="monotone" dataKey="totalBundlePurchase" stroke="#ff7300" />
-                        <Line type="monotone" dataKey="totalShopPurchase" stroke="#387908" />
-                        <Line type="monotone" dataKey="totalCreditsRefilled" stroke="#ff0000" />
+                        <Line type="monotone" dataKey="totalCredits" stroke="#8884d8" name="Total Active Credits" />
+                        <Line type="monotone" dataKey="totalSpend" stroke="#82ca9d" name="Total Spend on individual activities" />
+                        <Line type="monotone" dataKey="totalSpendGroup" stroke="#ffc658" name="Total Spend on Group activities" />
+                        <Line type="monotone" dataKey="totalBundlePurchase" stroke="#ff7300" name="Total spend on Bundle Purchase" />
+                        <Line type="monotone" dataKey="totalShopPurchase" stroke="#387908" name="Total spend on Shop Purchase" />
+                        <Line type="monotone" dataKey="totalCreditsRefilled" stroke="#ff0000" name="Total spend on Credits Refilled" />
                     </LineChart>
                 </ResponsiveContainer>
+
             </div>
         </div>
     )
