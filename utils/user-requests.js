@@ -281,6 +281,47 @@ export const cancelReservation = async (
 			throw new Error(`Error updating user data: ${userUpdateError.message}`)
 		}
 
+		const sessionTransactionData = {
+			user_id: userId,
+			name: `Cancelled individual session: ${activityData.name}`,
+			type: 'individual session',
+			amount: reservationData.booked_with_token
+				? '+1 private token'
+				: `+${activityData.credits} credits`
+		}
+
+		const { error: sessionTransactionError } = await supabase
+			.from('transactions')
+			.insert(sessionTransactionData)
+
+		if (sessionTransactionError) {
+			console.error(
+				'Error recording session transaction:',
+				sessionTransactionError.message
+			)
+		}
+
+		// Add transaction record for market item refunds
+		if (additionsTotalPrice > 0) {
+			const marketTransactionData = {
+				user_id: userId,
+				name: `Refunded market items for cancelled session: ${activityData.name}`,
+				type: 'market transaction',
+				amount: `+${additionsTotalPrice} credits`
+			}
+
+			const { error: marketTransactionError } = await supabase
+				.from('transactions')
+				.insert(marketTransactionData)
+
+			if (marketTransactionError) {
+				console.error(
+					'Error recording market transaction:',
+					marketTransactionError.message
+				)
+			}
+		}
+
 		// Fetch coach data
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
@@ -487,6 +528,57 @@ export const cancelReservationGroup = async (
 			throw new Error(`Error updating user data: ${userUpdateError.message}`)
 		}
 
+		let sessionTransactionAmount = ''
+		if (refundType === 'credits') {
+			sessionTransactionAmount = `+${activityData.credits} credits`
+		} else if (refundType === 'semiPrivateToken') {
+			sessionTransactionAmount = '+1 semi-private token'
+		} else if (refundType === 'publicToken') {
+			sessionTransactionAmount = '+1 public token'
+		}
+
+		const sessionTransactionData = {
+			user_id: userId,
+			name: `Cancelled ${
+				activityData.semi_private ? 'semi-private' : 'public'
+			} class session: ${activityData.name}`,
+			type: 'class session',
+			amount: sessionTransactionAmount
+		}
+
+		const { error: sessionTransactionError } = await supabase
+			.from('transactions')
+			.insert(sessionTransactionData)
+
+		if (sessionTransactionError) {
+			console.error(
+				'Error recording session transaction:',
+				sessionTransactionError.message
+			)
+		}
+
+		// Add transaction record for market item refunds
+		if (additionsTotalPrice > 0) {
+			const marketTransactionData = {
+				user_id: userId,
+				name: `Refunded market items for cancelled ${
+					activityData.semi_private ? 'semi-private' : 'public'
+				} class session: ${activityData.name}`,
+				type: 'market transaction',
+				amount: `+${additionsTotalPrice} credits`
+			}
+
+			const { error: marketTransactionError } = await supabase
+				.from('transactions')
+				.insert(marketTransactionData)
+
+			if (marketTransactionError) {
+				console.error(
+					'Error recording market transaction:',
+					marketTransactionError.message
+				)
+			}
+		}
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
 			.select('*')
