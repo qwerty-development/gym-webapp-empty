@@ -161,17 +161,27 @@ export default function TimeSlotListClient({
 		let totalRefund = 0
 		let newPublicTokenBalance = userData.public_token
 		let newSemiPrivateTokenBalance = userData.semiPrivate_token
+		let classTransactionAmount = ''
+		let additionsTransactionAmount = ''
 
 		if (bookedWithToken) {
 			if (activityData.semi_private) {
 				newSemiPrivateTokenBalance += 1
+				classTransactionAmount = '+1 semi-private token'
 			} else {
 				newPublicTokenBalance += 1
+				classTransactionAmount = '+1 public token'
 			}
 		} else if (!userData.isFree) {
-			totalRefund += credits + additionsTotalPrice
+			totalRefund += credits
+			classTransactionAmount = `+${credits} credits`
 		} else {
+			classTransactionAmount = '0 credits (free user)'
+		}
+
+		if (additionsTotalPrice > 0) {
 			totalRefund += additionsTotalPrice
+			additionsTransactionAmount = `+${additionsTotalPrice} credits`
 		}
 
 		// Remove user's additions from the additions array
@@ -216,6 +226,42 @@ export default function TimeSlotListClient({
 			})
 			.eq('user_id', userId)
 
+		const { error: classTransactionError } = await supabase
+			.from('transactions')
+			.insert({
+				user_id: userId,
+				name: `Cancelled ${
+					activityData.semi_private ? 'semi-private' : 'public'
+				} class session: ${activityData.name}`,
+				type: 'class session',
+				amount: classTransactionAmount
+			})
+
+		if (classTransactionError) {
+			console.error(
+				'Error recording class session transaction:',
+				classTransactionError.message
+			)
+		}
+
+		// Add transaction record for additions refund if applicable
+		if (additionsTotalPrice > 0) {
+			const { error: additionsTransactionError } = await supabase
+				.from('transactions')
+				.insert({
+					user_id: userId,
+					name: `Refunded additions for cancelled class: ${activityData.name}`,
+					type: 'class session',
+					amount: additionsTransactionAmount
+				})
+
+			if (additionsTransactionError) {
+				console.error(
+					'Error recording additions refund transaction:',
+					additionsTransactionError.message
+				)
+			}
+		}
 		// Fetch coach data
 		const { data: coachData, error: coachError } = await supabase
 			.from('coaches')
