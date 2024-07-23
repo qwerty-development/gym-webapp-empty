@@ -33,6 +33,7 @@
     "react": "^18",
     "react-big-calendar": "^1.12.1",
     "react-calendar": "^4.8.0",
+    "react-date-range": "^2.0.1",
     "react-datepicker": "^6.6.0",
     "react-dom": "^18",
     "react-dropzone": "^14.2.3",
@@ -43,12 +44,14 @@
     "react-select": "^5.8.0",
     "react-spinners": "^0.13.8",
     "react-toastify": "^10.0.5",
+    "recharts": "^2.12.7",
     "shopify-buy": "^2.21.1"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-big-calendar": "^1.8.9",
+    "@types/react-date-range": "^1.4.9",
     "@types/react-datepicker": "^6.2.0",
     "@types/react-dom": "^18",
     "@types/react-modal": "^3.16.3",
