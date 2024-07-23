@@ -569,10 +569,10 @@ export const fetchTimeSlots = async () => {
 		end_time: slot.end_time,
 		user: slot.users
 			? {
-				user_id: slot.users.user_id,
-				first_name: slot.users.first_name,
-				last_name: slot.users.last_name
-			}
+					user_id: slot.users.user_id,
+					first_name: slot.users.first_name,
+					last_name: slot.users.last_name
+			  }
 			: null,
 		booked: slot.booked
 	}))
@@ -842,10 +842,10 @@ export const fetchGroupTimeSlots = async () => {
 		id: slot.id,
 		activity: slot.activities
 			? {
-				name: slot.activities.name,
-				credits: slot.activities.credits,
-				capacity: slot.activities.capacity
-			}
+					name: slot.activities.name,
+					credits: slot.activities.credits,
+					capacity: slot.activities.capacity
+			  }
 			: null,
 		coach: slot.coaches ? { name: slot.coaches.name } : null,
 		date: slot.date,
@@ -1009,8 +1009,8 @@ export const fetchUsers = async searchQuery => {
 	if (searchQuery) {
 		query = query.or(
 			`username.ilike.%${searchQuery}%,` +
-			`first_name.ilike.%${searchQuery}%,` +
-			`last_name.ilike.%${searchQuery}%`
+				`first_name.ilike.%${searchQuery}%,` +
+				`last_name.ilike.%${searchQuery}%`
 		)
 	}
 
@@ -1080,7 +1080,37 @@ export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 
 	if (refillError) {
 		console.error('Error inserting refill record:', refillError.message)
-		// Note: We're not returning here, as we want to continue with the email sending process
+		// Note: We're not returning here, as we want to continue with the process
+	}
+
+	// Add transaction records
+	const transactions = [
+		{
+			user_id: userData.user_id,
+			name: 'Credit refill',
+			type: 'credit refill',
+			amount: `+${creditsAdded} credits`
+		}
+	]
+
+	// If there was a sale, add a transaction for the free tokens
+	if (sale && sale > 0) {
+		const freeTokens = Math.floor(newCredits * (sale / 100))
+		transactions.push({
+			user_id: userData.user_id,
+			name: 'Free tokens from credit refill sale',
+			type: 'credit refill',
+			amount: `+${freeTokens} tokens`
+		})
+	}
+
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert(transactions)
+
+	if (transactionError) {
+		console.error('Error recording transactions:', transactionError.message)
+		// Note: We don't return here as the credit update was successful
 	}
 
 	// Prepare email data
@@ -1239,8 +1269,8 @@ export const bookTimeSlotForClient = async ({
 			bookingMethod === 'token'
 				? '1 token'
 				: userData.isFree
-					? 0
-					: activityData.credits,
+				? 0
+				: activityData.credits,
 		activity_date: date,
 		start_time: startTime,
 		end_time: endTime,
@@ -1404,13 +1434,13 @@ export const bookTimeSlotForClientGroup = async ({
 
 	if (slotId) {
 		// Update existing slot
-		; ({ data: timeSlotData, error: timeSlotError } = await supabase
+		;({ data: timeSlotData, error: timeSlotError } = await supabase
 			.from('group_time_slots')
 			.update(upsertData)
 			.eq('id', slotId))
 	} else {
 		// Insert new slot
-		; ({ data: timeSlotData, error: timeSlotError } = await supabase
+		;({ data: timeSlotData, error: timeSlotError } = await supabase
 			.from('group_time_slots')
 			.insert(upsertData)
 			.single())
@@ -1468,10 +1498,10 @@ export const bookTimeSlotForClientGroup = async ({
 			bookingMethod === 'semiPrivateToken'
 				? '1 semi-private token'
 				: bookingMethod === 'publicToken'
-					? '1 public token'
-					: userData.isFree
-						? 0
-						: activityData.credits,
+				? '1 public token'
+				: userData.isFree
+				? 0
+				: activityData.credits,
 		activity_date: date,
 		start_time: startTime,
 		end_time: endTime,
@@ -1506,12 +1536,13 @@ export const bookTimeSlotForClientGroup = async ({
 
 	return {
 		success: true,
-		message: `Group session booked successfully using ${bookingMethod === 'semiPrivateToken'
+		message: `Group session booked successfully using ${
+			bookingMethod === 'semiPrivateToken'
 				? 'semi-private token'
 				: bookingMethod === 'publicToken'
-					? 'public token'
-					: 'credits'
-			}.`,
+				? 'public token'
+				: 'credits'
+		}.`,
 		timeSlot: timeSlotData
 	}
 }
@@ -1592,17 +1623,20 @@ export const modifyMarketItem = async (id, name, price) => {
  * @returns {Promise<{ data: number | null, error: string | null }>}
  */
 export const getActiveTotalCredits = async () => {
-    const { data, error } = await supabaseClient()
-        .from('users') // Replace with your actual table name if different
-        .select('wallet')
+	const { data, error } = await supabaseClient()
+		.from('users') // Replace with your actual table name if different
+		.select('wallet')
 
-    if (error) {
-        console.error('Error fetching active total credits:', error.message)
-        return { data: null, error: error.message }
-    }
+	if (error) {
+		console.error('Error fetching active total credits:', error.message)
+		return { data: null, error: error.message }
+	}
 
-    const totalActiveCredits = data.reduce((total, row) => total + (row.wallet || 0), 0)
-    return { data: totalActiveCredits, error: null }
+	const totalActiveCredits = data.reduce(
+		(total, row) => total + (row.wallet || 0),
+		0
+	)
+	return { data: totalActiveCredits, error: null }
 }
 
 /**
@@ -1610,18 +1644,24 @@ export const getActiveTotalCredits = async () => {
  * @returns {Promise<{ data: number | null, error: string | null }>}
  */
 export const getTotalSpendActivities = async () => {
-    const { data, error } = await supabaseClient()
-        .from('time_slots')
-        .select('activities!inner(credits)')
-        .eq('booked', true)
+	const { data, error } = await supabaseClient()
+		.from('time_slots')
+		.select('activities!inner(credits)')
+		.eq('booked', true)
 
-    if (error) {
-        console.error('Error fetching total credits spent on activities:', error.message)
-        return { data: null, error: error.message }
-    }
+	if (error) {
+		console.error(
+			'Error fetching total credits spent on activities:',
+			error.message
+		)
+		return { data: null, error: error.message }
+	}
 
-    const totalCreditsForActivities = data.reduce((total, row) => total + row.activities.credits, 0)
-    return { data: totalCreditsForActivities, error: null }
+	const totalCreditsForActivities = data.reduce(
+		(total, row) => total + row.activities.credits,
+		0
+	)
+	return { data: totalCreditsForActivities, error: null }
 }
 
 /**
@@ -1632,33 +1672,39 @@ export const getTotalSpendActivities = async () => {
  * @returns {Promise<{ data: number | null, error: string | null }>}
  */
 export const getTotalSpendActivitiesGroup = async () => {
-    const { data, error } = await supabaseClient()
-        .from('group_time_slots')
-        .select('activities!inner(credits), count')
-        .gt('count', 0)
+	const { data, error } = await supabaseClient()
+		.from('group_time_slots')
+		.select('activities!inner(credits), count')
+		.gt('count', 0)
 
-    if (error) {
-        console.error('Error fetching total credits spent on group activities:', error.message)
-        return { data: null, error: error.message }
-    }
+	if (error) {
+		console.error(
+			'Error fetching total credits spent on group activities:',
+			error.message
+		)
+		return { data: null, error: error.message }
+	}
 
-    const totalCreditsForActivitiesGroup = data.reduce((total, row) => {
-        return total + ((row.activities.credits || 0) * (row.count || 0))
-    }, 0)
+	const totalCreditsForActivitiesGroup = data.reduce((total, row) => {
+		return total + (row.activities.credits || 0) * (row.count || 0)
+	}, 0)
 
-    return { data: totalCreditsForActivitiesGroup, error: null }
+	return { data: totalCreditsForActivitiesGroup, error: null }
 }
 
 export const getTotalBundlePurchaseAmount = async () => {
-    const { data, error } = await supabaseClient()
-        .from('bundle_purchase')
-        .select('amount')
+	const { data, error } = await supabaseClient()
+		.from('bundle_purchase')
+		.select('amount')
 
-    if (error) {
-        console.error('Error fetching total bundle purchase amount:', error.message)
-        return { data: null, error: error.message }
-    }
+	if (error) {
+		console.error('Error fetching total bundle purchase amount:', error.message)
+		return { data: null, error: error.message }
+	}
 
-    const totalBundlePurchaseAmount = data.reduce((total, row) => total + (row.amount || 0), 0)
-    return { data: totalBundlePurchaseAmount, error: null }
+	const totalBundlePurchaseAmount = data.reduce(
+		(total, row) => total + (row.amount || 0),
+		0
+	)
+	return { data: totalBundlePurchaseAmount, error: null }
 }
