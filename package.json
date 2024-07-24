@@ -19,6 +19,7 @@
     "@mui/material": "^5.15.15",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.39.8",
+    "@types/react-tooltip": "^4.2.4",
     "add-to-calendar-button-react": "^2.6.14",
     "chart.js": "^4.4.3",
     "date-fns": "^3.6.0",
@@ -46,6 +47,7 @@
     "react-select": "^5.8.0",
     "react-spinners": "^0.13.8",
     "react-toastify": "^10.0.5",
+    "react-tooltip": "^5.27.1",
     "recharts": "^2.12.7",
     "shopify-buy": "^2.21.1"
   },
