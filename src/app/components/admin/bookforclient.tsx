@@ -7,7 +7,7 @@ import {
 	bookTimeSlotForClientGroup,
 	fetchCoachesActivitiesGroup,
 	fetchCoachesActivities
-} from '../../../../utils/admin-requests'
+} from '../../../../utils/adminRequests'
 import {
 	fetchFilteredUnbookedTimeSlots,
 	fetchFilteredUnbookedTimeSlotsGroup,
@@ -16,7 +16,7 @@ import {
 	fetchMarket,
 	payForGroupItems,
 	payForItems
-} from '../../../../utils/user-requests'
+} from '../../../../utils/userRequests'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 

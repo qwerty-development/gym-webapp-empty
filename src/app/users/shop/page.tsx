@@ -5,7 +5,7 @@ import {
 	fetchMarketItems,
 	handlePurchase,
 	fetchUserData
-} from '../../../../utils/user-requests'
+} from '../../../../utils/userRequests'
 import { useUser } from '@clerk/clerk-react' // Assuming you are using Clerk for authentication
 import Bundles from '@/app/components/users/bundles'
 

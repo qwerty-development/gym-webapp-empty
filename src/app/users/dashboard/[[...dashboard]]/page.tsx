@@ -15,14 +15,14 @@ import {
 	claimTransaction,
 	fetchShopTransactions,
 	fetchUserTokens
-} from '../../../../../utils/user-requests'
+} from '../../../../../utils/userRequests'
 import {
 	fetchTotalUsers,
 	fetchTotalActivities,
 	fetchTodaysSessions,
 	fetchAllBookedSlotsToday,
 	fetchUpcomingSessions
-} from '../../../../../utils/admin-requests'
+} from '../../../../../utils/adminRequests'
 import { Menu, Transition } from '@headlessui/react'
 import { AddToCalendarButton } from 'add-to-calendar-button-react'
 import { RingLoader } from 'react-spinners'

@@ -7,7 +7,7 @@ import {
 	useEffect,
 	ReactNode
 } from 'react'
-import { getWalletBalance } from '../../../../utils/user-requests'
+import { getWalletBalance } from '../../../../utils/userRequests'
 import { useAuth } from '@clerk/nextjs'
 
 interface WalletContextType {

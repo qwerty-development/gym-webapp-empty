@@ -8,7 +8,7 @@ import {
 	addTimeSlot,
 	fetchGroupActivities,
 	addTimeSlotGroup
-} from '../../../../utils/admin-requests'
+} from '../../../../utils/adminRequests'
 import MultiDatePicker from 'react-multi-date-picker'
 import DatePanel from 'react-multi-date-picker/plugins/date_panel'
 import Icon from 'react-multi-date-picker/components/icon'
@@ -80,7 +80,10 @@ export default function AddTimeSlotComponent() {
 		async function loadCoachesAndActivities() {
 			const fetchedCoaches = await fetchCoaches()
 			setCoaches(
-				fetchedCoaches.map(coach => ({ label: coach.name, value: coach.id }))
+				fetchedCoaches.map((coach: any) => ({
+					label: coach.name,
+					value: coach.id
+				}))
 			)
 			const fetchedActivities = await fetchActivities()
 			setActivities(

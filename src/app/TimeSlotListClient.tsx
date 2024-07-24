@@ -5,7 +5,7 @@ import {
 	updateUserCreditsCancellation,
 	deleteGroupTimeSlot,
 	cancelGroupBooking
-} from '@/../utils/admin-requests'
+} from '../../utils/adminRequests'
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'

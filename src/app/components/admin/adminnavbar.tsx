@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UserButton } from '@clerk/nextjs'
 import { useAuth } from '@clerk/nextjs'
-import { getWalletBalance } from '../../../../utils/user-requests'
+import { getWalletBalance } from '../../../../utils/userRequests'
 import Image from 'next/image'
 import {
 	FaBars,
@@ -70,7 +70,7 @@ export default function AdminNavbarComponent() {
 	}, [isSignedIn, getToken, userId])
 
 	const toggleSubMenu = (menu: string) => {
-		setOpenSubMenu((prev) => ({
+		setOpenSubMenu(prev => ({
 			...prev,
 			[menu]: !prev[menu]
 		}))
@@ -82,14 +82,22 @@ export default function AdminNavbarComponent() {
 			icon: FaDollarSign,
 			submenu: [
 				{ href: '/admin/accounting/dashboard', label: 'Dashboard', icon: FaTv },
-				{ href: '/admin/accounting/transactions', label: 'Transactions', icon: FaRegCaretSquareDown }
+				{
+					href: '/admin/accounting/transactions',
+					label: 'Transactions',
+					icon: FaRegCaretSquareDown
+				}
 			]
 		},
 		{
 			label: 'Manage',
 			icon: FaRegEdit,
 			submenu: [
-				{ href: '/admin/add-activities-and-coaches', label: 'Coaches & Activities', icon: FaCalendarPlus },
+				{
+					href: '/admin/add-activities-and-coaches',
+					label: 'Coaches & Activities',
+					icon: FaCalendarPlus
+				},
 				{ href: '/admin/add-timeslots', label: 'Time Slots', icon: FaClock },
 				{ href: '/admin/add-market-items', label: 'Shop', icon: FaStore }
 			]
@@ -146,13 +154,18 @@ export default function AdminNavbarComponent() {
 									<div>
 										<button
 											onClick={() => toggleSubMenu(item.label)}
-											className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${openSubMenu[item.label]
-												? 'bg-green-500 text-white'
-												: 'text-gray-300 hover:bg-green-300 hover:text-white'
-												}`}>
+											className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+												openSubMenu[item.label]
+													? 'bg-green-500 text-white'
+													: 'text-gray-300 hover:bg-green-300 hover:text-white'
+											}`}>
 											<item.icon className='mr-2 text-lg' />
 											<span>{item.label}</span>
-											{openSubMenu[item.label] ? <FaChevronUp className='ml-2' /> : <FaChevronDown className='ml-2' />}
+											{openSubMenu[item.label] ? (
+												<FaChevronUp className='ml-2' />
+											) : (
+												<FaChevronDown className='ml-2' />
+											)}
 										</button>
 										{openSubMenu[item.label] && (
 											<div className='absolute z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5'>
@@ -160,8 +173,11 @@ export default function AdminNavbarComponent() {
 													<Link
 														key={subIndex}
 														href={subItem.href!}
-														className={`block px-4 py-2 flex items-center text-sm text-gray-700 hover:bg-green-300 hover:text-white ${currentPage === subItem.href ? 'bg-green-500 text-white' : ''
-															}`}>
+														className={`block px-4 py-2 flex items-center text-sm text-gray-700 hover:bg-green-300 hover:text-white ${
+															currentPage === subItem.href
+																? 'bg-green-500 text-white'
+																: ''
+														}`}>
 														<subItem.icon className='mr-2 text-lg' />
 														{subItem.label}
 													</Link>
@@ -172,10 +188,11 @@ export default function AdminNavbarComponent() {
 								) : (
 									<Link
 										href={item.href!}
-										className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${currentPage === item.href
-											? 'bg-green-500 text-white'
-											: 'text-gray-300 hover:bg-green-300 hover:text-white'
-											}`}>
+										className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+											currentPage === item.href
+												? 'bg-green-500 text-white'
+												: 'text-gray-300 hover:bg-green-300 hover:text-white'
+										}`}>
 										<item.icon className='mr-2 text-lg' />
 										<span className='whitespace-nowrap'>{item.label}</span>
 									</Link>
@@ -215,21 +232,30 @@ export default function AdminNavbarComponent() {
 										<div>
 											<button
 												onClick={() => toggleSubMenu(item.label)}
-												className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${openSubMenu[item.label]
-													? 'bg-green-500 text-white'
-													: 'text-gray-300 hover:bg-green-300 hover:text-white'
-													}`}>
+												className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+													openSubMenu[item.label]
+														? 'bg-green-500 text-white'
+														: 'text-gray-300 hover:bg-green-300 hover:text-white'
+												}`}>
 												<item.icon className='mr-2 text-lg' />
 												<span>{item.label}</span>
-												{openSubMenu[item.label] ? <FaChevronUp className='ml-2' /> : <FaChevronDown className='ml-2' />}
+												{openSubMenu[item.label] ? (
+													<FaChevronUp className='ml-2' />
+												) : (
+													<FaChevronDown className='ml-2' />
+												)}
 											</button>
 											{openSubMenu[item.label] && (
 												<div className='mt-2 ml-6 space-y-1'>
 													{item.submenu.map((subItem, subIndex) => (
 														<Link
-															key={subIndex} href={subItem.href!}
-															className={`block px-3 py-2 text-base font-medium text-gray-300 hover:bg-green-300 hover:text-white ${currentPage === subItem.href ? 'bg-green-500 text-white' : ''
-																}`}
+															key={subIndex}
+															href={subItem.href!}
+															className={`block px-3 py-2 text-base font-medium text-gray-300 hover:bg-green-300 hover:text-white ${
+																currentPage === subItem.href
+																	? 'bg-green-500 text-white'
+																	: ''
+															}`}
 															onClick={() => setIsMenuOpen(false)}>
 															<subItem.icon className='mr-2 text-lg' />
 															{subItem.label}
@@ -241,10 +267,11 @@ export default function AdminNavbarComponent() {
 									) : (
 										<Link
 											href={item.href!}
-											className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${currentPage === item.href
-												? 'bg-green-500 text-white'
-												: 'text-gray-300 hover:bg-green-300 hover:text-white'
-												}`}
+											className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+												currentPage === item.href
+													? 'bg-green-500 text-white'
+													: 'text-gray-300 hover:bg-green-300 hover:text-white'
+											}`}
 											onClick={() => setIsMenuOpen(false)}>
 											<item.icon className='mr-2 text-lg' />
 											<span className='whitespace-nowrap'>{item.label}</span>

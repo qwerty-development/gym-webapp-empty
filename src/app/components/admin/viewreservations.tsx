@@ -9,7 +9,7 @@ import {
 	deleteGroupTimeSlot,
 	fetchGroupTimeSlots,
 	cancelGroupBooking
-} from '../../../../utils/admin-requests'
+} from '../../../../utils/adminRequests'
 import { supabaseClient } from '../../../../utils/supabaseClient'
 import { motion } from 'framer-motion'
 import { FaSearch, FaFilter, FaTrash, FaCheck, FaTimes } from 'react-icons/fa'

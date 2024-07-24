@@ -15,7 +15,7 @@ import {
 	bookTimeSlotGroup,
 	payForGroupItems,
 	fetchCoachesGroup
-} from '../../../../utils/user-requests'
+} from '../../../../utils/userRequests'
 import { AnimatePresence, motion } from 'framer-motion'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'

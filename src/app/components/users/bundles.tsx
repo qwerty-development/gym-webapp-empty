@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { purchaseBundle } from '../../../../utils/user-requests'
+import { purchaseBundle } from '../../../../utils/userRequests'
 import { useUser } from '@clerk/nextjs'
 import { useWallet } from './WalletContext'
 import { toast } from 'react-hot-toast'

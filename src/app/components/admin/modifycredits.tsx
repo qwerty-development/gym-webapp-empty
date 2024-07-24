@@ -13,7 +13,7 @@ import {
 	fetchUsers,
 	updateUserCredits,
 	updateUserisFree
-} from '../../../../utils/admin-requests'
+} from '../../../../utils/adminRequests'
 import toast from 'react-hot-toast'
 
 interface User {
@@ -41,7 +41,7 @@ const ModifyCreditsComponent = () => {
 	useEffect(() => {
 		setIsLoading(true)
 		fetchUsers(searchQuery)
-			.then(data => {
+			.then((data: any) => {
 				if (data) {
 					let sortedUsers = data as User[]
 					if (sortOption === 'alphabetical') {
@@ -58,7 +58,7 @@ const ModifyCreditsComponent = () => {
 					setUsers(sortedUsers)
 				}
 			})
-			.catch(error => {
+			.catch((error: any) => {
 				console.error('Error fetching users:', error)
 			})
 			.finally(() => {

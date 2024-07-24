@@ -15,7 +15,7 @@ import {
 	updateActivity,
 	updateCoach,
 	fetchGroupActivities
-} from '../../../../utils/admin-requests'
+} from '../../../../utils/adminRequests'
 import AdminNavbarComponent from '@/app/components/admin/adminnavbar'
 declare global {
 	interface HTMLElement {

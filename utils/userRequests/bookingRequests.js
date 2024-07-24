@@ -1,86 +1,4 @@
-import { supabaseClient } from './supabaseClient'
-
-// Function to fetch wallet balance for a user from Supabase
-export const getWalletBalance = async ({ userId }) => {
-	const supabase = await supabaseClient()
-	const { data: userData, error } = await supabase
-		.from('users')
-		.select('wallet') // Selecting only the wallet column
-		.eq('user_id', userId)
-		.single() // Assuming each user has a unique user_id
-
-	if (error) {
-		console.error('Error fetching wallet balance:', error.message)
-		return null
-	}
-
-	return userData ? userData.wallet : null
-}
-
-export const checkUserExists = async userId => {
-	const supabase = await supabaseClient()
-	const { data, error } = await supabase
-		.from('users')
-		.select('*')
-		.eq('user_id', userId)
-		.single()
-
-	if (error) {
-		console.error('Error checking user existence:', error.message)
-		return null
-	}
-
-	return data
-}
-
-// Function to create or update user record in Supabase
-export const updateUserRecord = async ({
-	userId,
-	email,
-	firstName,
-	lastName,
-	userName
-}) => {
-	const supabase = await supabaseClient()
-	const existingUser = await checkUserExists(userId)
-
-	if (existingUser) {
-		const { data, error } = await supabase
-			.from('users')
-			.update({
-				email,
-				first_name: firstName,
-				last_name: lastName,
-				username: userName
-			})
-			.eq('user_id', userId)
-
-		if (error) {
-			console.error('Error updating user record:', error.message)
-			return null
-		}
-
-		return data
-	} else {
-		const { data, error } = await supabase.from('users').insert([
-			{
-				user_id: userId,
-				email,
-				first_name: firstName,
-				last_name: lastName,
-				username: userName
-			}
-		])
-
-		if (error) {
-			console.error('Error creating user record:', error.message)
-			return null
-		}
-
-		return data
-	}
-}
-
+import { supabaseClient } from '../supabaseClient'
 export const fetchReservations = async userId => {
 	const supabase = supabaseClient() // Ensure you're correctly initializing this with any necessary tokens
 	const today = new Date().toISOString().slice(0, 10) // Get today's date in YYYY-MM-DD format
@@ -736,108 +654,6 @@ export const fetchFilteredUnbookedTimeSlotsGroup = async ({
 	return data
 }
 
-// Ensure this function is fetching the 'credits' for each activity.
-export const fetchAllActivities = async () => {
-	const supabase = await supabaseClient()
-	const { data, error } = await supabase
-		.from('activities')
-		.select('id, name, credits') // Ensure 'credits' is included
-		.eq('group', false)
-
-	if (error) {
-		console.error('Error fetching activities:', error.message)
-		return []
-	}
-
-	return data
-}
-
-export const fetchAllActivitiesGroup = async () => {
-	const supabase = await supabaseClient()
-	const { data, error } = await supabase
-		.from('activities')
-		.select('id, name, credits, capacity') // Ensure 'credits' is included
-		.eq('group', true)
-
-	if (error) {
-		console.error('Error fetching activities:', error.message)
-		return []
-	}
-
-	return data
-}
-
-// In your requests.js, ensure fetchAllCoaches function correctly filters by activityId
-// utils/requests.js
-export const fetchCoaches = async activityId => {
-	const supabase = await supabaseClient()
-	// Fetch unique coach IDs associated with the activityId from the time_slots table
-	const { data: timeSlotsData, error: timeSlotsError } = await supabase
-		.from('time_slots')
-		.select('coach_id')
-		.eq('activity_id', activityId)
-		.is('booked', false) // Assuming you want to fetch coaches for unbooked time slots
-
-	if (timeSlotsError || !timeSlotsData) {
-		console.error(
-			'Error fetching coach IDs from time slots:',
-			timeSlotsError?.message
-		)
-		return []
-	}
-
-	// Extract unique coach IDs
-	const coachIds = timeSlotsData.map(slot => slot.coach_id)
-
-	// Fetch coaches based on extracted coach IDs
-	const { data: coachesData, error: coachesError } = await supabase
-		.from('coaches')
-		.select('id, name, profile_picture,email')
-		.in('id', coachIds) // Filter coaches by extracted IDs
-
-	if (coachesError) {
-		console.error('Error fetching coaches:', coachesError.message)
-		return []
-	}
-
-	return coachesData
-}
-
-export const fetchCoachesGroup = async activityId => {
-	const supabase = await supabaseClient()
-	// Fetch unique coach IDs associated with the activityId from the time_slots table
-	const { data: timeSlotsData, error: timeSlotsError } = await supabase
-		.from('group_time_slots')
-		.select('coach_id')
-		.eq('activity_id', activityId)
-		.is('booked', false) // Assuming you want to fetch coaches for unbooked time slots
-
-	if (timeSlotsError || !timeSlotsData) {
-		console.error(
-			'Error fetching coach IDs from time slots:',
-			timeSlotsError?.message
-		)
-		return []
-	}
-
-	// Extract unique coach IDs
-	const coachIds = timeSlotsData.map(slot => slot.coach_id)
-
-	// Fetch coaches based on extracted coach IDs
-	const { data: coachesData, error: coachesError } = await supabase
-		.from('coaches')
-		.select('id, name, profile_picture,email')
-		.in('id', coachIds) // Filter coaches by extracted IDs
-
-	if (coachesError) {
-		console.error('Error fetching coaches:', coachesError.message)
-		return []
-	}
-
-	return coachesData
-}
-
-// Function to book a time slot in Supabase
 export const bookTimeSlot = async ({
 	activityId,
 	coachId,
@@ -1319,643 +1135,102 @@ export const bookTimeSlotGroup = async ({
 	}
 }
 
-export const fetchMarket = async () => {
+export const fetchAllActivities = async () => {
 	const supabase = await supabaseClient()
-	const { data, error } = await supabase.from('market').select('*')
+	const { data, error } = await supabase
+		.from('activities')
+		.select('id, name, credits') // Ensure 'credits' is included
+		.eq('group', false)
+
 	if (error) {
-		console.error('Error fetching market:', error.message)
+		console.error('Error fetching activities:', error.message)
 		return []
 	}
+
 	return data
 }
 
-export const payForItems = async ({
-	userId,
-	activityId,
-	coachId,
-	date,
-	startTime,
-	selectedItems
-}) => {
+export const fetchAllActivitiesGroup = async () => {
 	const supabase = await supabaseClient()
+	const { data, error } = await supabase
+		.from('activities')
+		.select('id, name, credits, capacity') // Ensure 'credits' is included
+		.eq('group', true)
 
-	// Fetch user's current credits
-	const { data: userData, error: userError } = await supabase
-		.from('users')
-		.select('*')
-		.eq('user_id', userId)
-		.single()
-
-	if (userError || !userData) {
-		console.error('Error fetching user credits:', userError?.message)
-		return { error: userError?.message || 'User not found.' }
+	if (error) {
+		console.error('Error fetching activities:', error.message)
+		return []
 	}
 
-	// Calculate total price of selected items
-	const totalPrice = selectedItems.reduce(
-		(total, item) => total + item.price,
-		0
-	)
+	return data
+}
 
-	if (totalPrice === 0) {
-		return { error: 'No items selected.' }
-	}
-
-	// Check if the user has enough credits
-	if (userData.wallet < totalPrice) {
-		return { error: 'Not enough credits to pay for the items.' }
-	}
-
-	// Fetch the time slot ID based on activity, coach, date, and start time
-	const { data: timeSlotData, error: timeSlotError } = await supabase
+// In your requests.js, ensure fetchAllCoaches function correctly filters by activityId
+// utils/requests.js
+export const fetchCoaches = async activityId => {
+	const supabase = await supabaseClient()
+	// Fetch unique coach IDs associated with the activityId from the time_slots table
+	const { data: timeSlotsData, error: timeSlotsError } = await supabase
 		.from('time_slots')
-		.select('*')
-		.match({
-			activity_id: activityId,
-			coach_id: coachId,
-			date: date,
-			start_time: startTime
-		})
-		.single()
+		.select('coach_id')
+		.eq('activity_id', activityId)
+		.is('booked', false) // Assuming you want to fetch coaches for unbooked time slots
 
-	if (timeSlotError || !timeSlotData) {
-		console.error('Error fetching time slot data:', timeSlotError?.message)
-		return { error: timeSlotError?.message || 'Time slot not found.' }
-	}
-
-	// Deduct credits from user's account
-	const newWalletBalance = userData.wallet - totalPrice
-	const { error: updateError } = await supabase
-		.from('users')
-		.update({ wallet: newWalletBalance })
-		.eq('user_id', userId)
-
-	if (updateError) {
-		console.error('Error updating user credits:', updateError.message)
-		return { error: updateError.message }
-	}
-
-	// Add the selected item names to the additions array in the time slot
-	const newAdditions = [
-		...(timeSlotData.additions || []),
-		...selectedItems.map(item => item.name)
-	]
-	const { error: additionsError } = await supabase
-		.from('time_slots')
-		.update({ additions: newAdditions })
-		.eq('id', timeSlotData.id)
-
-	if (additionsError) {
-		console.error('Error updating time slot additions:', additionsError.message)
-		return { error: additionsError.message }
-	}
-
-	const itemNames = selectedItems.map(item => item.name).join(', ')
-	const { error: transactionError } = await supabase
-		.from('transactions')
-		.insert({
-			user_id: userId,
-			name: `Purchased items for individual session: ${itemNames}`,
-			type: 'market transaction',
-			amount: `-${totalPrice} credits`
-		})
-
-	if (transactionError) {
-		console.error('Error recording transaction:', transactionError.message)
-		// Note: We don't return here as the purchase was successful
-	}
-
-	return {
-		data: { ...timeSlotData, additions: newAdditions },
-		message: 'Items added to time slot and credits deducted.'
-	}
-}
-
-const classestiers = [
-	{
-		name: '"I train from time to time"',
-		id: 'tier-freelancer',
-		href: '#',
-		priceMonthly: '25 credits',
-		description: '1 class',
-		features: [
-			'5 products',
-			'Up to 1,000 subscribers',
-			'Basic analytics',
-			'48-hour support response time'
-		],
-		mostPopular: false
-	},
-	{
-		name: '"I train everyday"',
-		id: 'tier-startup',
-		href: '#',
-		priceMonthly: '100 credits',
-		description: '5 classes',
-		features: [
-			'25 products',
-			'Up to 10,000 subscribers',
-			'Advanced analytics',
-			'24-hour support response time',
-			'Marketing automations'
-		],
-		mostPopular: true
-	},
-	{
-		name: 'Eat, sleep, gym, repeat',
-		id: 'tier-enterprise',
-		href: '#',
-		priceMonthly: '150 credits',
-		description: '10 classes',
-		features: [
-			'Unlimited products',
-			'Unlimited subscribers',
-			'Advanced analytics',
-			'1-hour, dedicated support response time',
-			'Marketing automations'
-		],
-		mostPopular: false
-	}
-]
-
-const individualtiers = [
-	{
-		name: 'Workout of the day',
-		id: 'tier-basic',
-		href: '#',
-		price: { monthly: '200', annually: '$12' },
-		description: '10 classes',
-		features: [
-			'5 products',
-			'Up to 1,000 subscribers',
-			'Basic analytics',
-			'48-hour support response time'
-		]
-	},
-	{
-		name: 'Private training',
-		id: 'tier-essential',
-		href: '#',
-		price: { monthly: '350', annually: '$24' },
-		description: '10 classes',
-		features: [
-			'25 products',
-			'Up to 10,000 subscribers',
-			'Advanced analytics',
-			'24-hour support response time',
-			'Marketing automations'
-		]
-	},
-	{
-		name: 'Semi-Private',
-		id: 'tier-growth',
-		href: '#',
-		price: { monthly: '300', annually: '$48' },
-		description: '10 classes',
-		features: [
-			'Unlimited products',
-			'Unlimited subscribers',
-			'Advanced analytics',
-			'1-hour, dedicated support response time',
-			'Marketing automations',
-			'Custom reporting tools'
-		]
-	}
-]
-// New function to insert a bundle purchase record
-// Modified function to insert a bundle purchase record
-async function insertBundlePurchaseRecord(
-	supabase,
-	userId,
-	amount,
-
-	tokenAmount,
-	tokenType
-) {
-	if (tokenType === 'public') {
-		tokenType = 'class'
-	}
-	const formattedBundleName = ` ${tokenAmount} ${tokenType} tokens`
-	const { data, error } = await supabase.from('bundle_purchase').insert({
-		user_id: userId,
-		amount: amount,
-		bundle_name: formattedBundleName
-	})
-
-	if (error) {
-		console.error('Error inserting bundle purchase record:', error.message)
-		return {
-			error: 'Failed to insert bundle purchase record: ' + error.message
-		}
-	}
-
-	return { data }
-}
-
-export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
-	const supabase = await supabaseClient()
-
-	// Fetch user's current data
-	const { data: userData, error: userError } = await supabase
-		.from('users')
-		.select('*')
-		.eq('user_id', userId)
-		.single()
-
-	if (userError || !userData) {
-		console.error('Error fetching user data:', userError?.message)
-		return { error: userError?.message || 'User not found.' }
-	}
-
-	// Determine the bundle details
-	let bundlePrice, tokenType, tokenAmount
-	if (bundleType === 'classes') {
-		const bundle = classestiers.find(tier => tier.name === bundleName)
-		if (!bundle) {
-			return { error: 'Invalid bundle name for classes.' }
-		}
-		bundlePrice = parseInt(bundle.priceMonthly)
-		tokenType = 'public'
-		tokenAmount = parseInt(bundle.description.split(' ')[0]) // Extract number of classes
-	} else if (bundleType === 'individual') {
-		const bundle = individualtiers.find(tier => tier.name === bundleName)
-		if (!bundle) {
-			return { error: 'Invalid bundle name for individual training.' }
-		}
-		bundlePrice = parseInt(bundle.price.monthly)
-		tokenAmount = parseInt(bundle.description.split(' ')[0]) // Extract number of classes
-		switch (bundleName) {
-			case 'Workout of the day':
-				tokenType = 'workoutDay'
-				break
-			case 'Private training':
-				tokenType = 'private'
-				break
-			case 'Semi-Private':
-				tokenType = 'semiPrivate'
-				break
-			default:
-				return { error: 'Invalid individual bundle type.' }
-		}
-	} else {
-		return { error: 'Invalid bundle type.' }
-	}
-
-	// Check if the user has enough credits
-	if (userData.wallet < bundlePrice) {
-		return { error: 'Not enough credits to purchase the bundle.' }
-	}
-
-	// Deduct credits and add tokens
-	const newWalletBalance = userData.wallet - bundlePrice
-	const newTokenBalance = userData[`${tokenType}_token`] + tokenAmount
-
-	// Update user data
-	const { error: updateError } = await supabase
-		.from('users')
-		.update({
-			wallet: newWalletBalance,
-			[`${tokenType}_token`]: newTokenBalance
-		})
-		.eq('user_id', userId)
-
-	if (updateError) {
-		console.error('Error updating user data:', updateError.message)
-		return { error: updateError.message }
-	}
-
-	// Insert bundle purchase record
-	const transactionRecords = [
-		{
-			user_id: userId,
-			name: `Purchased ${bundleName} bundle`,
-			type: 'bundle purchase',
-			amount: `-${bundlePrice} credits`
-		},
-		{
-			user_id: userId,
-			name: `Received tokens for ${bundleName} bundle`,
-			type: 'bundle purchase',
-			amount: `+${tokenAmount} ${tokenType} token${tokenAmount > 1 ? 's' : ''}`
-		}
-	]
-
-	const { error: transactionError } = await supabase
-		.from('transactions')
-		.insert(transactionRecords)
-
-	if (transactionError) {
-		console.error('Error recording transactions:', transactionError.message)
-		// Note: We're not returning here to ensure the purchase is still considered successful
-	}
-
-	return {
-		data: {
-			newWalletBalance,
-			[`${tokenType}_token`]: newTokenBalance
-		},
-		message: 'Bundle purchased successfully.'
-	}
-}
-
-export const payForGroupItems = async ({
-	userId,
-	activityId,
-	coachId,
-	date,
-	startTime,
-	selectedItems
-}) => {
-	const supabase = await supabaseClient()
-
-	// Fetch user's current credits
-	const { data: userData, error: userError } = await supabase
-		.from('users')
-		.select('*')
-		.eq('user_id', userId)
-		.single()
-
-	if (userError || !userData) {
-		console.error('Error fetching user credits:', userError?.message)
-		return { error: userError?.message || 'User not found.' }
-	}
-
-	// Calculate total price of selected items
-	const totalPrice = selectedItems.reduce(
-		(total, item) => total + item.price,
-		0
-	)
-
-	if (totalPrice === 0) {
-		return { error: 'No items selected.' }
-	}
-
-	// Check if the user has enough credits
-	if (userData.wallet < totalPrice) {
-		return { error: 'Not enough credits to pay for the items.' }
-	}
-
-	// Fetch the group time slot ID based on activity, coach, date, and start time
-	const { data: timeSlotData, error: timeSlotError } = await supabase
-		.from('group_time_slots')
-		.select('*')
-		.match({
-			activity_id: activityId,
-			coach_id: coachId,
-			date: date,
-			start_time: startTime
-		})
-		.single()
-
-	if (timeSlotError || !timeSlotData) {
+	if (timeSlotsError || !timeSlotsData) {
 		console.error(
-			'Error fetching group time slot data:',
-			timeSlotError?.message
+			'Error fetching coach IDs from time slots:',
+			timeSlotsError?.message
 		)
-		return { error: timeSlotError?.message || 'Group time slot not found.' }
-	}
-
-	// Deduct credits from user's account
-	const newWalletBalance = userData.wallet - totalPrice
-	const { error: updateError } = await supabase
-		.from('users')
-		.update({ wallet: newWalletBalance })
-		.eq('user_id', userId)
-
-	if (updateError) {
-		console.error('Error updating user credits:', updateError.message)
-		return { error: updateError.message }
-	}
-
-	// Create a new addition entry
-	const newAddition = {
-		user_id: userId,
-		items: selectedItems.map(item => ({
-			id: item.id,
-			name: item.name,
-			price: item.price
-		}))
-	}
-
-	// Add the new addition entry to the additions array in the group time slot
-	const newAdditions = [...(timeSlotData.additions || []), newAddition]
-	const { error: additionsError } = await supabase
-		.from('group_time_slots')
-		.update({ additions: newAdditions })
-		.eq('id', timeSlotData.id)
-
-	if (additionsError) {
-		console.error(
-			'Error updating group time slot additions:',
-			additionsError.message
-		)
-		return { error: additionsError.message }
-	}
-
-	const itemNames = selectedItems.map(item => item.name).join(', ')
-	const { error: transactionError } = await supabase
-		.from('transactions')
-		.insert({
-			user_id: userId,
-			name: `Purchased items for group session: ${itemNames}`,
-			type: 'market transaction',
-			amount: `-${totalPrice} credits`
-		})
-
-	if (transactionError) {
-		console.error('Error recording transaction:', transactionError.message)
-		// Note: We don't return here as the purchase was successful
-	}
-
-	return {
-		data: { ...timeSlotData, additions: newAdditions },
-		message: 'Items added to group time slot and credits deducted.'
-	}
-}
-
-export const fetchMarketItems = async () => {
-	const supabase = await supabaseClient()
-	const { data, error } = await supabase
-		.from('market')
-		.select('id, name, price')
-
-	if (error) {
-		console.error('Error fetching market items:', error.message)
 		return []
 	}
 
-	return data
-}
-export const fetchUserTokens = async id => {
-	const supabase = await supabaseClient()
-	const { data, error } = await supabase
-		.from('users')
-		.select('private_token, semiPrivate_token, public_token, workoutDay_token')
-		.eq('user_id', id)
-		.single()
+	// Extract unique coach IDs
+	const coachIds = timeSlotsData.map(slot => slot.coach_id)
 
-	if (error) throw error
+	// Fetch coaches based on extracted coach IDs
+	const { data: coachesData, error: coachesError } = await supabase
+		.from('coaches')
+		.select('id, name, profile_picture,email')
+		.in('id', coachIds) // Filter coaches by extracted IDs
 
-	return data
-}
-export const fetchUserData = async userId => {
-	const supabase = supabaseClient()
-	const { data, error } = await supabase
-		.from('users')
-		.select('wallet')
-		.eq('user_id', userId)
-		.single()
-
-	if (error) {
-		console.error('Error fetching user data:', error.message)
-		return null
-	}
-
-	return data
-}
-
-export const handlePurchase = async (userId, cart, totalPrice) => {
-	const supabase = supabaseClient()
-
-	// Check user's wallet balance
-	const { data: userData, error: userError } = await supabase
-		.from('users')
-		.select('wallet')
-		.eq('user_id', userId)
-		.single()
-
-	if (userError) {
-		console.error('Error fetching user wallet:', userError.message)
-		return false
-	}
-
-	if (userData.wallet < totalPrice) {
-		alert('You do not have enough credits to make this purchase.')
-		return false
-	}
-
-	// Update user's wallet
-	const { error: updateError } = await supabase
-		.from('users')
-		.update({ wallet: userData.wallet - totalPrice })
-		.eq('user_id', userId)
-
-	if (updateError) {
-		console.error('Error updating user wallet:', updateError.message)
-		return false
-	}
-
-	// Transform cart items to an array of UUIDs
-	const items = cart.flatMap(item => Array(item.quantity).fill(item.id))
-	console.log('Items to insert:', items) // Log the items array to verify
-
-	// Record transaction in market_transactions table
-	const { error: marketTransactionError } = await supabase
-		.from('market_transactions')
-		.insert({
-			user_id: userId,
-			items: items,
-			date: new Date(),
-			claimed: false,
-			price: totalPrice
-		})
-
-	if (marketTransactionError) {
-		console.error(
-			'Error recording market transaction:',
-			marketTransactionError.message
-		)
-		return false
-	}
-
-	// Record transaction in the new transactions table
-	const transactionData = {
-		user_id: userId,
-		name: `Market purchase: ${cart.length} item${cart.length > 1 ? 's' : ''}`,
-		type: 'market transaction',
-		amount: `-${totalPrice} credits`
-	}
-
-	const { error: transactionError } = await supabase
-		.from('transactions')
-		.insert(transactionData)
-
-	if (transactionError) {
-		console.error('Error recording transaction:', transactionError.message)
-		// Note: We don't return false here as the purchase was successful
-	}
-
-	return true
-}
-
-export const fetchShopTransactions = async () => {
-	const supabase = supabaseClient()
-	const { data: transactions, error } = await supabase
-		.from('market_transactions')
-		.select('*')
-		.eq('claimed', false)
-
-	if (error) {
-		console.error('Error fetching shop transactions:', error.message)
+	if (coachesError) {
+		console.error('Error fetching coaches:', coachesError.message)
 		return []
 	}
 
-	// Fetch user data for each transaction
-	const userPromises = transactions.map(transaction =>
-		supabase
-			.from('users')
-			.select('first_name, last_name')
-			.eq('user_id', transaction.user_id)
-			.single()
-	)
-
-	const userResults = await Promise.all(userPromises)
-
-	// Fetch item data for each transaction
-	const itemPromises = transactions.map(transaction => {
-		const itemIds = transaction.items
-		return supabase.from('market').select('id, name').in('id', itemIds)
-	})
-
-	const itemResults = await Promise.all(itemPromises)
-
-	// Combine transactions with user and item data
-	const enhancedTransactions = transactions.map((transaction, index) => {
-		const user = userResults[index].data
-		const items = itemResults[index].data
-
-		// Count item quantities
-		const itemCounts = transaction.items.reduce((acc, itemId) => {
-			acc[itemId] = (acc[itemId] || 0) + 1
-			return acc
-		}, {})
-
-		const itemDetails = items.map(item => ({
-			name: item.name,
-			quantity: itemCounts[item.id] || 0
-		}))
-
-		return {
-			...transaction,
-			user_name: `${user.first_name} ${user.last_name}`,
-			item_details: itemDetails
-		}
-	})
-
-	return enhancedTransactions
+	return coachesData
 }
 
-export const claimTransaction = async transactionId => {
-	const supabase = supabaseClient()
-	const { error } = await supabase
-		.from('market_transactions')
-		.update({ claimed: true })
-		.eq('transaction_id', transactionId)
+export const fetchCoachesGroup = async activityId => {
+	const supabase = await supabaseClient()
+	// Fetch unique coach IDs associated with the activityId from the time_slots table
+	const { data: timeSlotsData, error: timeSlotsError } = await supabase
+		.from('group_time_slots')
+		.select('coach_id')
+		.eq('activity_id', activityId)
+		.is('booked', false) // Assuming you want to fetch coaches for unbooked time slots
 
-	if (error) {
-		console.error('Error claiming transaction:', error.message)
-		return false
+	if (timeSlotsError || !timeSlotsData) {
+		console.error(
+			'Error fetching coach IDs from time slots:',
+			timeSlotsError?.message
+		)
+		return []
 	}
 
-	return true
+	// Extract unique coach IDs
+	const coachIds = timeSlotsData.map(slot => slot.coach_id)
+
+	// Fetch coaches based on extracted coach IDs
+	const { data: coachesData, error: coachesError } = await supabase
+		.from('coaches')
+		.select('id, name, profile_picture,email')
+		.in('id', coachIds) // Filter coaches by extracted IDs
+
+	if (coachesError) {
+		console.error('Error fetching coaches:', coachesError.message)
+		return []
+	}
+
+	return coachesData
 }
