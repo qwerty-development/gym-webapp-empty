@@ -6,33 +6,38 @@ import {
 	FaFilter,
 	FaDownload,
 	FaSortAmountDown,
-	FaSortAmountUp
+	FaSortAmountUp,
+	FaUser
 } from 'react-icons/fa'
 import { supabaseClient } from '../../../../../utils/supabaseClient'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import saveAs from 'file-saver'
 import AdminNavbarComponent from '@/app/components/admin/adminnavbar'
+import Select from 'react-select'
 
 const TransactionPage = () => {
 	const [transactions, setTransactions] = useState<any[]>([])
-	const [loading, setLoading] = useState<any>(true)
-	const [currentPage, setCurrentPage] = useState<any>(1)
-	const [totalPages, setTotalPages] = useState<any>(0)
-	const [filter, setFilter] = useState<any>('all')
-	const [searchTerm, setSearchTerm] = useState<any>('')
-	const [startDate, setStartDate] = useState<any>(null)
-	const [endDate, setEndDate] = useState<any>(null)
+	const [users, setUsers] = useState<any[]>([])
+	const [loading, setLoading] = useState<boolean>(true)
+	const [currentPage, setCurrentPage] = useState<number>(1)
+	const [totalPages, setTotalPages] = useState<number>(0)
+	const [filter, setFilter] = useState<string>('all')
+	const [searchTerm, setSearchTerm] = useState<string>('')
+	const [startDate, setStartDate] = useState<Date | null>(null)
+	const [endDate, setEndDate] = useState<Date | null>(null)
 	const [summary, setSummary] = useState<any>({
 		totalCredits: 0,
 		totalTokens: 0
 	})
-	const [sortField, setSortField] = useState<any>('created_at')
-	const [sortOrder, setSortOrder] = useState<any>('desc')
+	const [sortField, setSortField] = useState<string>('created_at')
+	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+	const [selectedUser, setSelectedUser] = useState<string | null>(null)
 
 	const itemsPerPage = 20
 
 	useEffect(() => {
+		fetchUsers()
 		fetchTransactions()
 	}, [
 		currentPage,
@@ -41,28 +46,28 @@ const TransactionPage = () => {
 		startDate,
 		endDate,
 		sortField,
-		sortOrder
+		sortOrder,
+		selectedUser
 	])
+	const fetchUsers = async () => {
+		const supabase = await supabaseClient()
+		const { data, error } = await supabase
+			.from('users')
+			.select('user_id, first_name, last_name')
+			.order('first_name', { ascending: true })
+
+		if (error) {
+			console.error('Error fetching users:', error)
+		} else {
+			setUsers(data || [])
+		}
+	}
 
 	const fetchSummaryData = async () => {
 		const supabase = await supabaseClient()
-		let query = supabase.from('transactions').select('amount')
+		let query = supabase.from('transactions').select('amount, user_id')
 
-		if (filter !== 'all') {
-			query = query.eq('type', filter)
-		}
-
-		if (searchTerm) {
-			query = query.or(
-				`name.ilike.%${searchTerm}%,amount.ilike.%${searchTerm}%`
-			)
-		}
-
-		if (startDate && endDate) {
-			query = query
-				.gte('created_at', startDate.toISOString())
-				.lt('created_at', new Date(endDate.getTime() + 86400000).toISOString())
-		}
+		query = applyFilters(query)
 
 		const { data, error } = await query
 
@@ -74,17 +79,47 @@ const TransactionPage = () => {
 		return calculateSummary(data)
 	}
 
-	// Modify the fetchTransactions function
 	const fetchTransactions = async () => {
 		setLoading(true)
 		const supabase = await supabaseClient()
 
 		let query = supabase
 			.from('transactions')
-			.select('*', { count: 'exact' })
-			.order(sortField, { ascending: sortOrder === 'asc' })
-			.range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1)
+			.select('*, users!inner(first_name, last_name)', { count: 'exact' })
 
+		query = applyFilters(query)
+		query = query.order(sortField, { ascending: sortOrder === 'asc' })
+		query = query.range(
+			(currentPage - 1) * itemsPerPage,
+			currentPage * itemsPerPage - 1
+		)
+
+		const { data, error, count }: any = await query
+
+		if (error) {
+			console.error('Error fetching transactions:', error)
+		} else {
+			setTransactions(data)
+			setTotalPages(Math.ceil(count / itemsPerPage))
+		}
+
+		const summaryData = await fetchSummaryData()
+		setSummary(summaryData)
+
+		setLoading(false)
+	}
+
+	const resetFilters = () => {
+		setFilter('all')
+		setSearchTerm('')
+		setStartDate(null)
+		setEndDate(null)
+		setSelectedUser(null)
+		setSortField('created_at')
+		setSortOrder('desc')
+		setCurrentPage(1)
+	}
+	const applyFilters = (query: any) => {
 		if (filter !== 'all') {
 			query = query.eq('type', filter)
 		}
@@ -103,20 +138,11 @@ const TransactionPage = () => {
 				.lte('created_at', endDateTime.toISOString())
 		}
 
-		const { data, error, count }: any = await query
-
-		if (error) {
-			console.error('Error fetching transactions:', error)
-		} else {
-			setTransactions(data)
-			setTotalPages(Math.ceil(count / itemsPerPage))
+		if (selectedUser) {
+			query = query.eq('user_id', selectedUser)
 		}
 
-		// Fetch summary data
-		const summaryData = await fetchSummaryData()
-		setSummary(summaryData)
-
-		setLoading(false)
+		return query
 	}
 	const calculateSummary = (data: any) => {
 		return data.reduce(
@@ -133,35 +159,44 @@ const TransactionPage = () => {
 		)
 	}
 
-	const handleFilterChange = (e: { target: { value: any } }) => {
+	const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		setFilter(e.target.value)
 		setCurrentPage(1)
 	}
 
-	const handleSearch = (e: { target: { value: any } }) => {
+	const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchTerm(e.target.value)
 		setCurrentPage(1)
 	}
-	const handleDateChange = (dates: Date[] | [any, any]) => {
+
+	const handleDateChange = (dates: [Date | null, Date | null]) => {
 		const [start, end] = dates
 		setStartDate(start)
-		if (end) {
-			// If end date is selected, set it to the end of the day
-			const endOfDay = new Date(end)
-			endOfDay.setHours(23, 59, 59, 999)
-			setEndDate(endOfDay)
-		} else {
-			setEndDate(end)
-		}
+		setEndDate(end)
+		setCurrentPage(1)
+	}
+
+	const handleQuickDateRange = (start: Date, end: Date) => {
+		setStartDate(start)
+		setEndDate(end)
 		setCurrentPage(1)
 	}
 
 	const handleSort = (field: string) => {
-		setSortOrder(sortField === field && sortOrder === 'desc' ? 'asc' : 'desc')
-		setSortField(field)
+		if (field !== 'user') {
+			setSortOrder(prevOrder =>
+				sortField === field && prevOrder === 'desc' ? 'asc' : 'desc'
+			)
+			setSortField(field)
+		}
 	}
 
-	const getTransactionColor = (type: any) => {
+	const handleUserChange = (selectedOption: any) => {
+		setSelectedUser(selectedOption ? selectedOption.value : null)
+		setCurrentPage(1)
+	}
+
+	const getTransactionColor = (type: string) => {
 		switch (type) {
 			case 'individual session':
 				return 'bg-green-500 text-white'
@@ -187,13 +222,14 @@ const TransactionPage = () => {
 		}
 
 		const csvContent = [
-			['Date', 'Description', 'Type', 'Amount', 'User ID'],
+			['Date', 'Description', 'Type', 'Amount', 'User ID', 'User Name'],
 			...transactions.map(transaction => [
 				new Date(transaction.created_at).toLocaleString(),
 				transaction.name,
 				transaction.type,
 				transaction.amount,
-				transaction.user_id
+				transaction.user_id,
+				`${transaction.users.first_name} ${transaction.users.last_name}`
 			])
 		]
 			.map(row => row.join(','))
@@ -210,24 +246,10 @@ const TransactionPage = () => {
 
 		let query = supabase
 			.from('transactions')
-			.select('*')
+			.select('*, users(first_name, last_name)')
 			.order(sortField, { ascending: sortOrder === 'asc' })
 
-		if (filter !== 'all') {
-			query = query.eq('type', filter)
-		}
-
-		if (searchTerm) {
-			query = query.or(
-				`name.ilike.%${searchTerm}%,amount.ilike.%${searchTerm}%`
-			)
-		}
-
-		if (startDate && endDate) {
-			query = query
-				.gte('created_at', startDate.toISOString())
-				.lt('created_at', new Date(endDate.getTime() + 86400000).toISOString())
-		}
+		query = applyFilters(query)
 
 		const { data, error } = await query
 
@@ -245,7 +267,6 @@ const TransactionPage = () => {
 			start: new Date(new Date().setHours(0, 0, 0, 0)),
 			end: new Date(new Date().setHours(23, 59, 59, 999))
 		},
-
 		{
 			label: 'Last 7 days',
 			start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
@@ -276,64 +297,136 @@ const TransactionPage = () => {
 
 			<div className='mx-6'>
 				<div className='bg-gray-800 rounded-xl p-6 mb-8 shadow-lg'>
-					<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-						<div className='space-y-2'>
-							<label className='block text-sm font-medium text-gray-400'>
-								Transaction Type
-							</label>
-							<select
-								value={filter}
-								onChange={handleFilterChange}
-								className='w-full bg-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'>
-								<option value='all'>All Types</option>
-								<option value='individual session'>Individual Session</option>
-								<option value='class session'>Class Session</option>
-								<option value='credit refill'>Credit Refill</option>
-								<option value='bundle purchase'>Bundle Purchase</option>
-								<option value='market transaction'>Market Transaction</option>
-							</select>
-						</div>
-						<div className='space-y-2'>
-							<label className='block text-sm font-medium text-gray-400'>
-								Search
-							</label>
-							<div className='relative'>
-								<input
-									type='text'
-									placeholder='Search transactions...'
-									value={searchTerm}
-									onChange={handleSearch}
-									className='w-full bg-gray-700 text-white rounded-md pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'
-								/>
-								<FaSearch className='absolute left-3 top-3 text-gray-400' />
+					<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+						<div className='space-y-4'>
+							<div>
+								<label className='block text-sm font-medium text-gray-400 mb-1'>
+									Transaction Type
+								</label>
+								<select
+									value={filter}
+									onChange={handleFilterChange}
+									className='w-full bg-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'>
+									<option value='all'>All Types</option>
+									<option value='individual session'>Individual Session</option>
+									<option value='class session'>Class Session</option>
+									<option value='credit refill'>Credit Refill</option>
+									<option value='bundle purchase'>Bundle Purchase</option>
+									<option value='market transaction'>Market Transaction</option>
+								</select>
+							</div>
+							<div>
+								<label className='block text-sm font-medium text-gray-400 mb-1'>
+									Search
+								</label>
+								<div className='relative'>
+									<input
+										type='text'
+										placeholder='Search transactions...'
+										value={searchTerm}
+										onChange={handleSearch}
+										className='w-full bg-gray-700 text-white rounded-md pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'
+									/>
+									<FaSearch className='absolute left-3 top-3 text-gray-400' />
+								</div>
 							</div>
 						</div>
-						<div className='space-y-2'>
-							<label className='block text-sm font-medium text-gray-400'>
-								Date Range
-							</label>
-							<DatePicker
-								selectsRange={true}
-								startDate={startDate}
-								endDate={endDate}
-								onChange={handleDateChange}
-								className='w-full bg-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'
-								placeholderText='Select date range'
-							/>
+						<div className='space-y-4'>
+							<div>
+								<label className='block text-sm font-medium text-gray-400 mb-1'>
+									Date Range
+								</label>
+								<DatePicker
+									selectsRange={true}
+									startDate={startDate}
+									endDate={endDate}
+									onChange={handleDateChange}
+									className='w-full bg-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'
+									placeholderText='Select date range'
+								/>
+							</div>
+							<div>
+								<label className='block text-sm font-medium text-gray-400 mb-1'>
+									Quick Date Ranges
+								</label>
+								<div className='grid grid-cols-2 gap-2'>
+									{predefinedDateRanges.map((range, index) => (
+										<button
+											key={index}
+											onClick={() =>
+												handleQuickDateRange(range.start, range.end)
+											}
+											className='bg-green-600 hover:bg-green-700 text-white text-sm rounded-md px-3 py-1 transition duration-300'>
+											{range.label}
+										</button>
+									))}
+								</div>
+							</div>
 						</div>
-						<div className='space-y-2'>
-							<label className='block text-sm font-medium text-gray-400'>
-								Quick Date Ranges
-							</label>
-							<div className='grid grid-cols-2 gap-2'>
-								{predefinedDateRanges.map((range, index) => (
-									<button
-										key={index}
-										onClick={() => handleDateChange([range.start, range.end])}
-										className='bg-green-600 hover:bg-green-700 text-white text-sm rounded-md px-3 py-1 transition duration-300'>
-										{range.label}
-									</button>
-								))}
+						<div className='space-y-4'>
+							<div>
+								<label className='block text-sm font-medium text-gray-400 mb-1'>
+									User
+								</label>
+								<Select
+									options={users.map(user => ({
+										value: user.user_id,
+										label: `${user.first_name} ${user.last_name}`
+									}))}
+									onChange={handleUserChange}
+									value={
+										selectedUser
+											? {
+													value: selectedUser,
+													label:
+														users.find(u => u.user_id === selectedUser)
+															?.first_name +
+														' ' +
+														users.find(u => u.user_id === selectedUser)
+															?.last_name
+											  }
+											: null
+									}
+									isClearable
+									placeholder='Select a user'
+									className='react-select-container bg-green-500'
+									classNamePrefix='react-select bg-green-500'
+									styles={{
+										control: (provided, state) => ({
+											...provided,
+											backgroundColor: '#454c45',
+											borderColor: state.isFocused ? '#4caf50' : '#4c6f46', // Green border on focus
+											color: 'white',
+											'&:hover': {
+												borderColor: '#4caf50' // Green border on hover
+											}
+										}),
+										menu: provided => ({
+											...provided,
+											backgroundColor: '#454c45'
+										}),
+										option: (provided, state) => ({
+											...provided,
+											backgroundColor: state.isFocused ? '#a5b89a' : '#454c45',
+											color: 'white'
+										}),
+										singleValue: provided => ({
+											...provided,
+											color: 'white'
+										}),
+										input: provided => ({
+											...provided,
+											color: 'white' // Make search text white
+										})
+									}}
+								/>
+							</div>
+							<div>
+								<button
+									onClick={resetFilters}
+									className='w-full bg-red-600 hover:bg-red-700 text-white rounded-md px-4 py-2 transition duration-300'>
+									Reset Filters
+								</button>
 							</div>
 						</div>
 					</div>
@@ -369,26 +462,34 @@ const TransactionPage = () => {
 									<table className='min-w-full divide-y divide-gray-700'>
 										<thead className='bg-gray-700'>
 											<tr>
-												<th
-													scope='col'
-													className='py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-400 uppercase'>
-													Date
-												</th>
-												<th
-													scope='col'
-													className='py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-400 uppercase'>
-													Description
-												</th>
-												<th
-													scope='col'
-													className='py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-400 uppercase'>
-													Type
-												</th>
-												<th
-													scope='col'
-													className='py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-400 uppercase'>
-													Amount
-												</th>
+												{[
+													{ key: 'created_at', label: 'Date', sortable: true },
+													{ key: 'name', label: 'Description', sortable: true },
+													{ key: 'type', label: 'Type', sortable: true },
+													{ key: 'amount', label: 'Amount', sortable: true },
+													{ key: 'user', label: 'User', sortable: false }
+												].map(column => (
+													<th
+														key={column.key}
+														scope='col'
+														className={`py-3 px-6 text-xs font-medium tracking-wider text-left text-gray-400 uppercase ${
+															column.sortable ? 'cursor-pointer' : ''
+														}`}
+														onClick={() =>
+															column.sortable && handleSort(column.key)
+														}>
+														<div className='flex items-center'>
+															{column.label}
+															{column.sortable &&
+																sortField === column.key &&
+																(sortOrder === 'asc' ? (
+																	<FaSortAmountUp className='ml-1' />
+																) : (
+																	<FaSortAmountDown className='ml-1' />
+																))}
+														</div>
+													</th>
+												))}
 											</tr>
 										</thead>
 										<tbody className='divide-y divide-gray-700'>
@@ -418,6 +519,10 @@ const TransactionPage = () => {
 															{transaction.amount}
 														</span>
 													</td>
+													<td className='py-4 px-6 whitespace-nowrap'>
+														{transaction.users.first_name}{' '}
+														{transaction.users.last_name}
+													</td>
 												</tr>
 											))}
 										</tbody>
@@ -439,18 +544,14 @@ const TransactionPage = () => {
 							</div>
 							<div className='space-x-2'>
 								<button
-									onClick={() =>
-										setCurrentPage((prev: number) => Math.max(prev - 1, 1))
-									}
+									onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
 									disabled={currentPage === 1}
 									className='px-4 py-2 bg-green-400 text-white rounded-md disabled:opacity-50 hover:bg-green-500 transition duration-300'>
 									Previous
 								</button>
 								<button
 									onClick={() =>
-										setCurrentPage((prev: number) =>
-											Math.min(prev + 1, totalPages)
-										)
+										setCurrentPage(prev => Math.min(prev + 1, totalPages))
 									}
 									disabled={currentPage === totalPages}
 									className='px-4 py-2 bg-green-400 text-white rounded-md disabled:opacity-50 hover:bg-green-500 transition duration-300'>

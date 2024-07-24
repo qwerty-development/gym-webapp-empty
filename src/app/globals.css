@@ -31,6 +31,28 @@ body {
 	}
 }
 
+.react-select-container .react-select__control {
+	background-color: #374151;
+	border-color: #4b5563;
+}
+
+.react-select-container .react-select__menu {
+	background-color: #374151;
+}
+
+.react-select-container .react-select__option {
+	background-color: #374151;
+	color: white;
+}
+
+.react-select-container .react-select__option--is-focused {
+	background-color: #4b5563;
+}
+
+.react-select-container .react-select__single-value {
+	color: white;
+}
+
 .custom-calendar {
 	border-radius: 15px;
 	border: 1px #36783a solid; /* green-400 */
