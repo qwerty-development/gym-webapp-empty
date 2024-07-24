@@ -4,8 +4,8 @@ import {
 	addMarketItem,
 	modifyMarketItem,
 	deleteMarketItem
-} from '../../../../utils/admin-requests'
-import { fetchMarket } from '../../../../utils/user-requests'
+} from '../../../../utils/adminRequests'
+import { fetchMarket } from '../../../../utils/userRequests'
 import toast from 'react-hot-toast'
 import AdminNavbarComponent from '@/app/components/admin/adminnavbar'
 import { motion } from 'framer-motion'
