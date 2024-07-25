@@ -2,9 +2,7 @@ import { supabaseClient } from '../supabaseClient'
 export const fetchFilteredUnbookedTimeSlots = async ({
 	activityId,
 	coachId,
-	date,
-	startTime,
-	endTime
+	date
 }) => {
 	const supabase = await supabaseClient()
 	let query = supabase
@@ -27,10 +25,6 @@ export const fetchFilteredUnbookedTimeSlots = async ({
 	if (activityId) query = query.eq('activity_id', activityId)
 	if (coachId) query = query.eq('coach_id', coachId)
 	if (date) query = query.eq('date', date)
-	if (startTime && endTime) {
-		// Ensures both startTime and endTime are provided for a valid time slot filter
-		query = query.gte('start_time', startTime).lte('end_time', endTime)
-	}
 
 	const { data, error } = await query
 
