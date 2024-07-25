@@ -1,4 +1,4 @@
-import supabaseClient from '../supabaseClient'
+import { supabaseClient } from '../supabaseClient'
 
 export const addCoach = async (coach, file) => {
 	const supabase = await supabaseClient()
