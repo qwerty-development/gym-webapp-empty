@@ -9,12 +9,12 @@ import FilterComponent from './components/admin/FilterComponent'
 import TableComponent from './components/admin/TableComponent'
 import {
 	deleteTimeSlot,
-	updateTimeSlot,
-	updateUserCreditsCancellation,
 	deleteGroupTimeSlot,
-	cancelGroupBooking
+	cancelGroupBooking,
+	cancelBookingIndividual
 } from '../../utils/adminRequests'
 import { supabaseClient } from '../../utils/supabaseClient'
+import toast from 'react-hot-toast'
 
 export default function TimeSlotListClient({
 	initialTimeSlots,
@@ -134,242 +134,21 @@ export default function TimeSlotListClient({
 			)
 		) {
 			if (isPrivateTraining) {
-				const supabase = await supabaseClient()
-
-				try {
-					// Fetch reservation details
-					const { data: reservationData, error: reservationError } =
-						await supabase
-							.from('time_slots')
-							.select(
-								'additions, coach_id, date, start_time, end_time, booked_with_token, activity_id'
-							)
-							.eq('id', reservation.id)
-							.single()
-
-					if (reservationError || !reservationData) {
-						throw new Error(
-							reservationError?.message || 'Reservation not found'
-						)
-					}
-
-					// Fetch additions prices from the market table
-					const { data: additionsData, error: additionsError } = await supabase
-						.from('market')
-						.select('name, price')
-						.in('name', reservationData.additions || [])
-
-					if (additionsError) {
-						throw new Error(
-							`Error fetching additions data: ${additionsError.message}`
-						)
-					}
-
-					const additionsTotalPrice = additionsData.reduce(
-						(total, item) => total + item.price,
-						0
-					)
-
-					// Fetch user data
-					const { data: userData, error: userError } = await supabase
-						.from('users')
-						.select(
-							'isFree, first_name, last_name, email, wallet, private_token'
-						)
-						.eq('user_id', reservation.user?.user_id)
-						.single()
-
-					if (userError || !userData) {
-						throw new Error(
-							`Error fetching user data: ${
-								userError?.message || 'User not found'
-							}`
-						)
-					}
-
-					// Fetch activity data
-					const { data: activityData, error: activityError } = await supabase
-						.from('activities')
-						.select('credits')
-						.eq('id', reservationData.activity_id)
-						.single()
-
-					if (activityError || !activityData) {
-						throw new Error(
-							`Error fetching activity data: ${
-								activityError?.message || 'Activity not found'
-							}`
-						)
-					}
-
-					let totalCreditRefund = additionsTotalPrice
-					let tokenRefund = 0
-
-					if (reservationData.booked_with_token) {
-						tokenRefund = 1
-					} else if (!userData.isFree) {
-						totalCreditRefund += activityData.credits
-					}
-
-					const updatedSlot = {
-						id: reservation.id,
-						start_time: reservationData.start_time,
-						end_time: reservationData.end_time,
-						date: reservationData.date,
-						activity_id: reservationData.activity_id,
-						coach_id: reservationData.coach_id,
-						user_id: null,
-						booked: false,
-						additions: [],
-						booked_with_token: false
-					}
-
-					// Update the time slot
-					const { error: updateError } = await supabase
-						.from('time_slots')
-						.update(updatedSlot)
-						.eq('id', reservation.id)
-
-					if (updateError) {
-						throw new Error(`Failed to cancel booking: ${updateError.message}`)
-					}
-
-					// Update user's wallet and tokens
-					const newWalletBalance = userData.wallet + totalCreditRefund
-					const newTokenBalance = userData.private_token + tokenRefund
-
-					const { error: userUpdateError } = await supabase
-						.from('users')
-						.update({
-							wallet: newWalletBalance,
-							private_token: newTokenBalance
-						})
-						.eq('user_id', reservation.user?.user_id)
-
-					if (userUpdateError) {
-						throw new Error(
-							`Error updating user data: ${userUpdateError.message}`
-						)
-					}
-
-					const sessionTransactionData = {
-						user_id: reservation.user?.user_id,
-						name: `Cancelled individual session: ${reservation.activity?.name}`,
-						type: 'individual session',
-						amount: reservationData.booked_with_token
-							? '+1 private token'
-							: userData.isFree
-							? '0 credits (free session)'
-							: `+${activityData.credits} credits`
-					}
-
-					const { error: sessionTransactionError } = await supabase
-						.from('transactions')
-						.insert(sessionTransactionData)
-
-					if (sessionTransactionError) {
-						console.error(
-							'Error recording session cancellation transaction:',
-							sessionTransactionError.message
-						)
-					}
-
-					// Add transaction record for refunded additions (if any)
-					if (additionsTotalPrice > 0) {
-						const marketTransactionData = {
-							user_id: reservation.user?.user_id,
-							name: `Refunded market items for cancelled session: ${reservation.activity?.name}`,
-							type: 'market transaction',
-							amount: `+${additionsTotalPrice} credits`
-						}
-
-						const { error: marketTransactionError } = await supabase
-							.from('transactions')
-							.insert(marketTransactionData)
-
-						if (marketTransactionError) {
-							console.error(
-								'Error recording market refund transaction:',
-								marketTransactionError.message
-							)
-						}
-					}
-
-					// Fetch coach data
-					const { data: coachData, error: coachError } = await supabase
-						.from('coaches')
-						.select('name, email')
-						.eq('id', reservationData.coach_id)
-						.single()
-
-					if (coachError) {
-						throw new Error(`Error fetching coach data: ${coachError.message}`)
-					}
-
-					// Prepare email data
-					const emailData = {
-						user_name: `${userData.first_name} ${userData.last_name}`,
-						user_email: userData.email,
-						activity_name: reservation.activity?.name,
-						activity_date: reservationData.date,
-						start_time: reservationData.start_time,
-						end_time: reservationData.end_time,
-						coach_name: coachData.name,
-						coach_email: coachData.email,
-						refund_type: reservationData.booked_with_token
-							? 'token'
-							: 'credits',
-						refund_amount: reservationData.booked_with_token
-							? tokenRefund
-							: totalCreditRefund
-					}
-
-					// Send cancellation email to admin
-					const responseAdmin = await fetch('/api/send-cancel-admin', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify(emailData)
-					})
-
-					if (!responseAdmin.ok) {
-						const resultAdmin = await responseAdmin.json()
-						throw new Error(
-							`Failed to send admin cancellation email: ${resultAdmin.error}`
-						)
-					}
-
-					// Send cancellation email to user
-					const responseUser = await fetch('/api/send-cancel-user', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify(emailData)
-					})
-
-					if (!responseUser.ok) {
-						const resultUser = await responseUser.json()
-						throw new Error(
-							`Failed to send user cancellation email: ${resultUser.error}`
-						)
-					}
-
-					console.log('Booking cancelled successfully.')
+				const { success, error } = await cancelBookingIndividual(reservation)
+				if (success) {
+					toast.success('Booking cancelled successfully.')
 					router.refresh()
-					return true
-				} catch (error) {
-					console.error('Error cancelling booking:', error)
-					return false
+				} else {
+					toast.error('Failed to cancel individual booking.')
 				}
 			} else {
 				const { success, error } = await cancelGroupBooking(reservation.id)
 				if (success) {
-					console.log('Group booking cancelled successfully.')
+					toast.success('Group booking cancelled successfully.')
+
 					router.refresh()
 				} else {
-					console.error('Failed to cancel group booking:', error)
+					toast.error('Failed to cancel group booking.')
 				}
 			}
 		}
@@ -608,6 +387,7 @@ export default function TimeSlotListClient({
 				)
 			}
 		} catch (error) {
+			toast.error('Error removing user')
 			console.error('Error sending admin removal email:', error)
 		}
 
@@ -628,9 +408,10 @@ export default function TimeSlotListClient({
 				)
 			}
 		} catch (error) {
+			toast.error('Error removing user from group.')
 			console.error('Error sending user removal email:', error)
 		}
-
+		toast.success('User removed from group successfully.')
 		router.refresh()
 	}
 
