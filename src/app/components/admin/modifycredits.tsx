@@ -7,7 +7,9 @@ import {
 	FaSort,
 	FaUserEdit,
 	FaCheckCircle,
-	FaTimesCircle
+	FaTimesCircle,
+	FaPlus,
+	FaMinus
 } from 'react-icons/fa'
 import {
 	fetchUsers,
@@ -24,6 +26,17 @@ interface User {
 	created_at: string
 	wallet?: number
 	isFree?: boolean
+	private_token: number
+	semiPrivate_token: number
+	public_token: number
+	workoutDay_token: number
+}
+
+interface TokenUpdates {
+	private_token: number
+	semiPrivate_token: number
+	public_token: number
+	workoutDay_token: number
 }
 
 const ModifyCreditsComponent = () => {
@@ -37,6 +50,12 @@ const ModifyCreditsComponent = () => {
 	const [modalIsOpen, setModalIsOpen] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
 	const [sale, setSale] = useState(0)
+	const [tokenUpdates, setTokenUpdates] = useState<TokenUpdates>({
+		private_token: 0,
+		semiPrivate_token: 0,
+		public_token: 0,
+		workoutDay_token: 0
+	})
 
 	useEffect(() => {
 		setIsLoading(true)
@@ -95,11 +114,26 @@ const ModifyCreditsComponent = () => {
 		}
 	}
 
+	const handleTokenChange = (tokenType: keyof TokenUpdates, value: number) => {
+		setTokenUpdates(prev => ({
+			...prev,
+			[tokenType]: prev[tokenType] + value
+		}))
+	}
+
+	const handleTokenInput = (tokenType: keyof TokenUpdates, value: string) => {
+		const numValue = parseInt(value, 10)
+		setTokenUpdates(prev => ({
+			...prev,
+			[tokenType]: isNaN(numValue) ? 0 : numValue
+		}))
+	}
+
 	const handleUpdateCredits = async () => {
-		if (selectedUserId !== null && newCredits) {
+		if (selectedUserId !== null) {
 			setIsUpdating(true)
 			try {
-				let creditChange = parseInt(newCredits, 10)
+				let creditChange = parseInt(newCredits, 10) || 0
 				creditChange = creditChange * (1 + sale / 100)
 				const currentUser = users.find(user => user.id === selectedUserId)
 				if (currentUser) {
@@ -108,20 +142,40 @@ const ModifyCreditsComponent = () => {
 						selectedUserId,
 						updatedCredits,
 						sale,
-						newCredits
+						newCredits,
+						tokenUpdates
 					)
 					if (!error) {
 						setUsers(prevUsers =>
 							prevUsers.map(user => {
 								if (user.id === selectedUserId) {
-									return { ...user, wallet: updatedCredits }
+									return {
+										...user,
+										wallet: updatedCredits,
+										private_token: Math.max(
+											0,
+											user.private_token + tokenUpdates.private_token
+										),
+										semiPrivate_token: Math.max(
+											0,
+											user.semiPrivate_token + tokenUpdates.semiPrivate_token
+										),
+										public_token: Math.max(
+											0,
+											user.public_token + tokenUpdates.public_token
+										),
+										workoutDay_token: Math.max(
+											0,
+											user.workoutDay_token + tokenUpdates.workoutDay_token
+										)
+									}
 								}
 								return user
 							})
 						)
-						toast.success('User credits updated successfully')
+						toast.success('User credits and tokens updated successfully')
 					} else {
-						toast.error('Failed to update user credits.')
+						toast.error('Failed to update user credits and tokens.')
 					}
 				} else {
 					console.error('User not found:', selectedUserId)
@@ -129,19 +183,31 @@ const ModifyCreditsComponent = () => {
 				}
 			} catch (error) {
 				console.error('Update failed:', error)
-				toast.error('Failed to update user credits.')
+				toast.error('Failed to update user credits and tokens.')
 			} finally {
 				setIsUpdating(false)
 				setSelectedUserId(null)
 				setNewCredits('')
+				setTokenUpdates({
+					private_token: 0,
+					semiPrivate_token: 0,
+					public_token: 0,
+					workoutDay_token: 0
+				})
 				setModalIsOpen(false)
 			}
 		}
 	}
-
 	const openModal = (userId: number) => {
 		setSelectedUserId(userId)
 		setModalIsOpen(true)
+		// Reset token updates when opening modal
+		setTokenUpdates({
+			private_token: 0,
+			semiPrivate_token: 0,
+			public_token: 0,
+			workoutDay_token: 0
+		})
 	}
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(e.target.value)
@@ -218,8 +284,20 @@ const ModifyCreditsComponent = () => {
 							<th scope='col' className='py-4 px-6 text-center'>
 								is Free
 							</th>
+							<th scope='col' className='py-4 px-6 text-center'>
+								Private Sessions
+							</th>
+							<th scope='col' className='py-4 px-6 text-center'>
+								Semi-Private Sessions
+							</th>
+							<th scope='col' className='py-4 px-6 text-center'>
+								Class Sessions
+							</th>
+							<th scope='col' className='py-4 px-6 text-center'>
+								Workout of the Day
+							</th>
 							<th scope='col' className='py-4 px-6 text-right'>
-								Add or Remove Credits
+								Actions
 							</th>
 						</tr>
 					</thead>
@@ -249,6 +327,14 @@ const ModifyCreditsComponent = () => {
 										{user.isFree ? <FaCheckCircle /> : <FaTimesCircle />}
 									</motion.button>
 								</td>
+								<td className='py-4 px-6 text-center'>{user.private_token}</td>
+								<td className='py-4 px-6 text-center'>
+									{user.semiPrivate_token}
+								</td>
+								<td className='py-4 px-6 text-center'>{user.public_token}</td>
+								<td className='py-4 px-6 text-center'>
+									{user.workoutDay_token}
+								</td>
 								<td className='py-4 px-6 text-right'>
 									<motion.button
 										onClick={() => openModal(user.id)}
@@ -268,18 +354,17 @@ const ModifyCreditsComponent = () => {
 			<Modal
 				isOpen={modalIsOpen}
 				onRequestClose={() => setModalIsOpen(false)}
-				contentLabel='Update Credits'
+				contentLabel='Update Credits and Tokens'
 				className='modal bg-gray-800 p-8 rounded-3xl shadow-lg'
 				overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center'>
 				<h2 className='text-2xl font-bold mb-6 text-green-400'>
-					Update Credits
+					Update Credits and Tokens
 				</h2>
 				<div className='flex flex-col items-center space-y-4'>
 					<input
 						type='number'
 						placeholder='New Credits'
 						value={newCredits}
-						disabled={isUpdating || isLoading}
 						onChange={e => setNewCredits(e.target.value)}
 						className='p-3 w-full bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 					/>
@@ -294,15 +379,51 @@ const ModifyCreditsComponent = () => {
 							value={sale}
 							min={0}
 							max={100}
-							disabled={isUpdating || isLoading}
 							onChange={e => setSale(parseInt(e.target.value))}
 							className='p-3 flex-grow bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 						/>
 					</div>
+					{Object.entries(tokenUpdates).map(([tokenType, value]) => (
+						<div
+							key={tokenType}
+							className='flex flex-row items-center gap-2 w-full'>
+							<label className='text-green-400 w-1/3'>
+								{tokenType.replace('_', ' ')}:
+							</label>
+							<motion.button
+								whileHover={{ scale: 1.1 }}
+								whileTap={{ scale: 0.9 }}
+								onClick={() =>
+									handleTokenChange(tokenType as keyof TokenUpdates, -1)
+								}
+								className='p-2 bg-red-500 text-white rounded-full'>
+								<FaMinus />
+							</motion.button>
+							<input
+								type='number'
+								value={value}
+								onChange={e =>
+									handleTokenInput(
+										tokenType as keyof TokenUpdates,
+										e.target.value
+									)
+								}
+								className='p-2 w-1/3 bg-gray-700 text-white border-2 border-green-500 rounded-full text-center'
+							/>
+							<motion.button
+								whileHover={{ scale: 1.1 }}
+								whileTap={{ scale: 0.9 }}
+								onClick={() =>
+									handleTokenChange(tokenType as keyof TokenUpdates, 1)
+								}
+								className='p-2 bg-green-500 text-white rounded-full'>
+								<FaPlus />
+							</motion.button>
+						</div>
+					))}
 					<div className='flex flex-row justify-between gap-5 w-full'>
 						<motion.button
 							onClick={handleUpdateCredits}
-							disabled={isUpdating || isLoading}
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
 							className='px-6 py-3 bg-green-500 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-800 transition duration-300'>

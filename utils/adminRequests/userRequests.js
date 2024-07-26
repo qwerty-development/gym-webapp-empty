@@ -35,13 +35,21 @@ async function insertRefillRecord(supabase, userId, amount) {
 	return { data }
 }
 
-export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
+export const updateUserCredits = async (
+	userId,
+	wallet,
+	sale,
+	newCredits,
+	tokenUpdates
+) => {
 	const supabase = await supabaseClient()
 
 	// Fetch user details
 	const { data: userData, error: userError } = await supabase
 		.from('users')
-		.select('wallet, first_name, last_name, email, user_id')
+		.select(
+			'wallet, first_name, last_name, email, user_id, private_token, semiPrivate_token, public_token, workoutDay_token'
+		)
 		.eq('id', userId)
 		.single()
 
@@ -53,15 +61,37 @@ export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 	// Calculate the amount of credits added
 	const creditsAdded = wallet - userData.wallet
 
-	// Update user's wallet
+	// Calculate updated token values
+	const updatedTokens = {
+		private_token: Math.max(
+			0,
+			userData.private_token + tokenUpdates.private_token
+		),
+		semiPrivate_token: Math.max(
+			0,
+			userData.semiPrivate_token + tokenUpdates.semiPrivate_token
+		),
+		public_token: Math.max(
+			0,
+			userData.public_token + tokenUpdates.public_token
+		),
+		workoutDay_token: Math.max(
+			0,
+			userData.workoutDay_token + tokenUpdates.workoutDay_token
+		)
+	}
+
+	// Update user's wallet and tokens
 	const { data, error } = await supabase
 		.from('users')
-		.update({ wallet })
+		.update({ wallet, ...updatedTokens })
 		.eq('id', userId)
 
 	if (error) {
-		console.error('Error updating user wallet:', error.message)
-		return { error: 'Failed to update user wallet: ' + error.message }
+		console.error('Error updating user wallet and tokens:', error.message)
+		return {
+			error: 'Failed to update user wallet and tokens: ' + error.message
+		}
 	}
 
 	// Insert refill record
@@ -82,7 +112,7 @@ export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 			user_id: userData.user_id,
 			name: 'Credit refill',
 			type: 'credit refill',
-			amount: `+${creditsAdded} credits`
+			amount: `${creditsAdded >= 0 ? '+' : ''}${creditsAdded} credits`
 		}
 	]
 
@@ -96,6 +126,18 @@ export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 			amount: `+${freeTokens} tokens`
 		})
 	}
+
+	// Add transactions for token updates
+	Object.entries(tokenUpdates).forEach(([tokenType, amount]) => {
+		if (amount !== 0) {
+			transactions.push({
+				user_id: userData.user_id,
+				name: `${tokenType} update`,
+				type: 'token update',
+				amount: `${amount > 0 ? '+' : ''}${amount} ${tokenType}`
+			})
+		}
+	})
 
 	const { error: transactionError } = await supabase
 		.from('transactions')
@@ -113,7 +155,8 @@ export const updateUserCredits = async (userId, wallet, sale, newCredits) => {
 		user_wallet: wallet,
 		creditsAdded,
 		sale,
-		newCredits
+		newCredits,
+		tokenUpdates
 	}
 
 	// Send email notification to user
