@@ -594,10 +594,11 @@ export default function Example() {
 							</div>
 						) : (
 							<ActivitySelection
-								activities={isPrivateTraining ? activities : activitiesGroup}
+								activities={activities}
 								selectedActivity={selectedActivity}
 								handleActivitySelect={handleActivitySelect}
 								isPrivateTraining={isPrivateTraining}
+								activitiesGroup={activitiesGroup}
 							/>
 						)}
 					</div>
@@ -660,14 +661,13 @@ export default function Example() {
 											Available Times
 										</h2>
 										<TimeSelection
-											availableTimes={
-												isPrivateTraining ? availableTimes : groupAvailableTimes
-											}
+											availableTimes={availableTimes}
 											selectedTime={selectedTime}
 											handleTimeSelect={handleTimeSelect}
 											isPrivateTraining={isPrivateTraining}
 											reservationCount={reservationCount}
 											getCapacity={getCapacity}
+											groupAvailableTimes={groupAvailableTimes}
 										/>
 									</div>
 								)}
