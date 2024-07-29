@@ -14,8 +14,8 @@ import DatePanel from 'react-multi-date-picker/plugins/date_panel'
 import Icon from 'react-multi-date-picker/components/icon'
 import Toolbar from 'react-multi-date-picker/plugins/toolbar'
 import toast from 'react-hot-toast'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FaCalendarAlt, FaClock, FaUserFriends, FaUser } from 'react-icons/fa'
+import { motion } from 'framer-motion'
+import { FaClock } from 'react-icons/fa'
 import { RingLoader } from 'react-spinners'
 import { DateObject } from 'react-multi-date-picker'
 
@@ -24,6 +24,7 @@ type OptionType = {
 	value: string
 }
 
+// ... (keep the customSelectStyles object as is)
 const customSelectStyles = {
 	control: (provided: any) => ({
 		...provided,
@@ -57,24 +58,35 @@ const customSelectStyles = {
 		color: 'white'
 	})
 }
+
 export default function AddTimeSlotComponent() {
-	const [isPublic, setIsPublic] = useState(false)
-	const [coaches, setCoaches] = useState<OptionType[]>([])
-	const [activities, setActivities] = useState<OptionType[]>([])
-	const [groupActivities, setGroupActivities] = useState<OptionType[]>([])
-	const [selectedCoach, setSelectedCoach] = useState<OptionType | null>(null)
-	const [selectedActivity, setSelectedActivity] = useState<OptionType | null>(
-		null
-	)
-	const [buttonLoading, setButtonLoading] = useState(false)
+	// States for private sessions
+	const [selectedPrivateCoach, setSelectedPrivateCoach] =
+		useState<OptionType | null>(null)
+	const [selectedPrivateActivity, setSelectedPrivateActivity] =
+		useState<OptionType | null>(null)
+	const [selectedPrivateDates, setSelectedPrivateDates] = useState<Date[]>([
+		new Date()
+	])
+	const [privateStartTime, setPrivateStartTime] = useState<string>('')
+	const [privateEndTime, setPrivateEndTime] = useState<string>('')
+
+	// States for group sessions
+	const [selectedGroupCoach, setSelectedGroupCoach] =
+		useState<OptionType | null>(null)
 	const [selectedGroupActivity, setSelectedGroupActivity] =
 		useState<OptionType | null>(null)
-	const [selectedDates, setSelectedDates] = useState<Date[]>([new Date()])
 	const [selectedGroupDates, setSelectedGroupDates] = useState<Date[]>([
 		new Date()
 	])
-	const [startTime, setStartTime] = useState<string>('')
-	const [endTime, setEndTime] = useState<string>('')
+	const [groupStartTime, setGroupStartTime] = useState<string>('')
+	const [groupEndTime, setGroupEndTime] = useState<string>('')
+
+	// Shared states
+	const [coaches, setCoaches] = useState<OptionType[]>([])
+	const [activities, setActivities] = useState<OptionType[]>([])
+	const [groupActivities, setGroupActivities] = useState<OptionType[]>([])
+	const [buttonLoading, setButtonLoading] = useState(false)
 
 	useEffect(() => {
 		async function loadCoachesAndActivities() {
@@ -104,9 +116,9 @@ export default function AddTimeSlotComponent() {
 		loadCoachesAndActivities()
 	}, [])
 
-	const handleDateChange = (dates: DateObject | DateObject[] | null) => {
+	const handlePrivateDateChange = (dates: DateObject | DateObject[] | null) => {
 		if (Array.isArray(dates)) {
-			setSelectedDates(dates.map(date => date.toDate()))
+			setSelectedPrivateDates(dates.map(date => date.toDate()))
 		}
 	}
 
@@ -116,63 +128,65 @@ export default function AddTimeSlotComponent() {
 		}
 	}
 
-	const handleAddTimeSlot = async () => {
+	const handleAddPrivateTimeSlot = async () => {
 		setButtonLoading(true)
 		if (
-			!selectedCoach ||
-			!selectedActivity ||
-			selectedDates.length === 0 ||
-			!startTime ||
-			!endTime
+			!selectedPrivateCoach ||
+			!selectedPrivateActivity ||
+			selectedPrivateDates.length === 0 ||
+			!privateStartTime ||
+			!privateEndTime
 		) {
-			alert('Please fill in all fields')
+			alert('Please fill in all fields for private session')
 			setButtonLoading(false)
 			return
 		}
 
-		for (const date of selectedDates) {
+		for (const date of selectedPrivateDates) {
 			const newTimeSlot = {
-				coach_id: selectedCoach.value,
-				activity_id: selectedActivity.value,
+				coach_id: selectedPrivateCoach.value,
+				activity_id: selectedPrivateActivity.value,
 				date: date.toISOString().substring(0, 10),
-				start_time: startTime,
-				end_time: endTime,
+				start_time: privateStartTime,
+				end_time: privateEndTime,
 				booked: false,
-				additions: []
+				additions: [],
+				user_id: null
 			}
 
 			const result = await addTimeSlot(newTimeSlot)
 			if (!result.success) {
-				toast.error('Error adding new time slot')
+				toast.error('Error adding new private time slot')
+				setButtonLoading(false)
 				return
 			}
 		}
 
-		toast.success('Time slots added successfully')
+		toast.success('Private time slots added successfully')
 		setButtonLoading(false)
 	}
 
 	const handleAddGroupTimeSlot = async () => {
 		setButtonLoading(true)
 		if (
-			!selectedCoach ||
+			!selectedGroupCoach ||
 			!selectedGroupActivity ||
 			selectedGroupDates.length === 0 ||
-			!startTime ||
-			!endTime
+			!groupStartTime ||
+			!groupEndTime
 		) {
-			alert('Please fill in all fields')
+			alert('Please fill in all fields for group session')
 			setButtonLoading(false)
 			return
 		}
 
 		for (const date of selectedGroupDates) {
 			const newGroupTimeSlot = {
-				coach_id: selectedCoach.value,
+				coach_id: selectedGroupCoach.value,
 				activity_id: selectedGroupActivity.value,
 				date: date.toISOString().substring(0, 10),
-				start_time: startTime,
-				end_time: endTime,
+				start_time: groupStartTime,
+				end_time: groupEndTime,
 				booked: false,
 				user_id: [],
 				count: 0,
@@ -182,6 +196,7 @@ export default function AddTimeSlotComponent() {
 			const result = await addTimeSlotGroup(newGroupTimeSlot)
 			if (!result.success) {
 				toast.error('Error adding new group time slot')
+				setButtonLoading(false)
 				return
 			}
 		}
@@ -196,30 +211,32 @@ export default function AddTimeSlotComponent() {
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.5 }}
 			className='min-h-screen bg-gray-900 text-white font-sans p-8'>
-			<h1 className='text-4xl font-bold mb-8 text-green-400'>Add Time Slots</h1>
+			<h1 className='text-4xl font-bold mb-8 text-green-400'>
+				Add Private Time Slots
+			</h1>
 
 			<motion.div className='bg-gray-800 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
 					<Select
 						placeholder='Select Coach'
 						options={coaches}
-						onChange={setSelectedCoach}
-						value={selectedCoach}
+						onChange={setSelectedPrivateCoach}
+						value={selectedPrivateCoach}
 						styles={customSelectStyles}
 					/>
 					<Select
 						placeholder='Select Activity'
 						options={activities}
-						onChange={setSelectedActivity}
-						value={selectedActivity}
+						onChange={setSelectedPrivateActivity}
+						value={selectedPrivateActivity}
 						styles={customSelectStyles}
 					/>
 				</div>
 
 				<div className='mb-6 flex flex-row justify-center align-middle'>
 					<MultiDatePicker
-						value={selectedDates}
-						onChange={handleDateChange}
+						value={selectedPrivateDates}
+						onChange={handlePrivateDateChange}
 						format='YYYY-MM-DD'
 						plugins={[
 							<DatePanel key='date-panel' sort='date' />,
@@ -240,8 +257,8 @@ export default function AddTimeSlotComponent() {
 						<FaClock className='absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500' />
 						<input
 							type='time'
-							value={startTime}
-							onChange={e => setStartTime(e.target.value)}
+							value={privateStartTime}
+							onChange={e => setPrivateStartTime(e.target.value)}
 							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
 						/>
 					</div>
@@ -249,15 +266,15 @@ export default function AddTimeSlotComponent() {
 						<FaClock className='absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500' />
 						<input
 							type='time'
-							value={endTime}
-							onChange={e => setEndTime(e.target.value)}
+							value={privateEndTime}
+							onChange={e => setPrivateEndTime(e.target.value)}
 							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
 						/>
 					</div>
 				</div>
 
 				<motion.button
-					onClick={handleAddTimeSlot}
+					onClick={handleAddPrivateTimeSlot}
 					disabled={buttonLoading}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
@@ -265,7 +282,7 @@ export default function AddTimeSlotComponent() {
 					{buttonLoading ? (
 						<RingLoader color='#ffffff' size={24} />
 					) : (
-						'Add Time Slots'
+						'Add Private Time Slots'
 					)}
 				</motion.button>
 			</motion.div>
@@ -279,8 +296,8 @@ export default function AddTimeSlotComponent() {
 					<Select
 						placeholder='Select Coach'
 						options={coaches}
-						onChange={setSelectedCoach}
-						value={selectedCoach}
+						onChange={setSelectedGroupCoach}
+						value={selectedGroupCoach}
 						styles={customSelectStyles}
 					/>
 					<Select
@@ -316,8 +333,8 @@ export default function AddTimeSlotComponent() {
 						<FaClock className='absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500' />
 						<input
 							type='time'
-							value={startTime}
-							onChange={e => setStartTime(e.target.value)}
+							value={groupStartTime}
+							onChange={e => setGroupStartTime(e.target.value)}
 							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
 						/>
 					</div>
@@ -325,8 +342,8 @@ export default function AddTimeSlotComponent() {
 						<FaClock className='absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500' />
 						<input
 							type='time'
-							value={endTime}
-							onChange={e => setEndTime(e.target.value)}
+							value={groupEndTime}
+							onChange={e => setGroupEndTime(e.target.value)}
 							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
 						/>
 					</div>
