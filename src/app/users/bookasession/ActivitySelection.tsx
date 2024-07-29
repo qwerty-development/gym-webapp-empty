@@ -25,7 +25,7 @@ const ActivitySelection = ({
 
 	return (
 		<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
-			{(isPrivateTraining ? activities : activitiesGroup).map(
+			{(isPrivateTraining ? activities : activitiesGroup)?.map(
 				(activity: { id: keyof typeof activityIcons; name: string }) => (
 					<motion.button
 						key={activity.id}
