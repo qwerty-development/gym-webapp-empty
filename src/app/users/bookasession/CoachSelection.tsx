@@ -5,7 +5,7 @@ const CoachSelection = ({ coaches, selectedCoach, handleCoachSelect }: any) => {
 	return (
 		<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
 			<AnimatePresence>
-				{coaches.map((coach: any) => (
+				{coaches?.map((coach: any) => (
 					<motion.button
 						key={coach.id}
 						initial={{ opacity: 0, y: 20 }}

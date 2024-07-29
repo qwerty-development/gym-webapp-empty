@@ -13,7 +13,7 @@ const TimeSelection = ({
 	return (
 		<div className='grid grid-cols-2 gap-4'>
 			<AnimatePresence>
-				{(isPrivateTraining ? availableTimes : groupAvailableTimes).map(
+				{(isPrivateTraining ? availableTimes : groupAvailableTimes)?.map(
 					(time: any) => (
 						<motion.button
 							key={time}

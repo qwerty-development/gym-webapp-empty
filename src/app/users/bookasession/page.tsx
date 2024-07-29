@@ -192,9 +192,9 @@ export default function Example() {
 					if (data) {
 						if (!selectedDate) {
 							const datesForSelectedCoach = data
-								.filter(slot => slot.coach_id === selectedCoach)
-								.map(slot => new Date(slot.date))
-								.filter((date: Date) => date >= currentDate)
+								?.filter(slot => slot.coach_id === selectedCoach)
+								?.map(slot => new Date(slot.date))
+								?.filter((date: Date) => date >= currentDate)
 							setHighlightDates(datesForSelectedCoach)
 							scrollToRef(dateRef)
 						}
@@ -211,13 +211,13 @@ export default function Example() {
 								: '00:00'
 
 							const timesForSelectedDate = data
-								.filter(
+								?.filter(
 									slot =>
 										new Date(slot.date).toDateString() ===
 											selectedDate.toDateString() &&
 										(!isToday || slot.end_time > currentTime)
 								)
-								.map(slot => {
+								?.map(slot => {
 									const startTime = slot.start_time.substr(0, 5)
 									const endTime = slot.end_time.substr(0, 5)
 									return `${startTime} - ${endTime}`
@@ -236,9 +236,9 @@ export default function Example() {
 					if (data) {
 						if (!selectedDate) {
 							const datesForSelectedCoach = data
-								.filter(slot => slot.coach_id === selectedCoach)
-								.map(slot => new Date(slot.date))
-								.filter((date: Date) => date >= currentDate)
+								?.filter(slot => slot.coach_id === selectedCoach)
+								?.map(slot => new Date(slot.date))
+								?.filter((date: Date) => date >= currentDate)
 							setHighlightDates(datesForSelectedCoach)
 							scrollToRef(dateRef)
 						}
@@ -255,13 +255,13 @@ export default function Example() {
 								: '00:00'
 
 							const timesForSelectedDate = data
-								.filter(
+								?.filter(
 									slot =>
 										new Date(slot.date).toDateString() ===
 											selectedDate.toDateString() &&
 										(!isToday || slot.end_time > currentTime)
 								)
-								.map(slot => {
+								?.map(slot => {
 									const startTime = slot.start_time.substr(0, 5)
 									const endTime = slot.end_time.substr(0, 5)
 									return `${startTime} - ${endTime}`
@@ -465,7 +465,7 @@ export default function Example() {
 		let newSelectedItems
 		if (alreadySelected) {
 			// Remove item from selectedItems
-			newSelectedItems = selectedItems.filter(
+			newSelectedItems = selectedItems?.filter(
 				selectedItem => selectedItem.id !== item.id
 			)
 		} else {

@@ -29,7 +29,7 @@ const MarketModal = ({
 				Enhance Your Session
 			</h2>
 			<div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
-				{market.map((item: any) => (
+				{market?.map((item: any) => (
 					<motion.div
 						key={item.id}
 						className='bg-gray-700 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-green-400 hover:shadow-lg transition-all duration-300'>
