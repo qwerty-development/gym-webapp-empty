@@ -12,7 +12,8 @@ import {
 	FaUser,
 	FaCalendarAlt,
 	FaCog,
-	FaShoppingCart
+	FaShoppingCart,
+	FaInfo
 } from 'react-icons/fa'
 import Link from 'next/link'
 import TokenInfo from './TokenInfo'
@@ -74,7 +75,7 @@ export default function NavbarComponent() {
 						</button>
 					</div>
 					<div className='flex justify-center lg:justify-start lg:ml-64 xl:ml-56 2xl:ml-32 w-1/3'>
-						<Link href='/' className='flex-shrink-0'>
+						<Link href='/users/dashboard' className='flex-shrink-0'>
 							<Image
 								src='/images/logoinverted.png'
 								alt='Logo'
@@ -102,10 +103,10 @@ export default function NavbarComponent() {
 					</div>
 					<div className='flex items-center justify-end w-1/3'>
 						<div
-							className='bg-gray-800 text-green-400 px-3 py-1 rounded-full mr-3 text-sm border text-nowrap border-green-500 relative'
+							className='bg-gray-800 text-white px-3 py-1 flex  rounded-full mr-3 text-sm border text-nowrap border-green-500 relative'
 							onMouseEnter={() => setShowTokenInfo(true)}
 							onMouseLeave={() => setShowTokenInfo(false)}>
-							{walletBalance} credits
+							{walletBalance} credits 
 							{showTokenInfo && userTokens && <TokenInfo tokens={userTokens} />}
 						</div>
 

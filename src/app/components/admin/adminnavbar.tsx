@@ -136,7 +136,7 @@ export default function AdminNavbarComponent() {
 						</button>
 					</div>
 					<div className='flex justify-center lg:justify-start w-1/3'>
-						<Link href='/' className='flex-shrink-0'>
+						<Link href='/users/dashboard' className='flex-shrink-0'>
 							<Image
 								src='/images/logoinverted.png'
 								alt='Logo'

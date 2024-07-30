@@ -702,8 +702,7 @@ export default function Dashboard() {
 							className={`flex items-center ${
 								activeTab === 'group' ? 'hover:text-green-400' : ''
 							} w-full text-left`}>
-							<FaCalendarAlt size={35} className='mr-2' /> Individual
-							Reservations
+							<FaCalendarAlt size={35} className='mr-2' /> PT Reservations
 						</button>
 					</li>
 					<li
@@ -935,8 +934,8 @@ export default function Dashboard() {
 							<div className='lg:w-3/4 space-y-8'>
 								<h2 className='text-3xl md:text-4xl font-bold tracking-tight mb-6 text-green-400'>
 									{activeTab === 'individual'
-										? 'Individual Reservations'
-										: 'Group Reservations'}
+										? 'Personal Training Reservations'
+										: 'Group Classes Reservations'}
 								</h2>
 								{user.publicMetadata.role === 'admin' ? (
 									// Admin view
