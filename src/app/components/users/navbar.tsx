@@ -15,16 +15,38 @@ import {
 	FaShoppingCart
 } from 'react-icons/fa'
 import Link from 'next/link'
+import TokenInfo from './TokenInfo'
+import { supabaseClient } from '../../../../utils/supabaseClient'
 
 export default function NavbarComponent() {
 	const { walletBalance } = useWallet()
 	const [currentPage, setCurrentPage] = useState('')
 	const { user } = useUser()
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
+	const [showTokenInfo, setShowTokenInfo] = useState(false)
+	const [userTokens, setUserTokens] = useState<any>(null)
 
 	useEffect(() => {
 		setCurrentPage(window.location.pathname)
-	}, [])
+		if (user) {
+			fetchUserTokens(user.id).then(setUserTokens)
+		}
+	}, [user])
+
+	const fetchUserTokens = async (id: any) => {
+		const supabase = await supabaseClient()
+		const { data, error } = await supabase
+			.from('users')
+			.select(
+				'private_token, semiPrivate_token, public_token, workoutDay_token'
+			)
+			.eq('user_id', id)
+			.single()
+
+		if (error) throw error
+
+		return data
+	}
 
 	const navItems = [
 		{ href: '/users/dashboard', label: 'Dashboard', icon: FaUser },
@@ -79,8 +101,12 @@ export default function NavbarComponent() {
 						))}
 					</div>
 					<div className='flex items-center justify-end w-1/3'>
-						<div className='bg-gray-800 text-green-400 px-3 py-1 rounded-full mr-3 text-sm border text-nowrap border-green-500'>
+						<div
+							className='bg-gray-800 text-green-400 px-3 py-1 rounded-full mr-3 text-sm border text-nowrap border-green-500 relative'
+							onMouseEnter={() => setShowTokenInfo(true)}
+							onMouseLeave={() => setShowTokenInfo(false)}>
 							{walletBalance} credits
+							{showTokenInfo && userTokens && <TokenInfo tokens={userTokens} />}
 						</div>
 
 						<UserButton
