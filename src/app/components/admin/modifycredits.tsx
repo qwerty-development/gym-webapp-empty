@@ -209,6 +209,14 @@ const ModifyCreditsComponent = () => {
 			workoutDay_token: 0
 		})
 	}
+
+	const tokenNames = {
+		private_token: "PT",
+		semiPrivate_token: "SPT",
+		public_token: "Class Tokens",
+		workoutDay_token: "WOD Pass"
+	};
+
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(e.target.value)
 	}
@@ -321,9 +329,8 @@ const ModifyCreditsComponent = () => {
 											handleToggleFree(user.id, user.isFree || false)
 										}
 										disabled={isUpdating || isLoading}
-										className={`p-2 rounded-full ${
-											user.isFree ? 'bg-green-500' : 'bg-red-700'
-										}`}>
+										className={`p-2 rounded-full ${user.isFree ? 'bg-green-500' : 'bg-red-700'
+											}`}>
 										{user.isFree ? <FaCheckCircle /> : <FaTimesCircle />}
 									</motion.button>
 								</td>
@@ -388,7 +395,7 @@ const ModifyCreditsComponent = () => {
 							key={tokenType}
 							className='flex flex-row items-center gap-2 w-full'>
 							<label className='text-green-400 w-1/3'>
-								{tokenType.replace('_', ' ')}:
+								{tokenNames[tokenType as keyof typeof tokenNames]}:
 							</label>
 							<motion.button
 								whileHover={{ scale: 1.1 }}
