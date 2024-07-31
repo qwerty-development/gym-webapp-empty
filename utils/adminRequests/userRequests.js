@@ -83,7 +83,11 @@ export const updateUserCredits = async (
 	}
 
 	// Handle essential_till update
-	let newEssentialsTill = new Date(essentialsTill).toISOString()
+	let newEssentialsTill = userData.essential_till
+	if (essentialsTill) {
+		newEssentialsTill = new Date(essentialsTill).toISOString()
+	}
+
 	// let newEssentialsTill = userData.essential_till
 	// if (essentialsTill) {
 	// 	const currentDate = new Date()
