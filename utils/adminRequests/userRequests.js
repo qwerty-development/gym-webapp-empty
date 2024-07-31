@@ -40,7 +40,8 @@ export const updateUserCredits = async (
 	wallet,
 	sale,
 	newCredits,
-	tokenUpdates
+	tokenUpdates,
+	essentialsTill
 ) => {
 	const supabase = await supabaseClient()
 
@@ -48,7 +49,7 @@ export const updateUserCredits = async (
 	const { data: userData, error: userError } = await supabase
 		.from('users')
 		.select(
-			'wallet, first_name, last_name, email, user_id, private_token, semiPrivate_token, public_token, workoutDay_token'
+			'wallet, first_name, last_name, email, user_id, private_token, semiPrivate_token, public_token, workoutDay_token, essential_till'
 		)
 		.eq('id', userId)
 		.single()
@@ -81,16 +82,37 @@ export const updateUserCredits = async (
 		)
 	}
 
-	// Update user's wallet and tokens
+	// Handle essential_till update
+	let newEssentialsTill = new Date(essentialsTill).toISOString()
+	// let newEssentialsTill = userData.essential_till
+	// if (essentialsTill) {
+	// 	const currentDate = new Date()
+	// 	const newDate = new Date(essentialsTill)
+	// 	if (newDate > currentDate) {
+	// 		if (userData.essential_till) {
+	// 			const currentEssentialsTill = new Date(userData.essential_till)
+	// 			newEssentialsTill =
+	// 				currentEssentialsTill > currentDate
+	// 					? new Date(
+	// 							Math.max(currentEssentialsTill.getTime(), newDate.getTime())
+	// 					  ).toISOString()
+	// 					: newDate.toISOString()
+	// 		} else {
+	// 			newEssentialsTill = newDate.toISOString()
+	// 		}
+	// 	}
+	// }
+
+	// Update user's wallet, tokens, and essential_till
 	const { data, error } = await supabase
 		.from('users')
-		.update({ wallet, ...updatedTokens })
+		.update({ wallet, ...updatedTokens, essential_till: newEssentialsTill })
 		.eq('id', userId)
 
 	if (error) {
-		console.error('Error updating user wallet and tokens:', error.message)
+		console.error('Error updating user data:', error.message)
 		return {
-			error: 'Failed to update user wallet and tokens: ' + error.message
+			error: 'Failed to update user data: ' + error.message
 		}
 	}
 
@@ -139,6 +161,18 @@ export const updateUserCredits = async (
 		}
 	})
 
+	// Add transaction for essentials update if changed
+	if (newEssentialsTill !== userData.essential_till) {
+		transactions.push({
+			user_id: userData.user_id,
+			name: 'Essentials membership update',
+			type: 'essentials update',
+			amount: `Essentials till ${new Date(
+				newEssentialsTill
+			).toLocaleDateString()}`
+		})
+	}
+
 	const { error: transactionError } = await supabase
 		.from('transactions')
 		.insert(transactions)
@@ -156,7 +190,8 @@ export const updateUserCredits = async (
 		creditsAdded,
 		sale,
 		newCredits,
-		tokenUpdates
+		tokenUpdates,
+		essentialsTill: newEssentialsTill
 	}
 
 	// Send email notification to user

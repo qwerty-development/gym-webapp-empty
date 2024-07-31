@@ -30,6 +30,7 @@ interface User {
 	semiPrivate_token: number
 	public_token: number
 	workoutDay_token: number
+	essential_till: string | null
 }
 
 interface TokenUpdates {
@@ -41,6 +42,7 @@ interface TokenUpdates {
 
 const ModifyCreditsComponent = () => {
 	const [users, setUsers] = useState<User[]>([])
+	const [essentialsTill, setEssentialsTill] = useState('')
 	const [searchQuery, setSearchQuery] = useState('')
 	const [searchTrigger, setSearchTrigger] = useState(0)
 	const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
@@ -87,6 +89,21 @@ const ModifyCreditsComponent = () => {
 
 	const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		setSortOption(e.target.value)
+	}
+
+	const renderEssentialsTill = (essentialTill: string | null) => {
+		if (!essentialTill) {
+			return <span className='text-red-500'>X</span>
+		}
+
+		const tillDate = new Date(essentialTill)
+		const now = new Date()
+
+		if (tillDate < now) {
+			return <span className='text-red-500'>X</span>
+		}
+
+		return tillDate.toLocaleDateString()
 	}
 
 	const handleToggleFree = async (userId: number, currentIsFree: boolean) => {
@@ -143,7 +160,8 @@ const ModifyCreditsComponent = () => {
 						updatedCredits,
 						sale,
 						newCredits,
-						tokenUpdates
+						tokenUpdates,
+						essentialsTill
 					)
 					if (!error) {
 						setUsers(prevUsers =>
@@ -167,7 +185,8 @@ const ModifyCreditsComponent = () => {
 										workoutDay_token: Math.max(
 											0,
 											user.workoutDay_token + tokenUpdates.workoutDay_token
-										)
+										),
+										essential_till: essentialsTill
 									}
 								}
 								return user
@@ -194,6 +213,7 @@ const ModifyCreditsComponent = () => {
 					public_token: 0,
 					workoutDay_token: 0
 				})
+				setEssentialsTill('')
 				setModalIsOpen(false)
 			}
 		}
@@ -208,14 +228,16 @@ const ModifyCreditsComponent = () => {
 			public_token: 0,
 			workoutDay_token: 0
 		})
+		const user = users.find(u => u.id === userId)
+		setEssentialsTill(user?.essential_till || '')
 	}
 
 	const tokenNames = {
-		private_token: "PT",
-		semiPrivate_token: "SPT",
-		public_token: "Class Tokens",
-		workoutDay_token: "WOD Pass"
-	};
+		private_token: 'PT',
+		semiPrivate_token: 'SPT',
+		public_token: 'Class Tokens',
+		workoutDay_token: 'WOD Pass'
+	}
 
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchQuery(e.target.value)
@@ -304,6 +326,9 @@ const ModifyCreditsComponent = () => {
 							<th scope='col' className='py-4 px-6 text-center'>
 								Workout of the Day
 							</th>
+							<th scope='col' className='py-4 px-6 text-center'>
+								Essentials
+							</th>
 							<th scope='col' className='py-4 px-6 text-right'>
 								Actions
 							</th>
@@ -329,8 +354,9 @@ const ModifyCreditsComponent = () => {
 											handleToggleFree(user.id, user.isFree || false)
 										}
 										disabled={isUpdating || isLoading}
-										className={`p-2 rounded-full ${user.isFree ? 'bg-green-500' : 'bg-red-700'
-											}`}>
+										className={`p-2 rounded-full ${
+											user.isFree ? 'bg-green-500' : 'bg-red-700'
+										}`}>
 										{user.isFree ? <FaCheckCircle /> : <FaTimesCircle />}
 									</motion.button>
 								</td>
@@ -341,6 +367,9 @@ const ModifyCreditsComponent = () => {
 								<td className='py-4 px-6 text-center'>{user.public_token}</td>
 								<td className='py-4 px-6 text-center'>
 									{user.workoutDay_token}
+								</td>
+								<td className='py-4 px-6 text-center'>
+									{renderEssentialsTill(user.essential_till)}
 								</td>
 								<td className='py-4 px-6 text-right'>
 									<motion.button
@@ -428,6 +457,18 @@ const ModifyCreditsComponent = () => {
 							</motion.button>
 						</div>
 					))}
+					<div className='flex flex-row justify-center items-center gap-2 w-full'>
+						<label className='text-green-400' htmlFor='essentialsTill'>
+							Essentials Till
+						</label>
+						<input
+							id='essentialsTill'
+							type='date'
+							value={essentialsTill}
+							onChange={e => setEssentialsTill(e.target.value)}
+							className='p-3 flex-grow bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						/>
+					</div>
 					<div className='flex flex-row justify-between gap-5 w-full'>
 						<motion.button
 							onClick={handleUpdateCredits}
