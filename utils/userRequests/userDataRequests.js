@@ -105,3 +105,18 @@ export const fetchUserData = async userId => {
 
 	return data
 }
+export const fetchUserEssentialTill = async userId => {
+	const supabase = await supabaseClient()
+	const { data, error } = await supabase
+		.from('users')
+		.select('essential_till')
+		.eq('user_id', userId)
+		.single()
+
+	if (error) {
+		console.error('Error fetching user essential_till:', error)
+		return null
+	}
+
+	return data?.essential_till
+}

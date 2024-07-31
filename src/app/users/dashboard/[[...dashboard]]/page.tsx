@@ -14,7 +14,8 @@ import {
 	payForGroupItems,
 	claimTransaction,
 	fetchShopTransactions,
-	fetchUserTokens
+	fetchUserTokens,
+	fetchUserEssentialTill
 } from '../../../../../utils/userRequests'
 import {
 	fetchTotalUsers,
@@ -159,6 +160,35 @@ export default function Dashboard() {
 	const loadShopTransactions = async () => {
 		const transactions = await fetchShopTransactions()
 		setShopTransactions(transactions)
+	}
+	const [essentialTill, setEssentialTill] = useState<string | null>(null)
+
+	useEffect(() => {
+		const fetchEssentialTill = async () => {
+			if (user) {
+				const till = await fetchUserEssentialTill(user.id)
+				setEssentialTill(till)
+			}
+		}
+
+		fetchEssentialTill()
+	}, [user])
+
+	const renderEssentialTill = () => {
+		if (!essentialTill) return null
+
+		const tillDate = new Date(essentialTill)
+		const now = new Date()
+
+		if (tillDate > now) {
+			return (
+				<p className='text-sm md:text-base text-gray-200'>
+					Essentials active until: {tillDate.toLocaleDateString()}
+				</p>
+			)
+		}
+
+		return null
 	}
 
 	useEffect(() => {
@@ -747,6 +777,7 @@ export default function Dashboard() {
 							<p className='text-sm md:text-base text-gray-200'>
 								@{user.username}
 							</p>
+							{renderEssentialTill()}
 						</div>
 					</div>
 				</motion.div>
