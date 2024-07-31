@@ -1,11 +1,11 @@
 import { supabaseClient } from '../supabaseClient'
 const classestiers = [
 	{
-		name: '"I train from time to time"',
+		name: 'BELIEVE',
 		id: 'tier-freelancer',
 		href: '#',
-		priceMonthly: '25 credits',
-		description: '1 class',
+		priceMonthly: '25 Credits',
+		description: '1 Token',
 		features: [
 			'5 products',
 			'Up to 1,000 subscribers',
@@ -15,26 +15,11 @@ const classestiers = [
 		mostPopular: false
 	},
 	{
-		name: '"I train everyday"',
-		id: 'tier-startup',
-		href: '#',
-		priceMonthly: '100 credits',
-		description: '5 classes',
-		features: [
-			'25 products',
-			'Up to 10,000 subscribers',
-			'Advanced analytics',
-			'24-hour support response time',
-			'Marketing automations'
-		],
-		mostPopular: true
-	},
-	{
-		name: 'Eat, sleep, gym, repeat',
+		name: 'EXCEED',
 		id: 'tier-enterprise',
 		href: '#',
-		priceMonthly: '150 credits',
-		description: '10 classes',
+		priceMonthly: '150 Credits',
+		description: '10  Tokens',
 		features: [
 			'Unlimited products',
 			'Unlimited subscribers',
@@ -42,17 +27,31 @@ const classestiers = [
 			'1-hour, dedicated support response time',
 			'Marketing automations'
 		],
+		mostPopular: true
+	},
+	{
+		name: 'ACHIEVE',
+		id: 'tier-startup',
+		href: '#',
+		priceMonthly: '100 Credits',
+		description: '5 Tokens',
+		features: [
+			'25 products',
+			'Up to 10,000 subscribers',
+			'Advanced analytics',
+			'24-hour support response time',
+			'Marketing automations'
+		],
 		mostPopular: false
 	}
 ]
-
 const individualtiers = [
 	{
 		name: 'Workout of the day',
 		id: 'tier-basic',
 		href: '#',
 		price: { monthly: '200', annually: '$12' },
-		description: '10 classes',
+		description: '10 Sessions',
 		features: [
 			'5 products',
 			'Up to 1,000 subscribers',
@@ -65,7 +64,7 @@ const individualtiers = [
 		id: 'tier-essential',
 		href: '#',
 		price: { monthly: '350', annually: '$24' },
-		description: '10 classes',
+		description: '10 PT Sessions',
 		features: [
 			'25 products',
 			'Up to 10,000 subscribers',
@@ -79,7 +78,7 @@ const individualtiers = [
 		id: 'tier-growth',
 		href: '#',
 		price: { monthly: '300', annually: '$48' },
-		description: '10 classes',
+		description: '10 SPT Sessions',
 		features: [
 			'Unlimited products',
 			'Unlimited subscribers',
@@ -196,30 +195,81 @@ export const purchaseBundle = async ({ userId, bundleType, bundleName }) => {
 	}
 }
 
-async function insertBundlePurchaseRecord(
-	supabase,
-	userId,
-	amount,
+export const purchaseEssentialsBundle = async userId => {
+	const supabase = supabaseClient()
+	const bundlePrice = 30
 
-	tokenAmount,
-	tokenType
-) {
-	if (tokenType === 'public') {
-		tokenType = 'class'
-	}
-	const formattedBundleName = ` ${tokenAmount} ${tokenType} tokens`
-	const { data, error } = await supabase.from('bundle_purchase').insert({
-		user_id: userId,
-		amount: amount,
-		bundle_name: formattedBundleName
-	})
+	// Fetch user's current data
+	const { data: userData, error: userError } = await supabase
+		.from('users')
+		.select('*')
+		.eq('user_id', userId)
+		.single()
 
-	if (error) {
-		console.error('Error inserting bundle purchase record:', error.message)
-		return {
-			error: 'Failed to insert bundle purchase record: ' + error.message
-		}
+	if (userError || !userData) {
+		console.error('Error fetching user data:', userError?.message)
+		return { error: userError?.message || 'User not found.' }
 	}
 
-	return { data }
+	// Check if the user has enough credits
+	if (userData.wallet < bundlePrice) {
+		return { error: 'Not enough credits to purchase the Essentials bundle.' }
+	}
+
+	// Calculate new wallet balance
+	const newWalletBalance = userData.wallet - bundlePrice
+
+	// Calculate new essential_till date
+	const currentDate = new Date()
+	let newEssentialsTill
+
+	if (
+		userData.essential_till &&
+		new Date(userData.essential_till) > currentDate
+	) {
+		// If essential_till is in the future, add one month to it
+		newEssentialsTill = new Date(userData.essential_till)
+		newEssentialsTill.setMonth(newEssentialsTill.getMonth() + 1)
+	} else {
+		// If essential_till is in the past or null, set it to one month from now
+		newEssentialsTill = new Date(currentDate)
+		newEssentialsTill.setMonth(newEssentialsTill.getMonth() + 1)
+	}
+
+	// Update user data
+	const { error: updateError } = await supabase
+		.from('users')
+		.update({
+			wallet: newWalletBalance,
+			essential_till: newEssentialsTill.toISOString()
+		})
+		.eq('user_id', userId)
+
+	if (updateError) {
+		console.error('Error updating user data:', updateError.message)
+		return { error: updateError.message }
+	}
+
+	// Insert bundle purchase record
+	const { error: transactionError } = await supabase
+		.from('transactions')
+		.insert({
+			user_id: userId,
+			name: 'Purchased Essentials bundle',
+			type: 'bundle purchase',
+			amount: `-${bundlePrice} credits`
+		})
+
+	if (transactionError) {
+		console.error('Error recording transaction:', transactionError.message)
+		// Note: We're not returning here to ensure the purchase is still considered successful
+	}
+
+	return {
+		data: {
+			newWalletBalance,
+			essential_till: newEssentialsTill.toISOString()
+		},
+		message: 'Essentials bundle purchased successfully.'
+	}
 }
