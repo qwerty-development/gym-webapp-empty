@@ -93,7 +93,7 @@ export const bookTimeSlotForClient = async ({
 		console.error('Error booking time slot:', bookingError.message)
 		return { error: bookingError.message }
 	}
-
+	await deleteConflictingTimeSlots(supabase, coachId, date, startTime, endTime)
 	// Add transaction record
 	const { error: transactionError } = await supabase
 		.from('transactions')
@@ -328,7 +328,15 @@ export const bookTimeSlotForClientGroup = async ({
 		console.error('Error booking group time slot:', timeSlotError.message)
 		return { error: timeSlotError.message }
 	}
-
+	if (isBooked) {
+		await deleteConflictingTimeSlots(
+			supabase,
+			coachId,
+			date,
+			startTime,
+			endTime
+		)
+	}
 	// Update user's account (wallet, public tokens, or semi-private tokens)
 	const { error: updateError } = await supabase
 		.from('users')
@@ -428,5 +436,45 @@ export const bookTimeSlotForClientGroup = async ({
 				: 'credits'
 		}.`,
 		timeSlot: timeSlotData
+	}
+}
+
+async function deleteConflictingTimeSlots(
+	supabase,
+	coachId,
+	date,
+	startTime,
+	endTime
+) {
+	// Delete conflicting individual time slots
+	const { error: individualError } = await supabase
+		.from('time_slots')
+		.delete()
+		.eq('coach_id', coachId)
+		.eq('date', date)
+		.neq('booked', true)
+		.or(`start_time.gte.${startTime},end_time.lte.${endTime}`)
+
+	if (individualError) {
+		console.error(
+			'Error deleting conflicting individual time slots:',
+			individualError.message
+		)
+	}
+
+	// Delete conflicting group time slots
+	const { error: groupError } = await supabase
+		.from('group_time_slots')
+		.delete()
+		.eq('coach_id', coachId)
+		.eq('date', date)
+		.eq('booked', false)
+		.or(`start_time.gte.${startTime},end_time.lte.${endTime}`)
+
+	if (groupError) {
+		console.error(
+			'Error deleting conflicting group time slots:',
+			groupError.message
+		)
 	}
 }
