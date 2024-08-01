@@ -98,11 +98,11 @@ const Shop: React.FC = () => {
 
 	return (
 		<div
-			className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-800'
+			className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-600'
 			id='__next'>
 			<NavbarComponent />
 			<div className='max-w-7xl mx-auto lg:ml-32 2xl:mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-				<h1 className='text-4xl sm:text-5xl  font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-800 mb-8 sm:mb-12 text-center'>
+				<h1 className='text-4xl sm:text-5xl  font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-500 mb-8 sm:mb-12 text-center'>
 					Shop
 				</h1>
 
@@ -113,8 +113,8 @@ const Shop: React.FC = () => {
 					</h2>
 					<ul>
 						<li
-							className={`mb-5 text-white p-2 px-6 ${
-								!isBundles ? 'bg-green-500 ' : ''
+							className={`mb-5 text-green-300 p-2 px-6 ${
+								!isBundles ? 'bg-green-500 text-white' : ''
 							}`}>
 							<button
 								className='flex items-center w-full text-left'
@@ -128,8 +128,8 @@ const Shop: React.FC = () => {
 							</button>
 						</li>
 						<li
-							className={`mb-10 text-white p-2 px-6 ${
-								isBundles ? 'bg-green-500' : ''
+							className={`mb-10 text-green-300 p-2 px-6 ${
+								isBundles ? 'bg-green-500 text-white' : ''
 							}`}>
 							<button
 								className='flex items-center hover:text-green-400 w-full text-left'

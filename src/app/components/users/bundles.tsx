@@ -204,33 +204,41 @@ export default function Bundles() {
 								<h3
 									id={tier.id}
 									className={classNames(
-										tier.mostPopular ? 'text-white' : 'text-gray-900',
+										tier.mostPopular ? 'text-green-300' : 'text-gray-900',
 										'text-4xl font-semibold leading-8'
 									)}>
 									{tier.name}
 								</h3>
 								{tier.mostPopular ? (
-									<p className='rounded-full bg-green-500 px-2.5 py-1 text-xs font-semibold leading-5 text-white'>
+									<p className='rounded-full bg-green-600 px-2.5 py-1 text-xs font-semibold leading-5 text-white'>
 										Most popular
 									</p>
 								) : null}
 							</div>
 							<p className='mt-6 flex items-baseline gap-x-1'>
-								<span className='text-2xl  tracking-tight text-gray-900'>
+								<span className='text-2xl  tracking-tight text-green-500'>
 									{tier.priceMonthly}
 								</span>
 								<span className='text-sm font-semibold leading-6 text-gray-600'></span>
 							</p>
-							<p className='mt-4 text-4xl font-semibold leading-6 text-black'>
-								{tier.description}
-							</p>
+							{!tier.mostPopular && (
+								<p className='mt-4 text-4xl font-semibold leading-6 text-gray-600'>
+									{tier.description}
+								</p>
+							)}
+
+							{tier.mostPopular && (
+								<p className='mt-4 text-4xl font-semibold leading-6 text-gray-500'>
+									{tier.description}
+								</p>
+							)}
 						</div>
 						<div className='flex justify-center'>
 							<button
 								onClick={() => handlePurchase('classes', tier.name)}
 								className={classNames(
 									tier.mostPopular
-										? 'bg-green-300 text-green-500 shadow-sm hover:bg-green-500'
+										? 'bg-green-300 text-white shadow-sm hover:bg-green-500'
 										: 'text-white bg-green-500 ring-1 ring-inset ring-indigo-200 hover:ring-green-500',
 									'mt-8 block rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500'
 								)}>
@@ -257,7 +265,9 @@ export default function Bundles() {
 										className='text-base mt-12 font-semibold leading-7 text-gray-900'>
 										{tier.name}
 									</h3>
-									<p className='mt-2 text-black text-s'>{tier.description}</p>
+									<p className='mt-2 text-green-500 text-s'>
+										{tier.description}
+									</p>
 									<p className='mt-6 flex items-baseline gap-x-1'>
 										<span className='text-4xl font-bold tracking-tight text-gray-900'>
 											{tier.price.monthly} credits
@@ -295,7 +305,7 @@ export default function Bundles() {
 						<p className='mt-6 text-2xl tracking-tight text-gray-900'>
 							{essentialsTier.priceMonthly}
 						</p>
-						<p className='mt-4 text-lg font-semibold leading-6 text-black'>
+						<p className='mt-4 text-lg font-semibold leading-6 text-green-500'>
 							{essentialsTier.description}
 						</p>
 						<ul className='mt-8 space-y-3'>

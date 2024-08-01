@@ -534,7 +534,7 @@ export default function Example() {
 
 	return (
 		<div
-			className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-800'
+			className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-600'
 			id='__next'>
 			<NavbarComponent />
 			<motion.div
@@ -542,7 +542,7 @@ export default function Example() {
 				animate={{ opacity: 1 }}
 				transition={{ duration: 0.5 }}
 				className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-800 mb-8 sm:mb-12 text-center'>
+				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-500 mb-8 sm:mb-12 text-center'>
 					Book Your Next Session
 				</h1>
 
@@ -587,7 +587,7 @@ export default function Example() {
 						{activitiesLoading ? (
 							<div className='flex items-center justify-center'>
 								<RotateLoader
-									color={'#4ADE80'}
+									color={'#2274A5'}
 									loading={activitiesLoading}
 									size={20}
 								/>
@@ -619,7 +619,7 @@ export default function Example() {
 							{coachesLoading ? (
 								<div className='flex items-center justify-center'>
 									<RotateLoader
-										color={'#4ADE80'}
+										color={'#2274A5'}
 										loading={coachesLoading}
 										size={20}
 									/>

@@ -564,7 +564,7 @@ export default function Dashboard() {
 							<h3 className='text-2xl font-bold text-green-400'>
 								{session.activities.name}
 							</h3>
-							<span className='text-sm bg-green-600 text-white px-2 text-nowrap py-1 rounded-full'>
+							<span className='text-sm bg-green-600 text-green-500 px-2 text-nowrap py-1 rounded-full'>
 								{session.activities.credits} Credits
 							</span>
 						</div>
@@ -684,7 +684,7 @@ export default function Dashboard() {
 	}
 
 	return (
-		<div className='min-h-screen bg-gray-700 text-white font-sans'>
+		<div className='min-h-screen bg-gray-700 text-green-300 font-sans'>
 			<ConfirmationModal
 				isOpen={isOpen}
 				message={message}
@@ -700,8 +700,8 @@ export default function Dashboard() {
 						onClick={() => setActiveTab('individual')}
 						className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
 							activeTab === 'individual'
-								? 'bg-green-500 text-white'
-								: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+								? 'bg-green-500 text-green-300'
+								: 'bg-gray-700 text-gray-300 hover:bg-text-green-300'
 						}`}>
 						Individual
 					</button>
@@ -709,8 +709,8 @@ export default function Dashboard() {
 						onClick={() => setActiveTab('group')}
 						className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
 							activeTab === 'group'
-								? 'bg-green-500 text-white'
-								: 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+								? 'bg-green-500 text-green-300'
+								: 'bg-gray-600 text-gray-300 hover:bg-text-green-300'
 						}`}>
 						Class
 					</button>
@@ -814,20 +814,20 @@ export default function Dashboard() {
 											<>
 												<div>
 													<p className='text-gray-300'>Total Users</p>
-													<p className='text-3xl font-bold text-white'>
+													<p className='text-3xl font-bold text-green-300'>
 														{totalUsers}
 													</p>
 												</div>
 												<div>
 													<p className='text-gray-300'>Total Activities</p>
-													<p className='text-3xl font-bold text-white'>
+													<p className='text-3xl font-bold text-green-300'>
 														{totalActivities}
 													</p>
 												</div>
 
 												<div>
 													<p className='text-gray-300'>Sessions Today</p>
-													<p className='text-3xl font-bold text-white'>
+													<p className='text-3xl font-bold text-green-300'>
 														{todaysSessions}
 													</p>
 												</div>
@@ -836,13 +836,13 @@ export default function Dashboard() {
 											<>
 												<div>
 													<p className='text-gray-300'>Total Reservations</p>
-													<p className='text-3xl font-bold text-white'>
+													<p className='text-3xl font-bold text-green-300'>
 														{reservations.length + groupReservations.length}
 													</p>
 												</div>
 												<div>
 													<p className='text-gray-300'>Upcoming This Week</p>
-													<p className='text-3xl font-bold text-white'>
+													<p className='text-3xl font-bold text-green-300'>
 														{upcomingThisWeek}
 													</p>
 												</div>
@@ -928,7 +928,7 @@ export default function Dashboard() {
 												})}
 										</ul>
 										{allSessions.length === 0 && (
-											<p className='text-green-300 text-center'>
+											<p className='text-green-500 text-center'>
 												No sessions left today
 											</p>
 										)}
@@ -945,14 +945,14 @@ export default function Dashboard() {
 									<div className='space-y-2'>
 										{user.publicMetadata.role !== 'admin' && (
 											<Link href='/users/bookasession'>
-												<button className='w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
+												<button className='w-full bg-green-600 hover:bg-green-700 text-green-300 font-bold py-2 px-4 rounded-lg transition duration-200'>
 													Book New Session
 												</button>
 											</Link>
 										)}
 										{user.publicMetadata.role === 'admin' && (
 											<Link href='/admin/manage-users'>
-												<button className='w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
+												<button className='w-full bg-green-600 hover:bg-green-700 text-green-300 font-bold py-2 px-4 rounded-lg transition duration-200'>
 													Go To Admin Panel
 												</button>
 											</Link>
@@ -1008,7 +1008,7 @@ export default function Dashboard() {
 																<h3 className='text-2xl font-bold text-green-400'>
 																	{reservation.activity.name}
 																</h3>
-																<span className='text-sm bg-green-600 text-white px-2 py-1 text-nowrap rounded-full'>
+																<span className='text-sm bg-green-600 text-green-300 px-2 py-1 text-nowrap rounded-full'>
 																	{reservation.activity.credits} Credits
 																</span>
 															</div>
@@ -1071,7 +1071,7 @@ export default function Dashboard() {
 																<div className='flex flex-col md:flex-row justify-between mt-4'>
 																	<button
 																		onClick={() => openMarketModal(reservation)}
-																		className='bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 mb-2 md:mb-0 rounded-lg transition duration-200 flex-grow mr-0 md:mr-2'
+																		className='bg-green-600 hover:bg-green-700 text-green-300 font-bold py-2 px-4 mb-2 md:mb-0 rounded-lg transition duration-200 flex-grow mr-0 md:mr-2'
 																		disabled={buttonLoading}>
 																		Add Items
 																	</button>
@@ -1081,7 +1081,7 @@ export default function Dashboard() {
 																				? handleCancel(reservation.id)
 																				: handleCancelGroup(reservation.id)
 																		}
-																		className='bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex-grow ml-0 md:ml-2'
+																		className='bg-red-600 hover:bg-red-700 text-green-300 font-bold py-2 px-4 rounded-lg transition duration-200 flex-grow ml-0 md:ml-2'
 																		disabled={buttonLoading}>
 																		Cancel
 																	</button>
@@ -1105,12 +1105,12 @@ export default function Dashboard() {
 						<button
 							onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
 							disabled={currentPage === 1}
-							className='p-2 bg-green-500 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600 transition-colors duration-200'
+							className='p-2 bg-green-500 text-green-300 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600 transition-colors duration-200'
 							aria-label='Previous page'>
 							<FaChevronLeft size={20} />
 						</button>
 
-						<span className='px-4 py-2 bg-gray-700 text-white rounded-md text-sm font-medium'>
+						<span className='px-4 py-2 bg-gray-700 text-green-300 rounded-md text-sm font-medium'>
 							Page {currentPage} of {totalPages}
 						</span>
 
@@ -1119,7 +1119,7 @@ export default function Dashboard() {
 								setCurrentPage(prev => Math.min(prev + 1, totalPages))
 							}
 							disabled={currentPage === totalPages}
-							className='p-2 bg-green-500 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600 transition-colors duration-200'
+							className='p-2 bg-green-500 text-green-300 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-600 transition-colors duration-200'
 							aria-label='Next page'>
 							<FaChevronRight size={20} />
 						</button>
@@ -1156,7 +1156,7 @@ export default function Dashboard() {
 											<h3 className='text-2xl font-bold text-green-400'>
 												Transaction ID: {transaction.transaction_id}
 											</h3>
-											<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full'>
+											<span className='text-sm bg-green-600 text-green-300 px-2 py-1 rounded-full'>
 												{new Date(transaction.date).toLocaleString()}
 											</span>
 										</div>
@@ -1210,7 +1210,7 @@ export default function Dashboard() {
 												onClick={() =>
 													handleClaimTransaction(transaction.transaction_id)
 												}
-												className='bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
+												className='bg-green-500 hover:bg-green-600 text-green-300 font-bold py-2 px-4 rounded-lg transition duration-200'>
 												Claim
 											</button>
 										</div>
@@ -1255,7 +1255,7 @@ export default function Dashboard() {
 								<motion.button
 									whileHover={{ scale: 1.05 }}
 									whileTap={{ scale: 0.95 }}
-									className={`mt-auto w-full py-2 sm:py-3 rounded-full text-white font-semibold text-sm sm:text-base transition-all duration-300 ${
+									className={`mt-auto w-full py-2 sm:py-3 rounded-full text-green-300 font-semibold text-sm sm:text-base transition-all duration-300 ${
 										selectedItems.find(
 											selectedItem => selectedItem.id === item.id
 										)
@@ -1284,7 +1284,7 @@ export default function Dashboard() {
 								boxShadow: '0 0 30px rgba(74, 222, 128, 0.7)'
 							}}
 							whileTap={{ scale: 0.95 }}
-							className='bg-green-500 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-green-600 disabled:opacity-50'
+							className='bg-green-500 text-green-300 py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-green-600 disabled:opacity-50'
 							onClick={handlePay}
 							disabled={buttonLoading}>
 							{buttonLoading ? 'Processing...' : 'Complete Purchase'}
@@ -1292,7 +1292,7 @@ export default function Dashboard() {
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							className='bg-red-500 text-white py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-red-600'
+							className='bg-red-500 text-green-300 py-2 sm:py-3 px-6 sm:px-8 rounded-full text-lg sm:text-xl font-bold transition-all duration-300 hover:bg-red-600'
 							onClick={() => setModalIsOpen(false)}>
 							Close
 						</motion.button>

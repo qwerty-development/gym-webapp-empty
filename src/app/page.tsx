@@ -20,20 +20,6 @@ export default function Example() {
 
 	return (
 		<div className='bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex flex-col justify-center items-center p-4 overflow-hidden'>
-			<motion.div
-				initial={{ y: -100, opacity: 0 }}
-				animate={{ y: 0, opacity: 1 }}
-				transition={{ duration: 0.8, type: 'spring' }}
-				className='mb-12'>
-				<Image
-					src='/images/logo.png'
-					className='w-auto h-48 md:h-72 '
-					alt='Logo'
-					width={200}
-					height={200}
-				/>
-			</motion.div>
-
 			<SignedIn>
 				<motion.div
 					initial={{ scale: 0.8, opacity: 0 }}
@@ -80,14 +66,14 @@ export default function Example() {
 				<SignedOut>
 					<motion.a
 						href='/sign-in'
-						className='neon-button'
+						className='neon-button border-green-500 border-b-4'
 						whileHover={{ scale: 1.05 }}
 						whileTap={{ scale: 0.95 }}>
 						<FaRocket className='mr-2' /> Sign In
 					</motion.a>
 					<motion.a
 						href='/sign-up'
-						className='neon-button'
+						className='neon-button border-green-500 border-b-4'
 						whileHover={{ scale: 1.05 }}
 						whileTap={{ scale: 0.95 }}>
 						<FaUserAstronaut className='mr-2' /> Join the Community

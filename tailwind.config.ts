@@ -30,7 +30,7 @@ const config: Config = {
 					900: '#F7F8F9' // Slightly lighter shade of primary white
 				},
 				// Adding default color overrides
-				white: '#FF7D6A', // Dark blue-gray shade
+				white: '#F2F3F4', // Dark blue-gray shade
 				black: '#010B13' // Same as primary black
 			},
 			backgroundImage: {

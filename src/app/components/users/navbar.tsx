@@ -92,10 +92,10 @@ export default function NavbarComponent() {
 					</div>
 					<div className='flex items-center justify-end w-1/3'>
 						<div
-							className='bg-gray-800 text-white px-3 py-1 flex  rounded-full mr-3 text-sm border text-nowrap border-green-500 relative'
+							className='bg-gray-800 text-green-300 px-3 py-1 flex  rounded-full mr-3 text-sm border text-nowrap border-green-500 relative'
 							onMouseEnter={() => setShowTokenInfo(true)}
 							onMouseLeave={() => setShowTokenInfo(false)}>
-							{walletBalance} credits
+							{walletBalance ? walletBalance : 0} credits
 							{showTokenInfo && userTokens && <TokenInfo tokens={userTokens} />}
 						</div>
 
