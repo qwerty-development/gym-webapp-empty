@@ -74,18 +74,7 @@ export default function NavbarComponent() {
 							)}
 						</button>
 					</div>
-					<div className='flex justify-center lg:justify-start lg:ml-64 xl:ml-56 2xl:ml-32 w-1/3'>
-						<Link href='/users/dashboard' className='flex-shrink-0'>
-							<Image
-								src='/images/logoinverted.png'
-								alt='Logo'
-								width={40}
-								height={40}
-								className='h-10 w-auto'
-								priority
-							/>
-						</Link>
-					</div>
+
 					<div className='hidden md:flex  justify-end items-center space-x-2 flex-grow'>
 						{navItems.map(item => (
 							<Link
@@ -106,7 +95,7 @@ export default function NavbarComponent() {
 							className='bg-gray-800 text-white px-3 py-1 flex  rounded-full mr-3 text-sm border text-nowrap border-green-500 relative'
 							onMouseEnter={() => setShowTokenInfo(true)}
 							onMouseLeave={() => setShowTokenInfo(false)}>
-							{walletBalance} credits 
+							{walletBalance} credits
 							{showTokenInfo && userTokens && <TokenInfo tokens={userTokens} />}
 						</div>
 
