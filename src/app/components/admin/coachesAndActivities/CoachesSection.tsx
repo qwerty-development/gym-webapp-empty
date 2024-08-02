@@ -47,7 +47,7 @@ const CoachesSection: React.FC<CoachesSectionProps> = ({
 	handleSubmitUpdate
 }) => {
 	return (
-		<section className='mb-16'>
+		<section className='mb-16 text-green-500'>
 			<h2 className='text-3xl font-bold mb-8 text-green-400'>Coaches</h2>
 			<motion.div
 				className='bg-gray-800 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'
@@ -58,14 +58,14 @@ const CoachesSection: React.FC<CoachesSectionProps> = ({
 						value={newCoachName}
 						onChange={e => setNewCoachName(e.target.value)}
 						placeholder='New Coach Name'
-						className='w-full sm:w-1/3 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						className='w-full sm:w-1/3 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-green-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 					/>
 					<input
 						type='email'
 						value={newCoachEmail}
 						onChange={e => setNewCoachEmail(e.target.value)}
 						placeholder='New Coach Email'
-						className='w-full sm:w-1/3 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						className='w-full sm:w-1/3 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-green-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 					/>
 					<FileUploadDropzone onFileChange={handleFileChange} />
 					<motion.button
@@ -137,14 +137,14 @@ const CoachesSection: React.FC<CoachesSectionProps> = ({
 											value={updatedCoachName}
 											onChange={e => setUpdatedCoachName(e.target.value)}
 											placeholder='New Coach Name'
-											className='w-full p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+											className='w-full p-3 bg-gray-700 border-2 border-green-500 rounded-full text-green-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 										/>
 										<input
 											type='email'
 											value={updatedCoachEmail}
 											onChange={e => setUpdatedCoachEmail(e.target.value)}
 											placeholder='New Coach Email'
-											className='w-full p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+											className='w-full p-3 bg-gray-700 border-2 border-green-500 rounded-full text-green-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 										/>
 										<FileUploadDropzone onFileChange={handleFileChange} />
 										<motion.button

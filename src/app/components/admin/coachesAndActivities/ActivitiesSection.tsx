@@ -82,14 +82,14 @@ const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
 						value={newActivityName}
 						onChange={e => setNewActivityName(e.target.value)}
 						placeholder='New Activity Name'
-						className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-green-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 					/>
 					<input
 						type='number'
 						value={newActivityCredits}
 						onChange={e => setNewActivityCredits(e.target.value)}
 						placeholder='Credits'
-						className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-green-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 					/>
 					{!isPrivateTraining && (
 						<>
@@ -98,7 +98,7 @@ const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
 								value={newActvityCapacity}
 								onChange={e => setNewActivityCapacity(e.target.value)}
 								placeholder='Capacity'
-								className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+								className='w-full sm:w-1/4 p-3 bg-gray-700 border-2 border-green-500 rounded-full text-green-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 							/>
 							<div className='flex items-center'>
 								<input
@@ -108,7 +108,11 @@ const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
 									onChange={e => setNewActivitySemiPrivate(e.target.checked)}
 									className='mr-2'
 								/>
-								<label htmlFor='semi-private text-nowrap'>Semi-Private</label>
+								<label
+									htmlFor='semi-private'
+									className='text-nowrap text-green-500'>
+									Semi-Private
+								</label>
 							</div>
 						</>
 					)}

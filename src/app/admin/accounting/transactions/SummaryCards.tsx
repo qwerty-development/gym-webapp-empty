@@ -21,7 +21,9 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({
 				className='bg-gray-800 rounded-xl p-6 shadow-lg'
 				data-tooltip-id='credits-tooltip'
 				data-tooltip-content='Total credits across all transactions'>
-				<h2 className='text-2xl font-semibold mb-4'>Total Credits</h2>
+				<h2 className='text-2xl font-semibold mb-4 text-green-500'>
+					Total Credits
+				</h2>
 				<p className='text-4xl font-bold text-green-400'>
 					{totalCredits.toFixed(2)}
 				</p>
@@ -33,7 +35,9 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({
 				className='bg-gray-800 rounded-xl p-6 shadow-lg'
 				data-tooltip-id='tokens-tooltip'
 				data-tooltip-content='Total tokens across all transactions'>
-				<h2 className='text-2xl font-semibold mb-4'>Total Tokens</h2>
+				<h2 className='text-2xl font-semibold mb-4 text-green-500'>
+					Total Tokens
+				</h2>
 				<p className='text-4xl font-bold text-blue-400'>
 					{totalTokens.toFixed(2)}
 				</p>
@@ -45,7 +49,9 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({
 				className='bg-gray-800 rounded-xl p-6 shadow-lg'
 				data-tooltip-id='transactions-tooltip'
 				data-tooltip-content='Total number of transactions'>
-				<h2 className='text-2xl font-semibold mb-4'>Total Transactions</h2>
+				<h2 className='text-2xl font-semibold mb-4 text-green-500'>
+					Total Transactions
+				</h2>
 				<p className='text-4xl font-bold text-purple-400'>
 					{totalTransactions}
 				</p>

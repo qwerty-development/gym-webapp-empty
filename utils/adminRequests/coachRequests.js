@@ -24,7 +24,7 @@ export const addCoach = async (coach, file) => {
 			return null
 		}
 
-		const publicURL = `https://ofsmbbjjveacrikuuueh.supabase.co/storage/v1/object/public/coach_profile_picture/${fileName}`
+		const publicURL = `https://zwbbxpzzymnownrqvhri.supabase.co/storage/v1/object/public/coach_profile_picture/${fileName}`
 		console.log('Constructed public URL: ' + publicURL)
 
 		if (publicURL) {
@@ -67,7 +67,7 @@ export const updateCoach = async (coachId, updates, file) => {
 			return null
 		}
 
-		const publicURL = `https://ofsmbbjjveacrikuuueh.supabase.co/storage/v1/object/public/coach_profile_picture/${fileName}`
+		const publicURL = `https://zwbbxpzzymnownrqvhri.supabase.co/storage/v1/object/public/coach_profile_picture/${fileName}`
 		console.log('New Public URL: ' + publicURL)
 
 		updates.profile_picture = publicURL

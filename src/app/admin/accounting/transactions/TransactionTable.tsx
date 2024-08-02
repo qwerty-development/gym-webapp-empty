@@ -54,7 +54,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
 							))}
 						</tr>
 					</thead>
-					<tbody className='divide-y divide-gray-700'>
+					<tbody className='divide-y divide-gray-700 text-green-500'>
 						<AnimatePresence>
 							{transactions.map(transaction => (
 								<motion.tr
@@ -63,7 +63,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
 									animate={{ opacity: 1 }}
 									exit={{ opacity: 0 }}
 									className='hover:bg-gray-700 transition-colors duration-200'>
-									<td className='py-4 px-6 whitespace-nowrap'>
+									<td className='py-4 px-6 whitespace-nowrap text-green-500'>
 										{new Date(transaction.created_at).toLocaleDateString()}
 									</td>
 									<td className='py-4 px-6'>{transaction.name}</td>

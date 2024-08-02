@@ -34,7 +34,7 @@ const FilterComponent: React.FC<FilterProps> = ({
 			initial={{ opacity: 0, y: -20 }}
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -20 }}
-			className='bg-gray-800 p-6 rounded-lg shadow-lg mb-6'>
+			className='bg-white p-6 rounded-lg shadow-lg mb-6 text-green-500 border border-blue-200'>
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
 				<input
 					type='text'
@@ -42,7 +42,7 @@ const FilterComponent: React.FC<FilterProps> = ({
 					placeholder='Filter by Activity...'
 					value={filter.activity}
 					onChange={handleFilterChange}
-					className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					className='w-full p-2 bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
 				/>
 				<input
 					type='text'
@@ -50,7 +50,7 @@ const FilterComponent: React.FC<FilterProps> = ({
 					placeholder='Filter by Coach...'
 					value={filter.coach}
 					onChange={handleFilterChange}
-					className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					className='w-full p-2 bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
 				/>
 				<input
 					type='text'
@@ -58,12 +58,12 @@ const FilterComponent: React.FC<FilterProps> = ({
 					placeholder='Filter by User...'
 					value={filter.user}
 					onChange={handleFilterChange}
-					className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					className='w-full p-2 bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
 				/>
 				<select
 					onChange={handleBookedFilterChange}
 					value={bookedFilter}
-					className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'>
+					className='w-full p-2 bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'>
 					<option value='all'>All</option>
 					<option value='booked'>Booked</option>
 					<option value='notBooked'>Not Booked</option>
@@ -73,32 +73,32 @@ const FilterComponent: React.FC<FilterProps> = ({
 					name='date'
 					value={filter.date}
 					onChange={handleFilterChange}
-					className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					className='w-full p-2 bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
 				/>
 				<input
 					type='time'
 					name='startTime'
 					value={filter.startTime}
 					onChange={handleFilterChange}
-					className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					className='w-full p-2 bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
 				/>
 				<input
 					type='time'
 					name='endTime'
 					value={filter.endTime}
 					onChange={handleFilterChange}
-					className='w-full p-2 bg-gray-700 border border-gray-600 rounded-md'
+					className='w-full p-2 bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
 				/>
 			</div>
 			<div className='flex justify-end mt-4 gap-x-4'>
 				<button
 					onClick={clearFilters}
-					className='bg-red-700 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-red-600'>
+					className='bg-red-500 text-white border-solid p-2 rounded-xl cursor-pointer hover:bg-red-600 transition duration-300'>
 					Clear Filters
 				</button>
 				<button
 					onClick={applyFilters}
-					className='bg-green-400 border-solid p-2 rounded-xl cursor-pointer hover:shadow-xl hover:shadow-green-700'>
+					className='bg-green-500 text-white border-solid p-2 rounded-xl cursor-pointer hover:bg-blue-600 transition duration-300'>
 					Apply Filters
 				</button>
 			</div>

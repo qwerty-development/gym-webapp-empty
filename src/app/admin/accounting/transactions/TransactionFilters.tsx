@@ -61,13 +61,13 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 				<div className='space-y-4'>
 					<div>
-						<label className='block text-sm font-medium text-gray-400 mb-1'>
+						<label className='block text-sm font-medium text-green-300 mb-1'>
 							Transaction Type
 						</label>
 						<select
 							value={filter}
 							onChange={handleFilterChange}
-							className='w-full bg-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'>
+							className='w-full bg-gray-700 text-green-500 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'>
 							<option value='all'>All Types</option>
 							<option value='individual session'>Individual Session</option>
 							<option value='class session'>Class Session</option>
@@ -77,7 +77,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
 						</select>
 					</div>
 					<div>
-						<label className='block text-sm font-medium text-gray-400 mb-1'>
+						<label className='block text-sm font-medium text-green-300 mb-1'>
 							Search
 						</label>
 						<div className='relative'>
@@ -86,15 +86,15 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
 								placeholder='Search transactions...'
 								value={searchTerm}
 								onChange={handleSearch}
-								className='w-full bg-gray-700 text-white rounded-md pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'
+								className='w-full bg-gray-700 text-green-500 rounded-md pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'
 							/>
-							<FaSearch className='absolute left-3 top-3 text-gray-400' />
+							<FaSearch className='absolute left-3 top-3 text-green-500' />
 						</div>
 					</div>
 				</div>
 				<div className='space-y-4'>
 					<div>
-						<label className='block text-sm font-medium text-gray-400 mb-1'>
+						<label className='block text-sm font-medium text-green-300 mb-1'>
 							Date Range
 						</label>
 						<DatePicker
@@ -102,18 +102,18 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
 							startDate={startDate}
 							endDate={endDate}
 							onChange={handleDateChange}
-							className='w-full bg-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'
+							className='w-full bg-gray-700 text-green-500 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500'
 							placeholderText='Select date range'
 							dateFormat='yyyy-MM-dd'
 							wrapperClassName='w-full'
 							calendarClassName='bg-gray-800 border border-gray-700'
 							dayClassName={date =>
-								'text-white hover:bg-green-500 rounded-full'
+								'text-green-500 hover:bg-green-200 rounded-full'
 							}
 						/>
 					</div>
 					<div>
-						<label className='block text-sm font-medium text-gray-400 mb-1'>
+						<label className='block text-sm font-medium text-green-300 mb-1'>
 							Quick Date Ranges
 						</label>
 						<div className='grid grid-cols-2 gap-2'>
@@ -130,7 +130,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
 				</div>
 				<div className='space-y-4'>
 					<div>
-						<label className='block text-sm font-medium text-gray-400 mb-1'>
+						<label className='block text-sm font-medium text-green-300 mb-1'>
 							User
 						</label>
 						<Select
@@ -153,34 +153,34 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
 							}
 							isClearable
 							placeholder='Select a user'
-							className='react-select-container bg-green-500'
-							classNamePrefix='react-select bg-green-500'
+							className='react-select-container bg-blue-500'
+							classNamePrefix='react-select bg-blue-500'
 							styles={{
 								control: (provided, state) => ({
 									...provided,
-									backgroundColor: '#454c45',
-									borderColor: state.isFocused ? '#4caf50' : '#4c6f46',
-									color: 'white',
+									backgroundColor: '#F2F3F4', // primary black
+									borderColor: state.isFocused ? '#2274A5' : '#1A5D8A', // primary blue : darker shade of blue
+									color: '#F2F3F4', // primary white
 									'&:hover': {
-										borderColor: '#4caf50'
+										borderColor: '#2274A5' // primary blue
 									}
 								}),
 								menu: provided => ({
 									...provided,
-									backgroundColor: '#454c45'
+									backgroundColor: '#010B13' // primary black
 								}),
 								option: (provided, state) => ({
 									...provided,
-									backgroundColor: state.isFocused ? '#a5b89a' : '#454c45',
-									color: 'white'
+									backgroundColor: state.isFocused ? '#1A5D8A' : '#010B13', // darker shade of blue : primary black
+									color: '#F2F3F4' // primary white
 								}),
 								singleValue: provided => ({
 									...provided,
-									color: 'white'
+									color: '#F2F3F4' // primary white
 								}),
 								input: provided => ({
 									...provided,
-									color: 'white'
+									color: '#2274A5' // primary white
 								})
 							}}
 						/>

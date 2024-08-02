@@ -350,7 +350,7 @@ const TransactionPage: React.FC = () => {
 			className='min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pb-3'>
 			<AdminNavbarComponent />
 			<div className='container mx-auto px-4 py-8'>
-				<h1 className='text-5xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-green-700'>
+				<h1 className='text-5xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-green-500'>
 					Transaction Dashboard
 				</h1>
 

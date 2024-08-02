@@ -268,7 +268,7 @@ const ModifyCreditsComponent = () => {
 						onChange={handleSearchChange}
 						onKeyPress={handleKeyPress}
 						disabled={isUpdating || isLoading}
-						className='w-full p-3 bg-gray-800 border-2 border-green-500 rounded-l-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						className='w-full p-3 bg-gray-800 border-2 border-green-500 rounded-l-full shadow-sm text-green-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 					/>
 					<motion.button
 						onClick={handleSearch}
@@ -285,7 +285,7 @@ const ModifyCreditsComponent = () => {
 					onChange={handleSortChange}
 					disabled={isUpdating || isLoading}
 					whileHover={{ scale: 1.05 }}
-					className='w-fit p-3 bg-gray-800 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'>
+					className='w-fit p-3 bg-gray-800 text-green-400 border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'>
 					<option value='alphabetical'>Sort Alphabetically</option>
 					<option value='newest'>Sort by Newest</option>
 				</motion.select>
@@ -402,7 +402,7 @@ const ModifyCreditsComponent = () => {
 						placeholder='New Credits'
 						value={newCredits}
 						onChange={e => setNewCredits(e.target.value)}
-						className='p-3 w-full bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						className='p-3 w-full bg-gray-700 text-green-500 border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 					/>
 					<div className='flex flex-row justify-center items-center gap-2 w-full'>
 						<label className='text-green-400' htmlFor='sales'>
@@ -416,7 +416,7 @@ const ModifyCreditsComponent = () => {
 							min={0}
 							max={100}
 							onChange={e => setSale(parseInt(e.target.value))}
-							className='p-3 flex-grow bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+							className='p-3 flex-grow bg-gray-700 text-green-500 border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 						/>
 					</div>
 					{Object.entries(tokenUpdates).map(([tokenType, value]) => (
@@ -444,7 +444,7 @@ const ModifyCreditsComponent = () => {
 										e.target.value
 									)
 								}
-								className='p-2 w-1/3 bg-gray-700 text-white border-2 border-green-500 rounded-full text-center'
+								className='p-2 w-1/3 bg-gray-700 text-green-500 border-2 border-green-500 rounded-full text-center'
 							/>
 							<motion.button
 								whileHover={{ scale: 1.1 }}
@@ -466,7 +466,7 @@ const ModifyCreditsComponent = () => {
 							type='date'
 							value={essentialsTill}
 							onChange={e => setEssentialsTill(e.target.value)}
-							className='p-3 flex-grow bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+							className='p-3 flex-grow bg-gray-700 text-green-500 border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 						/>
 					</div>
 					<div className='flex flex-row justify-between gap-5 w-full'>

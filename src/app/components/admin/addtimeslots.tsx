@@ -28,34 +28,35 @@ type OptionType = {
 const customSelectStyles = {
 	control: (provided: any) => ({
 		...provided,
-		backgroundColor: '#353b35', // gray-800
-		borderColor: '#36783a', // green-400 (primary)
+		backgroundColor: '#F2F3F4', // primary white
+		borderColor: '#2274A5', // primary blue
 		borderRadius: '9999px',
 		padding: '0.5rem',
 		boxShadow: 'none',
 		'&:hover': {
-			borderColor: '#4c6f46' // green-500
+			borderColor: '#1A5D8A' // darker shade of blue
 		}
 	}),
 	menu: (provided: any) => ({
 		...provided,
-		backgroundColor: '#353b35' // gray-800
+		backgroundColor: '#F2F3F4' // primary white
 	}),
 	option: (provided: any, state: { isSelected: any }) => ({
 		...provided,
-		backgroundColor: state.isSelected ? '#36783a' : '#353b35', // green-400 if selected, gray-800 if not
+		backgroundColor: state.isSelected ? '#2274A5' : '#F2F3F4', // primary blue if selected, primary white if not
+		color: state.isSelected ? '#F2F3F4' : '#010B13', // primary white text if selected, primary black text if not
 		'&:hover': {
-			backgroundColor: '#4c6f46', // green-500
-			color: 'white'
+			backgroundColor: '#1A5D8A', // darker shade of blue
+			color: '#F2F3F4' // primary white
 		}
 	}),
 	singleValue: (provided: any) => ({
 		...provided,
-		color: 'white'
+		color: '#010B13' // primary black
 	}),
 	input: (provided: any) => ({
 		...provided,
-		color: 'white'
+		color: '#010B13' // primary black
 	})
 }
 
@@ -210,12 +211,12 @@ export default function AddTimeSlotComponent() {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.5 }}
-			className='min-h-screen bg-gray-900 text-white font-sans p-8'>
-			<h1 className='text-4xl font-bold mb-8 text-green-400'>
+			className='min-h-screen bg-white text-black font-sans p-8'>
+			<h1 className='text-4xl font-bold mb-8 text-green-500'>
 				Add Private Time Slots
 			</h1>
 
-			<motion.div className='bg-gray-800 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
+			<motion.div className='bg-gray-100 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
 					<Select
 						placeholder='Select Coach'
@@ -247,7 +248,7 @@ export default function AddTimeSlotComponent() {
 							/>
 						]}
 						render={<Icon />}
-						className='custom-date-picker w-full bg-gray-700 border-2 border-green-400 rounded-full text-white'
+						className='custom-date-picker w-full bg-white border-2 border-blue-400 rounded-full text-black'
 						containerClassName='custom-date-picker-container'
 					/>
 				</div>
@@ -259,7 +260,7 @@ export default function AddTimeSlotComponent() {
 							type='time'
 							value={privateStartTime}
 							onChange={e => setPrivateStartTime(e.target.value)}
-							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
+							className='w-full p-3 pl-10 bg-white border-2 border-green-500 rounded-full text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent'
 						/>
 					</div>
 					<div className='relative'>
@@ -268,7 +269,7 @@ export default function AddTimeSlotComponent() {
 							type='time'
 							value={privateEndTime}
 							onChange={e => setPrivateEndTime(e.target.value)}
-							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
+							className='w-full p-3 pl-10 bg-white border-2 border-green-500 rounded-full text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent'
 						/>
 					</div>
 				</div>
@@ -278,7 +279,7 @@ export default function AddTimeSlotComponent() {
 					disabled={buttonLoading}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
-					className='w-full px-6 py-3 bg-green-500 disabled:bg-green-700 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+					className='w-full px-6 py-3 bg-green-500 disabled:bg-blue-300 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white transition duration-300'>
 					{buttonLoading ? (
 						<RingLoader color='#ffffff' size={24} />
 					) : (
@@ -287,11 +288,11 @@ export default function AddTimeSlotComponent() {
 				</motion.button>
 			</motion.div>
 
-			<h1 className='text-4xl font-bold mb-8 text-green-400'>
+			<h1 className='text-4xl font-bold mb-8 text-green-500'>
 				Add Group Time Slots
 			</h1>
 
-			<motion.div className='bg-gray-800 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
+			<motion.div className='bg-gray-100 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
 					<Select
 						placeholder='Select Coach'
@@ -323,7 +324,7 @@ export default function AddTimeSlotComponent() {
 							/>
 						]}
 						render={<Icon />}
-						className='custom-date-picker w-full bg-gray-700 border-2 border-green-400 rounded-full text-white'
+						className='custom-date-picker w-full bg-white border-2 border-blue-400 rounded-full text-black'
 						containerClassName='custom-date-picker-container'
 					/>
 				</div>
@@ -335,7 +336,7 @@ export default function AddTimeSlotComponent() {
 							type='time'
 							value={groupStartTime}
 							onChange={e => setGroupStartTime(e.target.value)}
-							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
+							className='w-full p-3 pl-10 bg-white border-2 border-green-500 rounded-full text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent'
 						/>
 					</div>
 					<div className='relative'>
@@ -344,7 +345,7 @@ export default function AddTimeSlotComponent() {
 							type='time'
 							value={groupEndTime}
 							onChange={e => setGroupEndTime(e.target.value)}
-							className='w-full p-3 pl-10 bg-gray-700 border-2 border-green-500 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent'
+							className='w-full p-3 pl-10 bg-white border-2 border-green-500 rounded-full text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent'
 						/>
 					</div>
 				</div>
@@ -354,7 +355,7 @@ export default function AddTimeSlotComponent() {
 					disabled={buttonLoading}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
-					className='w-full px-6 py-3 bg-green-500 disabled:bg-green-700 text-white rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-300'>
+					className='w-full px-6 py-3 bg-green-500 disabled:bg-blue-300 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white transition duration-300'>
 					{buttonLoading ? (
 						<RingLoader color='#ffffff' size={24} />
 					) : (
