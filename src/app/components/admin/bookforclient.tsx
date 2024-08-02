@@ -361,25 +361,25 @@ export default function BookForClient() {
 			: ''
 	return (
 		<div
-			className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-800'
+			className='min-h-screen bg-gradient-to-br from-white to-gray-100'
 			id='__next'>
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				transition={{ duration: 0.5 }}
 				className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-700 mb-8 sm:mb-12 text-center'>
+				<h1 className='text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-green-700 mb-8 sm:mb-12 text-center'>
 					Book a Session for a User
 				</h1>
 
 				<FadeInSection>
-					<div className='mb-16 bg-gray-700 text-white bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8'>
-						<h2 className='text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-700 mb-6 text-center'>
+					<div className='mb-16 bg-white text-gray-800 shadow-lg rounded-3xl p-8'>
+						<h2 className='text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-green-700 mb-6 text-center'>
 							Select Your User
 						</h2>
 						<div className='relative'>
 							<div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10'>
-								<RiUserSearchLine className='h-5 w-5 text-green-400' />
+								<RiUserSearchLine className='h-5 w-5 text-green-500' />
 							</div>
 							<Select
 								options={userOptions}
@@ -401,37 +401,37 @@ export default function BookForClient() {
 									...theme,
 									colors: {
 										...theme.colors,
-										primary25: '#4c6f46', // green-500
-										primary: '#36783a', // green-400 (primary)
-										neutral0: 'rgba(53, 59, 53, 0.5)', // gray-800 with opacity
-										neutral80: '#d1d4d1', // gray-200
-										neutral20: '#36783a' // green-400 (primary)
+										primary25: '#1A5D8A', // Darker shade of primary green
+										primary: '#2274A5', // Primary green
+										neutral0: '#010B13', // Primary black for background
+										neutral80: '#F2F3F4', // Primary white for text
+										neutral20: '#2274A5' // Primary green
 									}
 								})}
 								styles={{
 									control: base => ({
 										...base,
-										backgroundColor: 'rgba(53, 59, 53, 0.5)', // gray-800 with opacity
+										backgroundColor: '#010B13', // Primary black
 										borderRadius: '1.5rem',
 										padding: '0.5rem',
 										paddingLeft: '2.5rem',
-										borderColor: '#36783a', // green-400 (primary)
-										boxShadow: '0 0 15px rgba(54, 120, 58, 0.3)', // green-400 with opacity
+										borderColor: '#2274A5', // Primary green
+										boxShadow: '0 0 15px rgba(34, 116, 165, 0.3)', // Primary green with opacity
 										'&:hover': {
-											borderColor: '#4c6f46', // green-500
-											boxShadow: '0 0 20px rgba(76, 111, 70, 0.5)' // green-500 with opacity
+											borderColor: '#1A5D8A', // Darker shade of primary green
+											boxShadow: '0 0 20px rgba(26, 93, 138, 0.5)' // Darker shade of primary green with opacity
 										}
 									}),
 									input: base => ({
 										...base,
-										color: '#d1d4d1', // gray-200
+										color: '#F2F3F4', // Primary white
 										'& input': {
-											color: '#d1d4d1 !important' // gray-200
+											color: '#F2F3F4 !important' // Primary white
 										}
 									}),
 									menu: base => ({
 										...base,
-										backgroundColor: 'rgba(53, 59, 53, 0.9)', // gray-800 with opacity
+										backgroundColor: 'rgba(1, 11, 19, 0.9)', // Primary black with opacity
 										backdropFilter: 'blur(8px)',
 										borderRadius: '1rem',
 										overflow: 'hidden'
@@ -439,11 +439,21 @@ export default function BookForClient() {
 									option: (base, state) => ({
 										...base,
 										backgroundColor: state.isSelected
-											? '#36783a' // green-400 (primary)
+											? '#2274A5' // Primary green
 											: 'transparent',
+										color: '#F2F3F4', // Always primary white for better contrast
 										'&:hover': {
-											backgroundColor: '#4c6f46' // green-500
+											backgroundColor: '#1A5D8A', // Darker shade of primary green
+											color: '#F2F3F4' // Primary white
 										}
+									}),
+									singleValue: base => ({
+										...base,
+										color: '#F2F3F4' // Primary white
+									}),
+									placeholder: base => ({
+										...base,
+										color: '#6B7280' // A lighter gray for the placeholder
 									})
 								}}
 							/>
@@ -459,12 +469,12 @@ export default function BookForClient() {
 										initial={{ scale: 0 }}
 										animate={{ scale: 1 }}
 										transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-										className='w-24 h-24 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 p-1 mx-auto mb-4 flex items-center justify-center'>
+										className='w-24 h-24 rounded-full bg-gradient-to-r from-green-400 to-green-500 p-1 mx-auto mb-4 flex items-center justify-center'>
 										<span className='text-4xl font-bold text-white'>
 											{selectedOptiontest.label.charAt(0).toUpperCase()}
 										</span>
 									</motion.div>
-									<p className='text-xl font-semibold text-green-400'>
+									<p className='text-xl font-semibold text-green-500'>
 										{selectedOptiontest.label}
 									</p>
 								</div>
@@ -483,7 +493,7 @@ export default function BookForClient() {
 							className={`px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
 								isPrivateTraining
 									? 'bg-green-500 text-white shadow-lg'
-									: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
+									: 'bg-gray-200 text-gray-700 hover:bg-green-300'
 							}`}
 							onClick={() => setIsPrivateTraining(true)}>
 							<RiUserLine className='inline-block mr-2' />
@@ -495,7 +505,7 @@ export default function BookForClient() {
 							className={`px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
 								!isPrivateTraining
 									? 'bg-green-500 text-white shadow-lg'
-									: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
+									: 'bg-gray-200 text-gray-700 hover:bg-green-300'
 							}`}
 							onClick={() => setIsPrivateTraining(false)}>
 							<RiGroupLine className='inline-block mr-2' />
@@ -505,8 +515,8 @@ export default function BookForClient() {
 				</FadeInSection>
 
 				<FadeInSection>
-					<div className='section bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16'>
-						<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center'>
+					<div className='section bg-white shadow-lg rounded-3xl p-8 mb-16'>
+						<h2 className='text-2xl sm:text-3xl font-bold text-green-500 mb-4 sm:mb-6 text-center'>
 							Select Your {isPrivateTraining ? 'Activity' : 'Class'}
 						</h2>
 						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
@@ -519,13 +529,13 @@ export default function BookForClient() {
 										exit={{ opacity: 0, y: -20 }}
 										whileHover={{
 											scale: 1.05,
-											boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+											boxShadow: '0 0 20px rgba(34, 116, 165, 0.5)'
 										}}
 										whileTap={{ scale: 0.95 }}
 										className={`flex flex-col items-center justify-center p-4 sm:p-8 rounded-2xl transition-all duration-300 ${
 											selectedActivity === activity.id
 												? 'bg-green-500 text-white'
-												: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
+												: 'bg-gray-300 text-gray-700 hover:bg-green-300'
 										}`}
 										onClick={() => setSelectedActivity(activity.id)}>
 										<span className='text-4xl'>
@@ -546,8 +556,8 @@ export default function BookForClient() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className='section bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16'>
-							<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center'>
+							className='section bg-white shadow-lg rounded-3xl p-8 mb-16'>
+							<h2 className='text-2xl sm:text-3xl font-bold text-green-500 mb-4 sm:mb-6 text-center'>
 								Choose Your {isPrivateTraining ? 'Coach' : 'Instructor'}
 							</h2>
 							<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
@@ -560,13 +570,13 @@ export default function BookForClient() {
 											exit={{ opacity: 0, y: -20 }}
 											whileHover={{
 												scale: 1.05,
-												boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+												boxShadow: '0 0 20px rgba(34, 116, 165, 0.5)'
 											}}
 											whileTap={{ scale: 0.95 }}
 											className={`p-3 sm:p-6 rounded-2xl transition-all duration-300 ${
 												selectedCoach === coach.id
 													? 'bg-green-500 text-white'
-													: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
+													: 'bg-gray-300 text-gray-700 hover:bg-green-300'
 											}`}
 											onClick={() => setSelectedCoach(coach.id)}>
 											<img
@@ -590,29 +600,27 @@ export default function BookForClient() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className='section bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16'>
+							className='section bg-white shadow-lg rounded-3xl p-8 mb-16'>
 							<div className='flex flex-col lg:flex-row lg:space-x-12'>
 								<div className='lg:w-1/2 mb-8 lg:mb-0'>
-									<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center lg:text-left'>
+									<h2 className='text-2xl sm:text-3xl font-bold text-green-500 mb-4 sm:mb-6 text-center lg:text-left'>
 										Select a Date
 									</h2>
 									<DatePicker
 										selected={selectedDate}
 										onChange={setSelectedDate}
 										inline
-										calendarClassName='custom-datepicker rounded-xl shadow-lg bg-gray-800 border-none text-white'
-										dayClassName={() =>
-											'text-gray-200 hover:bg-green-500 hover:text-white'
-										}
-										monthClassName={() => 'text-green-400'}
-										weekDayClassName={() => 'text-green-300'}
+										calendarClassName='custom-datepicker rounded-xl shadow-lg bg-white border-none text-gray-800'
+										dayClassName={() => 'text-gray-700 hover:bg-green-300'}
+										monthClassName={() => 'text-green-500'}
+										weekDayClassName={() => 'text-green-400'}
 										minDate={new Date()}
 										highlightDates={highlightDates}
 									/>
 								</div>
 								{selectedDate && (
 									<div className='lg:w-1/2'>
-										<h2 className='text-2xl sm:text-3xl font-bold text-green-400 mb-4 sm:mb-6 text-center lg:text-left'>
+										<h2 className='text-2xl sm:text-3xl font-bold text-green-500 mb-4 sm:mb-6 text-center lg:text-left'>
 											Available Times
 										</h2>
 										<div className='grid grid-cols-2 gap-4'>
@@ -628,13 +636,13 @@ export default function BookForClient() {
 														exit={{ opacity: 0, y: -20 }}
 														whileHover={{
 															scale: 1.05,
-															boxShadow: '0 0 20px rgba(74, 222, 128, 0.5)'
+															boxShadow: '0 0 20px rgba(34, 116, 165, 0.5)'
 														}}
 														whileTap={{ scale: 0.95 }}
 														className={`p-3 sm:p-4 rounded-xl text-base sm:text-lg font-semibold transition-all duration-300 ${
 															selectedTime === time
 																? 'bg-green-500 text-white'
-																: 'bg-gray-700 text-gray-300 hover:bg-green-300 hover:text-white'
+																: 'bg-gray-300 text-gray-700 hover:bg-green-300'
 														}`}
 														onClick={() => setSelectedTime(time)}>
 														{time}
@@ -659,9 +667,9 @@ export default function BookForClient() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className='section bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-16'>
+							className='section bg-white shadow-lg rounded-3xl p-8 mb-16'>
 							<div className='mt-12 text-center'>
-								<p className='text-xl sm:text-2xl font-semibold text-green-400 mb-4 sm:mb-6'>
+								<p className='text-xl sm:text-2xl font-semibold text-green-500 mb-4 sm:mb-6'>
 									Booking {isPrivateTraining ? 'private session' : 'class'} for{' '}
 									{
 										(isPrivateTraining ? activities : activitiesGroup).find(
@@ -674,7 +682,7 @@ export default function BookForClient() {
 								<motion.button
 									whileHover={{
 										scale: 1.05,
-										boxShadow: '0 0 30px rgba(74, 222, 128, 0.7)'
+										boxShadow: '0 0 30px rgba(34, 116, 165, 0.7)'
 									}}
 									whileTap={{ scale: 0.95 }}
 									type='button'
@@ -686,13 +694,13 @@ export default function BookForClient() {
 								<motion.button
 									whileHover={{
 										scale: 1.05,
-										boxShadow: '0 0 30px rgba(59, 130, 246, 0.7)'
+										boxShadow: '0 0 30px rgba(255, 113, 91, 0.7)'
 									}}
 									whileTap={{ scale: 0.95 }}
 									type='button'
 									onClick={openMarketModal}
 									disabled={loading}
-									className='rounded-full bg-blue-500 px-8 sm:px-10 py-3 sm:py-4 text-lg sm:text-xl font-bold text-white transition-all duration-300 hover:bg-blue-600 disabled:opacity-50 ml-4'>
+									className='rounded-full bg-bittersweet-500 px-8 sm:px-10 py-3 sm:py-4 text-lg sm:text-xl font-bold text-white transition-all duration-300 hover:bg-bittersweet-600 disabled:opacity-50 ml-4'>
 									Add Items
 								</motion.button>
 							</div>
@@ -708,25 +716,25 @@ export default function BookForClient() {
 				className='modal rounded-3xl p-4 sm:p-6 md:p-8 mx-auto mt-10 sm:mt-20 w-11/12 md:max-w-4xl'
 				style={{
 					content: {
-						backgroundColor: 'rgba(53, 59, 53, 0.9)', // This is gray-800 with 90% opacity
-						backdropFilter: 'blur(16px)' // This adds the blur effect
+						backgroundColor: 'rgba(255, 255, 255, 0.95)',
+						backdropFilter: 'blur(16px)'
 					}
 				}}
 				overlayClassName='overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center'>
-				<h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-800'>
+				<h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-green-700'>
 					Enhance Your Session
 				</h2>
 				<div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8'>
 					{market.map(item => (
 						<motion.div
 							key={item.id}
-							className='bg-gray-700 rounded-xl p-4 sm:p-6 shadow-lg  hover:shadow-green-400 hover:shadow-lg transition-all duration-300  '>
+							className='bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-green-400 hover:shadow-lg transition-all duration-300'>
 							<div className='flex flex-col h-full'>
-								<div className='flex justify-between items-center text-gray-300 mb-3 sm:mb-4'>
+								<div className='flex justify-between items-center text-gray-700 mb-3 sm:mb-4'>
 									<span className='font-semibold text-sm sm:text-lg'>
 										{item.name}
 									</span>
-									<span className='text-lg sm:text-xl font-bold text-green-400'>
+									<span className='text-lg sm:text-xl font-bold text-green-500'>
 										{item.price} Credits
 									</span>
 								</div>
@@ -737,7 +745,7 @@ export default function BookForClient() {
 										selectedItems.find(
 											selectedItem => selectedItem.id === item.id
 										)
-											? 'bg-red-700 hover:bg-red-600'
+											? 'bg-bittersweet-500 hover:bg-bittersweet-600'
 											: 'bg-green-500 hover:bg-green-600'
 									}`}
 									onClick={() => handleItemSelect(item)}>
@@ -752,14 +760,14 @@ export default function BookForClient() {
 					))}
 				</div>
 				<div className='text-right'>
-					<p className='text-lg sm:text-xl md:text-2xl font-bold text-green-400 mb-3 sm:mb-4 md:mb-6'>
+					<p className='text-lg sm:text-xl md:text-2xl font-bold text-green-500 mb-3 sm:mb-4 md:mb-6'>
 						Total Price: {totalPrice} Credits
 					</p>
 					<div className='flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-6'>
 						<motion.button
 							whileHover={{
 								scale: 1.05,
-								boxShadow: '0 0 30px rgba(54, 120, 58, 0.7)' // Using green-400 with 70% opacity
+								boxShadow: '0 0 30px rgba(34, 116, 165, 0.7)'
 							}}
 							whileTap={{ scale: 0.95 }}
 							className='bg-green-500 text-white py-2 sm:py-3 px-5 sm:px-6 md:px-8 rounded-full text-base sm:text-lg md:text-xl font-bold transition-all duration-300 hover:bg-green-600 disabled:opacity-50'
@@ -770,7 +778,7 @@ export default function BookForClient() {
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
-							className='bg-red-500 text-white py-2 sm:py-3 px-5 sm:px-6 md:px-8 rounded-full text-base sm:text-lg md:text-xl font-bold transition-all duration-300 hover:bg-red-600'
+							className='bg-bittersweet-500 text-white py-2 sm:py-3 px-5 sm:px-6 md:px-8 rounded-full text-base sm:text-lg md:text-xl font-bold transition-all duration-300 hover:bg-bittersweet-600'
 							onClick={handleCloseModal}>
 							Close
 						</motion.button>
