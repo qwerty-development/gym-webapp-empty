@@ -706,7 +706,7 @@ export default function Dashboard() {
 						onClick={() => setActiveTab('individual')}
 						className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
 							activeTab === 'individual'
-								? 'bg-green-500 text-green-300'
+								? 'bg-green-500 text-white'
 								: 'bg-gray-700 text-gray-300 hover:bg-text-green-300'
 						}`}>
 						Individual
@@ -715,7 +715,7 @@ export default function Dashboard() {
 						onClick={() => setActiveTab('group')}
 						className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
 							activeTab === 'group'
-								? 'bg-green-500 text-green-300'
+								? 'bg-green-500 text-white'
 								: 'bg-gray-600 text-gray-300 hover:bg-text-green-300'
 						}`}>
 						Class
@@ -731,7 +731,7 @@ export default function Dashboard() {
 				<ul>
 					<li
 						className={`mb-5 p-2 px-6 ${
-							activeTab === 'individual' ? 'bg-green-500' : ''
+							activeTab === 'individual' ? 'bg-green-500 text-white' : ''
 						}`}>
 						<button
 							onClick={() => setActiveTab('individual')}
@@ -743,7 +743,7 @@ export default function Dashboard() {
 					</li>
 					<li
 						className={`mb-10 p-2 px-6 ${
-							activeTab === 'group' ? 'bg-green-500' : ''
+							activeTab === 'group' ? 'bg-green-500 text-white' : ''
 						}`}>
 						<button
 							onClick={() => setActiveTab('group')}
@@ -951,14 +951,14 @@ export default function Dashboard() {
 									<div className='space-y-2'>
 										{user.publicMetadata.role !== 'admin' && (
 											<Link href='/users/bookasession'>
-												<button className='w-full bg-green-600 hover:bg-green-700 text-green-300 font-bold py-2 px-4 rounded-lg transition duration-200'>
+												<button className='w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
 													Book New Session
 												</button>
 											</Link>
 										)}
 										{user.publicMetadata.role === 'admin' && (
 											<Link href='/admin/manage-users'>
-												<button className='w-full bg-green-600 hover:bg-green-700 text-green-300 font-bold py-2 px-4 rounded-lg transition duration-200'>
+												<button className='w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200'>
 													Go To Admin Panel
 												</button>
 											</Link>
@@ -978,7 +978,7 @@ export default function Dashboard() {
 									{user.publicMetadata.role === 'admin' && (
 										<button
 											onClick={toggleCalendarView}
-											className='flex items-center bg-green-500 hover:bg-green-600 text-green-300 font-bold py-2 px-4 rounded transition duration-200 mt-2 lg:mt-0'>
+											className='flex items-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-200 mt-2 lg:mt-0'>
 											{showCalendarView ? (
 												<>
 													<FaListUl className='mr-2' /> Show Card View
