@@ -87,7 +87,7 @@ export default function MarketManagement() {
 	}
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white'>
+		<div className='min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-green-500'>
 			<AdminNavbarComponent />
 			<div className='container mx-auto p-6'>
 				<motion.h1
@@ -98,7 +98,7 @@ export default function MarketManagement() {
 					Market Management
 				</motion.h1>
 
-				<div className='grid grid-cols-1 md:grid-cols-1 gap-8'>
+				<div className='grid grid-cols-1 md:grid-cols-1 gap-8 text-green-500'>
 					<AddItemCard
 						newItemName={newItemName}
 						setNewItemName={setNewItemName}
@@ -138,13 +138,14 @@ const AddItemCard = ({
 			initial={{ opacity: 0, scale: 0.9 }}
 			animate={{ opacity: 1, scale: 1 }}
 			transition={{ duration: 0.5 }}
-			className='bg-gray-800 p-6 rounded-2xl hover:shadow-green-500 shadow-lg'>
+			className='bg-gray-800 p-6 text-green-500 rounded-2xl hover:shadow-green-500 shadow-lg'>
 			<h2 className='text-3xl font-bold mb-6 text-green-400'>Add New Item</h2>
-			<div className='space-y-4'>
+			<div className='space-y-4 text-green-500'>
 				<Input
 					type='text'
 					placeholder='Item Name'
 					value={newItemName}
+					className='text-green-500'
 					onChange={(e: any) => setNewItemName(e.target.value)}
 				/>
 				<Input
@@ -282,7 +283,7 @@ const ItemCard = ({
 const Input = ({ type, placeholder, value, onChange }: any) => (
 	<input
 		type={type}
-		className='w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300'
+		className='w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-green-500 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300'
 		placeholder={placeholder}
 		value={value}
 		onChange={onChange}
