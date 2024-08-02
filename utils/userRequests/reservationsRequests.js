@@ -16,7 +16,7 @@ export const fetchReservations = async userId => {
             activity:activities (
                 id,
                 name,
-                coach_id,
+
                 credits
             ),
             coach:coaches (
@@ -57,7 +57,6 @@ export const fetchReservationsGroup = async userId => {
             activity:activities (
                 id,
                 name,
-                coach_id,
                 credits
             ),
             coach:coaches (

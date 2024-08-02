@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import NavbarComponent from '@/app/components/users/navbar'
 import { UserButton, useUser } from '@clerk/nextjs'
+import CalendarView from '@/app/components/admin/CalendarView'
 import {
 	fetchReservations,
 	fetchReservationsGroup,
@@ -37,7 +38,8 @@ import {
 	FaUsers,
 	FaBars,
 	FaClock,
-	FaShoppingCart
+	FaShoppingCart,
+	FaListUl
 } from 'react-icons/fa'
 import Link from 'next/link'
 import useConfirmationModal from '../../../../../utils/useConfirmationModel'
@@ -101,7 +103,7 @@ interface Session {
 const LoadingOverlay = () => (
 	<div className='fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50'>
 		<div className='p-5 mx-auto text-center flex flex-col justify-center items-center rounded-lg'>
-			<RingLoader color={'#2274A5'} size={70} />
+			<RingLoader color={'#10B981'} size={70} />
 			<p className='mt-4 text-green-400 text-xl'>Cancelling reservation...</p>
 		</div>
 	</div>
@@ -118,6 +120,10 @@ export default function Dashboard() {
 		workoutDay: 0
 	})
 	const [adminGroupSessions, setAdminGroupSessions] = useState<any[]>([])
+	const [showCalendarView, setShowCalendarView] = useState(false)
+	const toggleCalendarView = () => {
+		setShowCalendarView(!showCalendarView)
+	}
 	const [isCancelling, setIsCancelling] = useState(false)
 	const [totalUsers, setTotalUsers] = useState(0)
 	const [totalActivities, setTotalActivities] = useState(0)
@@ -564,7 +570,7 @@ export default function Dashboard() {
 							<h3 className='text-2xl font-bold text-green-400'>
 								{session.activities.name}
 							</h3>
-							<span className='text-sm bg-green-600 text-green-500 px-2 text-nowrap py-1 rounded-full'>
+							<span className='text-sm bg-green-600 text-white px-2 text-nowrap py-1 rounded-full'>
 								{session.activities.credits} Credits
 							</span>
 						</div>
@@ -963,20 +969,47 @@ export default function Dashboard() {
 							{/* Reservations */}
 
 							<div className='lg:w-3/4 space-y-8'>
-								<h2 className='text-3xl md:text-4xl font-bold tracking-tight mb-6 text-green-400'>
-									{activeTab === 'individual'
-										? 'Personal Training Reservations'
-										: 'Group Classes Reservations'}
-								</h2>
+								<div className='flex justify-between items-center flex-wrap mb-6'>
+									<h2 className='text-3xl md:text-4xl font-bold tracking-tight text-green-400'>
+										{activeTab === 'individual'
+											? 'Personal Training Reservations'
+											: 'Group Classes Reservations'}
+									</h2>
+									{user.publicMetadata.role === 'admin' && (
+										<button
+											onClick={toggleCalendarView}
+											className='flex items-center bg-green-500 hover:bg-green-600 text-green-300 font-bold py-2 px-4 rounded transition duration-200 mt-2 lg:mt-0'>
+											{showCalendarView ? (
+												<>
+													<FaListUl className='mr-2' /> Show Card View
+												</>
+											) : (
+												<>
+													<FaCalendarAlt className='mr-2' /> Show Calendar View
+												</>
+											)}
+										</button>
+									)}
+								</div>
+
 								{user.publicMetadata.role === 'admin' ? (
 									// Admin view
-									<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-										{renderAdminSessions(
-											activeTab === 'individual'
-												? adminIndividualSessions
-												: adminGroupSessions
-										)}
-									</div>
+									showCalendarView ? (
+										<CalendarView
+											sessions={[
+												...adminIndividualSessions,
+												...adminGroupSessions
+											]}
+										/>
+									) : (
+										<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+											{renderAdminSessions(
+												activeTab === 'individual'
+													? adminIndividualSessions
+													: adminGroupSessions
+											)}
+										</div>
+									)
 								) : (
 									// Non-admin view
 									<>
@@ -995,24 +1028,24 @@ export default function Dashboard() {
 												</p>
 											</motion.div>
 										) : (
-											<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+											<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
 												{paginatedReservations.map((reservation, index) => (
 													<motion.div
 														key={reservation.id}
 														initial={{ opacity: 0, y: 20 }}
 														animate={{ opacity: 1, y: 0 }}
 														transition={{ delay: index * 0.1 }}
-														className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-xl hover:shadow-green-500/30 transition duration-300'>
+														className='bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden shadow-lg hover:shadow-green-500/30 transition duration-300'>
 														<div className='p-6 space-y-4'>
 															<div className='flex justify-between items-center mb-4'>
 																<h3 className='text-2xl font-bold text-green-400'>
 																	{reservation.activity.name}
 																</h3>
-																<span className='text-sm bg-green-600 text-green-300 px-2 py-1 text-nowrap rounded-full'>
+																<span className='text-sm bg-green-600 text-white px-2 py-1 rounded-full whitespace-nowrap'>
 																	{reservation.activity.credits} Credits
 																</span>
 															</div>
-															<div className='space-y-2 text-gray-300'>
+															<div className='space-y-2 text-gray-300 text-sm'>
 																<p className='flex items-center'>
 																	<FaCalendarAlt className='mr-2 text-green-500' />
 																	{reservation.date}
@@ -1033,8 +1066,8 @@ export default function Dashboard() {
 																	</p>
 																)}
 															</div>
-															<div className='bg-gray-700 rounded-lg p-3 mt-4'>
-																<p className='text-sm text-gray-300'>
+															<div className='bg-gray-700 rounded-lg p-3 mt-4 text-xs'>
+																<p className='text-gray-300'>
 																	<span className='font-semibold text-green-400'>
 																		Additions:
 																	</span>{' '}
@@ -1053,7 +1086,7 @@ export default function Dashboard() {
 																</p>
 															</div>
 															<div className='flex flex-col space-y-2 mt-4'>
-																<div className='flex flex-row justify-center items-center'>
+																<div className='flex justify-center items-center'>
 																	<AddToCalendarButton
 																		name={`${reservation.activity.name} with ${reservation.coach.name}`}
 																		startDate={reservation.date}
@@ -1068,10 +1101,10 @@ export default function Dashboard() {
 																		inline
 																	/>
 																</div>
-																<div className='flex flex-col md:flex-row justify-between mt-4'>
+																<div className='flex flex-col sm:flex-row justify-between mt-4 space-y-2 sm:space-y-0 sm:space-x-2'>
 																	<button
 																		onClick={() => openMarketModal(reservation)}
-																		className='bg-green-600 hover:bg-green-700 text-green-300 font-bold py-2 px-4 mb-2 md:mb-0 rounded-lg transition duration-200 flex-grow mr-0 md:mr-2'
+																		className='bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex-grow'
 																		disabled={buttonLoading}>
 																		Add Items
 																	</button>
