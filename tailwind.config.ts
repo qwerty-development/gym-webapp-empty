@@ -11,10 +11,10 @@ const config: Config = {
 			colors: {
 				green: {
 					200: '#FFB3A7', // Lighter shade of bittersweet
-					300: '#FF9281', // Light shade of bittersweet
-					400: '#FF715B', // Primary bittersweet
-					500: '#2274A5', // Primary blue
-					600: '#1D6089', // Darker shade of blue
+					300: '#1D6089', // Light shade of bittersweet
+					400: '#2274A5', // Primary bittersweet
+					500: '#00B2FF', // Primary blue
+					600: '#66CFFF', // Darker shade of blue
 					700: '#18506E', // Even darker shade of blue
 					800: '#134054', // Much darker shade of blue
 					900: '#0E303A' // Very dark shade of blue

@@ -224,14 +224,14 @@ const Shop: React.FC = () => {
 								<div
 									key={item.id}
 									className='bg-gray-100 rounded-lg shadow-lg p-6 flex flex-col items-center'>
-									<h2 className='text-2xl font-bold text-blue-700 mb-4'>
+									<h2 className='text-2xl font-bold text-gray-400 mb-4'>
 										{item.name}
 									</h2>
-									<p className='text-lg text-green-500 mb-4'>
+									<p className='text-lg text-gray-400 mb-4'>
 										{item.price.toFixed(2)} credits
 									</p>
 									<button
-										className='mt-auto px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-blue-600'
+										className='mt-auto px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600'
 										onClick={() => addToCart(item)}>
 										Add to cart
 									</button>

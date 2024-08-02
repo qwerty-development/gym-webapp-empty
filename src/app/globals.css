@@ -282,12 +282,12 @@ body {
 }
 
 .custom-calendar .rmdp-day.rmdp-today span {
-	background-color: #ff715b !important; /* primary bittersweet */
+	background-color: #00b2ff !important; /* primary bittersweet */
 	color: #010b13 !important; /* primary black */
 }
 
 .custom-calendar .rmdp-week-day {
-	color: #ff715b !important; /* primary bittersweet */
+	color: #00b2ff !important; /* primary bittersweet */
 }
 
 .custom-calendar .rmdp-header-values {
@@ -334,7 +334,7 @@ body {
 }
 
 .custom-calendar .rmdp-range-hover {
-	background-color: #ff715b !important; /* primary bittersweet */
+	background-color: #00b2ff !important; /* primary bittersweet */
 	color: #010b13 !important; /* primary black */
 }
 
@@ -378,7 +378,7 @@ body {
 }
 
 .rmdp-week-day {
-	color: #ff715b !important; /* primary bittersweet */
+	color: #00b2ff !important; /* primary bittersweet */
 }
 
 .rmdp-panel-body .b-date {
@@ -417,7 +417,7 @@ body {
 }
 
 .custom-datepicker .react-datepicker__day-name {
-	color: #ff715b !important; /* primary bittersweet */
+	color: #00b2ff !important; /* primary bittersweet */
 }
 
 .custom-datepicker .react-datepicker__day {
@@ -586,7 +586,7 @@ body {
 }
 
 .rbc-current-time-indicator {
-	background-color: #ff715b; /* bittersweet */
+	background-color: #00b2ff; /* bittersweet */
 }
 
 .rbc-event-label {

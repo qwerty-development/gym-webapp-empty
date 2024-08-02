@@ -20,7 +20,7 @@ const MarketModal = ({
 			className='modal rounded-3xl p-4 sm:p-6 md:p-8 mx-auto mt-10 sm:mt-20 w-11/12 md:max-w-4xl'
 			style={{
 				content: {
-					backgroundColor: 'rgba(53, 59, 53, 0.9)',
+					backgroundColor: '#fffff',
 					backdropFilter: 'blur(16px)'
 				}
 			}}
@@ -32,7 +32,7 @@ const MarketModal = ({
 				{market?.map((item: any) => (
 					<motion.div
 						key={item.id}
-						className='bg-gray-700 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-green-400 hover:shadow-lg transition-all duration-300'>
+						className='bg-gray-800 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-green-400 hover:shadow-lg transition-all duration-300'>
 						<div className='flex flex-col h-full'>
 							<div className='flex justify-between items-center text-gray-300 mb-3 sm:mb-4'>
 								<span className='font-semibold text-sm sm:text-lg'>
