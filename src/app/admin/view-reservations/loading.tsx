@@ -4,8 +4,8 @@ import { RotateLoader } from 'react-spinners'
 
 export default function Loading() {
 	return (
-		<div className='flex justify-center items-center h-screen'>
-			<RotateLoader color={'#4ADE80'} loading={true} size={15} />
+		<div className='flex justify-center items-center h-screen bg-gray-800 '>
+			<RotateLoader color={'#2274A5'} loading={true} size={15} />
 		</div>
 	)
 }
