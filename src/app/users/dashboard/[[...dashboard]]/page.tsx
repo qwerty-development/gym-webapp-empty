@@ -796,7 +796,7 @@ export default function Dashboard() {
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
 							className='flex justify-center items-center h-64'>
-							<RingLoader color={'#2274A5'} size={100} />
+							<RingLoader color={'#00B2FF'} size={100} />
 						</motion.div>
 					) : (
 						<motion.div

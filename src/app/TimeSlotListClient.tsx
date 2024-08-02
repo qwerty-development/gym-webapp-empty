@@ -46,6 +46,13 @@ export default function TimeSlotListClient({
 	const [bookedFilter, setBookedFilter] = useState(
 		searchParams.get('booked') || 'all'
 	)
+	const toggleTrainingType = (isPrivate: boolean) => {
+		setIsLoading(true)
+		const newParams = new URLSearchParams(searchParams.toString())
+		newParams.set('isPrivateTraining', isPrivate.toString())
+		newParams.set('page', '1') // Reset to first page when switching
+		router.replace(`/admin/view-reservations?${newParams.toString()}`)
+	}
 
 	useEffect(() => {
 		setTimeSlots(initialTimeSlots)
@@ -70,13 +77,19 @@ export default function TimeSlotListClient({
 		if (filter.endTime) params.set('endTime', filter.endTime)
 		params.set('isPrivateTraining', isPrivateTraining.toString())
 		params.set('page', page.toString())
-		router.push(`/admin/view-reservations?${params.toString()}`)
+		router.replace(`/admin/view-reservations?${params.toString()}`)
 	}
 
 	useEffect(() => {
 		applyFilters(currentPage)
-	}, [filter, bookedFilter, isPrivateTraining])
+	}, [filter, bookedFilter, isPrivateTraining, currentPage])
 
+	useEffect(() => {
+		const isPrivate = searchParams.get('isPrivateTraining') === 'true'
+		if (isPrivate !== isPrivateTraining) {
+			setIsPrivateTraining(isPrivate)
+		}
+	}, [searchParams])
 	useEffect(() => {
 		setIsLoading(false)
 	}, [timeSlots])
@@ -429,7 +442,7 @@ export default function TimeSlotListClient({
 				<motion.button
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
-					onClick={() => setIsPrivateTraining(true)}
+					onClick={() => toggleTrainingType(true)}
 					className={`px-6 py-3 rounded-full ${
 						isPrivateTraining
 							? 'bg-green-500 text-white'
@@ -440,7 +453,7 @@ export default function TimeSlotListClient({
 				<motion.button
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
-					onClick={() => setIsPrivateTraining(false)}
+					onClick={() => toggleTrainingType(false)}
 					className={`px-6 py-3 rounded-full ${
 						!isPrivateTraining
 							? 'bg-green-500 text-white'

@@ -587,7 +587,7 @@ export default function Example() {
 						{activitiesLoading ? (
 							<div className='flex items-center justify-center'>
 								<RotateLoader
-									color={'#2274A5'}
+									color={'#00B2FF'}
 									loading={activitiesLoading}
 									size={20}
 								/>
@@ -619,7 +619,7 @@ export default function Example() {
 							{coachesLoading ? (
 								<div className='flex items-center justify-center'>
 									<RotateLoader
-										color={'#2274A5'}
+										color={'#00B2FF'}
 										loading={coachesLoading}
 										size={20}
 									/>
