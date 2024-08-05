@@ -585,8 +585,7 @@ export default function Dashboard() {
 							</p>
 							<p className='flex items-center'>
 								<FaUser className='mr-2 text-green-500' />
-								Coach:
-								{session.coaches.name}
+								{`Coach: ${session.coaches.name}`}
 							</p>
 							{activeTab === 'individual' ? (
 								<p className='flex items-center'>
