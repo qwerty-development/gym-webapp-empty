@@ -27,7 +27,7 @@ export const SearchUsers = () => {
 						id='search'
 						name='search'
 						type='text'
-						className='w-full px-4 py-3 bg-gray-700 text-white border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
+						className='w-full px-4 py-3 bg-gray-700 text-green-500 border-2 border-green-500 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition duration-300'
 						placeholder='Enter a name or email'
 					/>
 					<button
