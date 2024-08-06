@@ -17,10 +17,10 @@ const ActivitySelection = ({
 }: any) => {
 	const activityIcons = {
 		1: <FaHeart />,
-		2: <FaBiking />,
-		3: <FaRunning />,
-		10: <FaDumbbell />,
-		11: <FaFirstAid />
+		2: <FaDumbbell />,
+		3: <FaFirstAid />,
+		10: <FaBiking />,
+		11: <FaRunning />
 	}
 
 	return (
