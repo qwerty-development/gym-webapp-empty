@@ -4,8 +4,12 @@ import {
 	FaHeart,
 	FaBiking,
 	FaDumbbell,
-	FaFirstAid
+	FaFirstAid,
+	FaMusic
 } from 'react-icons/fa'
+import { GiBoxingGlove } from 'react-icons/gi'
+import { TbStretching } from 'react-icons/tb'
+import { MdOutlineSportsGymnastics } from 'react-icons/md'
 import { motion } from 'framer-motion'
 
 const ActivitySelection = ({
@@ -16,11 +20,15 @@ const ActivitySelection = ({
 	isPrivateTraining
 }: any) => {
 	const activityIcons = {
-		1: <FaHeart />,
+		1: <MdOutlineSportsGymnastics />,
 		2: <FaDumbbell />,
-		3: <FaFirstAid />,
-		10: <FaBiking />,
-		11: <FaRunning />
+		3: <TbStretching />,
+		4: <FaBiking />,
+		5: <FaMusic />,
+		6: <GiBoxingGlove />,
+		7: <FaRunning />,
+		8: <FaHeart />,
+		9: <FaFirstAid />
 	}
 
 	return (
