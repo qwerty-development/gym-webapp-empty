@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UserButton } from '@clerk/nextjs'
@@ -12,8 +10,7 @@ import {
 	FaUser,
 	FaCalendarAlt,
 	FaCog,
-	FaShoppingCart,
-	FaInfo
+	FaShoppingCart
 } from 'react-icons/fa'
 import Link from 'next/link'
 import TokenInfo from './TokenInfo'
@@ -62,16 +59,8 @@ export default function NavbarComponent() {
 		<nav className='bg-gray-900 text-white border-b-2 border-blue-500'>
 			<div className='mx-auto max-w-7xl px-4 lg:px-8'>
 				<div className='flex items-center justify-between h-16'>
-					<div className='flex items-center'>
-						<Link href="/">
-							<Image
-								src="/logo.png"
-								alt="Gym Logo"
-								width={50}
-								height={60}
-								className="mr-20"
-							/>
-						</Link>
+					{/* Logo and mobile menu button */}
+					<div className='flex items-center justify-between w-full md:w-auto'>
 						<div className='md:hidden'>
 							<button
 								onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -84,25 +73,50 @@ export default function NavbarComponent() {
 								)}
 							</button>
 						</div>
+						<div className='flex-grow text-center lg:ml-60 2xl:mx-auto md:text-left'>
+							<Link href='/'>
+								<Image
+									src='/logoGym.png'
+									alt='Gym Logo'
+									width={40}
+									height={40}
+									className='inline-block'
+								/>
+							</Link>
+						</div>
+						<div className='md:hidden'>
+							<UserButton
+								afterSignOutUrl='/'
+								appearance={{
+									elements: {
+										avatarBox: 'border-2 border-blue-500'
+									}
+								}}
+							/>
+						</div>
 					</div>
 
+					{/* Navigation items for medium and larger screens */}
 					<div className='hidden md:flex justify-center items-center space-x-2 flex-grow'>
 						{navItems.map(item => (
 							<Link
 								key={item.href}
 								href={item.href}
-								className={`flex items-center justify-center w-min px-7 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-center ${currentPage === item.href
+								className={`flex items-center justify-center w-min px-7 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-center ${
+									currentPage === item.href
 										? 'bg-blue-500 text-white'
 										: 'text-gray-300 hover:bg-blue-300 hover:text-white'
-									}`}>
+								}`}>
 								<item.icon className='mr-2' />
 								{item.label}
 							</Link>
 						))}
 					</div>
-					<div className='flex items-center justify-end'>
+
+					{/* User button and wallet balance for medium and larger screens */}
+					<div className='hidden md:flex items-center justify-end space-x-2 sm:space-x-3 md:space-x-4'>
 						<div
-							className='bg-gray-800 text-blue-300 px-3 py-1 flex rounded-full mr-3 text-sm border text-nowrap border-blue-500 relative'
+							className='bg-gray-800 text-blue-300 px-2 sm:px-3 py-1 flex rounded-full text-xs sm:text-sm border text-nowrap border-blue-500 relative'
 							onMouseEnter={() => setShowTokenInfo(true)}
 							onMouseLeave={() => setShowTokenInfo(false)}>
 							{walletBalance ? walletBalance : 0} credits
@@ -121,6 +135,7 @@ export default function NavbarComponent() {
 				</div>
 			</div>
 
+			{/* Mobile menu */}
 			<AnimatePresence>
 				{isMenuOpen && (
 					<motion.div
@@ -133,10 +148,11 @@ export default function NavbarComponent() {
 								<Link
 									key={item.href}
 									href={item.href}
-									className={`flex items-center justify-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${currentPage === item.href
+									className={`flex items-center justify-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+										currentPage === item.href
 											? 'bg-blue-500 text-white'
 											: 'text-gray-300 hover:bg-blue-300 hover:text-white'
-										}`}
+									}`}
 									onClick={() => setIsMenuOpen(false)}>
 									<item.icon className='mr-2' />
 									{item.label}
