@@ -361,7 +361,7 @@ export default function BookForClient() {
 			: ''
 	return (
 		<div
-			className='min-h-screen bg-gradient-to-br from-white to-gray-100'
+			className='min-h-screen bg-gradient-to-br bg-gray-900 to-gray-100'
 			id='__next'>
 			<motion.div
 				initial={{ opacity: 0 }}
@@ -373,7 +373,7 @@ export default function BookForClient() {
 				</h1>
 
 				<FadeInSection>
-					<div className='mb-16 bg-white text-gray-800 shadow-lg rounded-3xl p-8'>
+					<div className='mb-16  text-gray-800 shadow-lg rounded-3xl p-8'>
 						<h2 className='text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-green-700 mb-6 text-center'>
 							Select Your User
 						</h2>

@@ -211,12 +211,12 @@ export default function AddTimeSlotComponent() {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.5 }}
-			className='min-h-screen bg-white text-black font-sans p-8'>
+			className='min-h-screen bg-gray-900  text-black font-sans p-8'>
 			<h1 className='text-4xl font-bold mb-8 text-green-500'>
 				Add Private Time Slots
 			</h1>
 
-			<motion.div className='bg-gray-100 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
+			<motion.div className='bg-white rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
 					<Select
 						placeholder='Select Coach'

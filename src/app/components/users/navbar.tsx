@@ -76,7 +76,7 @@ export default function NavbarComponent() {
 						<div className='flex-grow text-center lg:ml-60 2xl:mx-auto md:text-left'>
 							<Link href='/'>
 								<Image
-									src='/logoGym.png'
+									src='/logo.png'
 									alt='Gym Logo'
 									width={40}
 									height={40}
