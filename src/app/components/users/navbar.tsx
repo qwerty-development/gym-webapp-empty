@@ -65,11 +65,11 @@ export default function NavbarComponent() {
 					<div className='flex items-center'>
 						<Link href="/">
 							<Image
-								src="/logoGym.png"
+								src="/logo.png"
 								alt="Gym Logo"
-								width={40}
-								height={40}
-								className="mr-64"
+								width={50}
+								height={60}
+								className="mr-20"
 							/>
 						</Link>
 						<div className='md:hidden'>
