@@ -1,28 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 :root {
-	--foreground-rgb: 53, 59, 53; /* Kept as is, assuming it's a desired grey */
-	--background-start-rgb: 242, 243, 244; /* primary white */
-	--background-end-rgb: 242, 243, 244; /* primary white */
+	--foreground-rgb: 242, 243, 244;
+	/* primary white */
+	--background-start-rgb: 18, 18, 18;
+	/* dark background */
+	--background-end-rgb: 0, 0, 0;
+	/* true black */
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--foreground-rgb: 242, 243, 244; /* primary white */
-		--background-start-rgb: 53, 59, 53; /* Kept as is, assuming it's a desired grey */
-		--background-end-rgb: 1, 11, 19; /* primary black */
+		--foreground-rgb: 242, 243, 244;
+		/* primary white */
+		--background-start-rgb: 18, 18, 18;
+		/* dark background */
+		--background-end-rgb: 0, 0, 0;
+		/* true black */
 	}
 }
 
 body {
 	color: rgb(var(--foreground-rgb));
-	background: linear-gradient(
-			to bottom,
+	background: linear-gradient(to bottom,
 			transparent,
-			rgb(var(--background-end-rgb))
-		)
-		rgb(var(--background-start-rgb));
+			rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
 @layer utilities {
@@ -32,47 +36,61 @@ body {
 }
 
 .react-select-container .react-select__control {
-	background-color: #010b13; /* primary black */
-	border-color: #1a5d8a; /* Darker shade of primary blue */
+	background-color: #010b13;
+	/* primary black */
+	border-color: #004aad;
+	/* Darker shade of primary blue */
 }
 
 .react-select-container .react-select__menu {
-	background-color: #010b13; /* primary black */
+	background-color: #010b13;
+	/* primary black */
 }
 
 .react-select-container .react-select__option {
-	background-color: #010b13; /* primary black */
-	color: #f2f3f4; /* primary white */
+	background-color: #010b13;
+	/* primary black */
+	color: #f2f3f4;
+	/* primary white */
 }
 
 .react-select-container .react-select__option--is-focused {
-	background-color: #1a5d8a; /* Darker shade of primary blue */
+	background-color: #004aad;
+	/* Darker shade of primary blue */
 }
 
 .react-select-container .react-select__single-value {
-	color: #f2f3f4; /* primary white */
+	color: #f2f3f4;
+	/* primary white */
 }
 
 .custom-calendar {
 	border-radius: 15px;
-	border: 1px #2274a5 solid; /* primary blue */
+	border: 1px #004aad solid;
+	/* primary blue */
 	padding: 4px 12px;
-	background-color: #f2f3f4; /* primary white */
+	background-color: #f2f3f4;
+	/* primary white */
 	height: 22px;
-	box-shadow: 0 0 2px #2274a5; /* primary blue */
+	box-shadow: 0 0 2px #004aad;
+	/* primary blue */
 }
 
 @keyframes highlightPulse {
 	0% {
-		box-shadow: 0 0 0 0 rgba(34, 116, 165, 0.7); /* primary blue with opacity */
+		box-shadow: 0 0 0 0 rgba(34, 116, 165, 0.7);
+		/* primary blue with opacity */
 	}
+
 	70% {
 		box-shadow: 0 0 0 20px rgba(34, 116, 165, 0);
 	}
+
 	100% {
 		box-shadow: 0 0 0 0 rgba(34, 116, 165, 0);
 	}
 }
+
 .react-select-container .react-select__input-container::after {
 	content: none;
 }
@@ -82,42 +100,46 @@ body {
 }
 
 .react-select-container .react-select__dropdown-indicator {
-	color: #2274a5; /* primary blue */
+	color: #2274a5;
+	/* primary blue */
 }
 
 @keyframes neon {
+
 	0%,
 	100% {
-		text-shadow: 0 0 2px #2274a5, 0 0 4px #2274a5, 0 0 6px #2274a5; /* primary blue */
+		text-shadow: 0 0 2px #2274a5, 0 0 4px #2274a5, 0 0 6px #2274a5;
+		/* primary blue */
 	}
+
 	50% {
-		text-shadow: 0 0 3px #2274a5, 0 0 5px #2274a5, 0 0 7px #2274a5; /* primary blue */
+		text-shadow: 0 0 3px #2274a5, 0 0 5px #2274a5, 0 0 7px #2274a5;
+		/* primary blue */
 	}
 }
 
 .neon-button {
-	@apply rounded-full bg-gray-800 px-6 py-3 text-lg font-semibold text-blue-400
-           hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-300
-           focus:ring-offset-1 focus:ring-offset-gray-800 transition-all duration-300
-           flex items-center justify-center;
+	@apply rounded-full bg-gray-800 px-6 py-3 text-lg font-semibold text-blue-400 hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-300 focus:ring-offset-1 focus:ring-offset-gray-800 transition-all duration-300 flex items-center justify-center;
 }
 
 .filter.drop-shadow-glow {
-	filter: drop-shadow(
-		0 0 10px rgba(34, 116, 165, 0.7)
-	); /* primary blue with opacity */
+	filter: drop-shadow(0 0 10px rgba(34, 116, 165, 0.7));
+	/* primary blue with opacity */
 }
 
 .react-select-container .react-select__dropdown-indicator:hover {
-	color: #1a5d8a; /* Darker shade of primary blue */
+	color: #1a5d8a;
+	/* Darker shade of primary blue */
 }
+
 .loader-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: rgba(1, 11, 19, 0.7); /* primary black with opacity */
+	background: rgba(1, 11, 19, 0.7);
+	/* primary black with opacity */
 	backdrop-filter: blur(5px);
 
 	display: flex;
@@ -129,13 +151,17 @@ body {
 .highlight-section {
 	animation: highlightPulse 2s ease-out;
 }
+
 .section {
 	scroll-margin-top: 100px;
 }
+
 .custom-calendar:focus {
 	outline: none;
-	border: 1px solid #2274a5; /* primary blue */
-	box-shadow: 0 0 10px 2px #1a5d8a; /* Darker shade of primary blue */
+	border: 1px solid #2274a5;
+	/* primary blue */
+	box-shadow: 0 0 10px 2px #1a5d8a;
+	/* Darker shade of primary blue */
 }
 
 .react-datepicker {
@@ -173,10 +199,13 @@ body {
 .react-datepicker__day {
 	width: 100% !important;
 }
+
 /* Adjust the Add to Calendar button */
 .atcb-button {
-	background-color: #2274a5; /* primary blue */
-	color: #f2f3f4; /* primary white */
+	background-color: #2274a5;
+	/* primary blue */
+	color: #f2f3f4;
+	/* primary white */
 	font-weight: bold;
 	border: none;
 	border-radius: 4px;
@@ -199,6 +228,7 @@ body {
 	.calendar-container {
 		max-height: 400px;
 	}
+
 	.rbc-calendar {
 		min-width: 600px;
 	}
@@ -206,12 +236,15 @@ body {
 
 .calendar-container .rbc-header {
 	top: 0;
-	background: #f2f3f4; /* primary white */
+	background: #f2f3f4;
+	/* primary white */
 }
 
 .cl-userButton {
-	background-color: #2274a5 !important; /* primary blue */
+	background-color: #2274a5 !important;
+	/* primary blue */
 }
+
 /* Centering and styling the buttons */
 .addButtonContainer {
 	display: flex;
@@ -220,9 +253,11 @@ body {
 }
 
 .addButton {
-	background-color: #2274a5; /* primary blue */
+	background-color: #2274a5;
+	/* primary blue */
 	border: none;
-	color: #f2f3f4; /* primary white */
+	color: #f2f3f4;
+	/* primary white */
 	padding: 10px 20px;
 	text-align: center;
 	text-decoration: none;
@@ -235,16 +270,20 @@ body {
 }
 
 .addButton:hover {
-	background-color: #1a5d8a; /* Darker shade of primary blue */
+	background-color: #1a5d8a;
+	/* Darker shade of primary blue */
 }
+
 /* modalStyles.css */
 .modal {
 	position: fixed;
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	background-color: #f2f3f4; /* primary white */
-	box-shadow: 0px 4px 8px rgba(1, 11, 19, 0.1); /* primary black with opacity */
+	background-color: #f2f3f4;
+	/* primary white */
+	box-shadow: 0px 4px 8px rgba(1, 11, 19, 0.1);
+	/* primary black with opacity */
 	padding: 20px;
 
 	z-index: 1000;
@@ -255,142 +294,190 @@ body {
 }
 
 .custom-date-picker {
-	background-color: #010b13 !important; /* primary black */
-	border-color: #2274a5 !important; /* primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #010b13 !important;
+	/* primary black */
+	border-color: #2274a5 !important;
+	/* primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-date-picker-container .rmdp-wrapper {
-	background-color: #010b13 !important; /* primary black */
-	border-color: #2274a5 !important; /* primary blue */
+	background-color: #010b13 !important;
+	/* primary black */
+	border-color: #2274a5 !important;
+	/* primary blue */
 }
 
 .custom-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span {
-	color: #f2f3f4 !important; /* primary white */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
-.custom-calendar
-	.rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden)
-	span:hover {
-	background-color: #1a5d8a !important; /* Darker shade of primary blue */
-	color: #f2f3f4 !important; /* primary white */
+.custom-calendar .rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span:hover {
+	background-color: #1a5d8a !important;
+	/* Darker shade of primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-calendar .rmdp-day.rmdp-selected span {
-	background-color: #2274a5 !important; /* primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #2274a5 !important;
+	/* primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-calendar .rmdp-day.rmdp-today span {
-	background-color: #00b2ff !important; /* primary bittersweet */
-	color: #010b13 !important; /* primary black */
+	background-color: #00b2ff !important;
+	/* primary bittersweet */
+	color: #010b13 !important;
+	/* primary black */
 }
 
 .custom-calendar .rmdp-week-day {
-	color: #00b2ff !important; /* primary bittersweet */
+	color: #00b2ff !important;
+	/* primary bittersweet */
 }
 
 .custom-calendar .rmdp-header-values {
-	color: #f2f3f4 !important; /* primary white */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-calendar .rmdp-arrow {
-	border-color: #2274a5 !important; /* primary blue */
+	border-color: #2274a5 !important;
+	/* primary blue */
 }
 
 .custom-calendar .rmdp-arrow-container:hover {
-	background-color: #1a5d8a !important; /* Darker shade of primary blue */
+	background-color: #1a5d8a !important;
+	/* Darker shade of primary blue */
 }
 
 .custom-calendar .rmdp-panel-body li {
-	background-color: #010b13 !important; /* primary black */
-	border-color: #2274a5 !important; /* primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #010b13 !important;
+	/* primary black */
+	border-color: #2274a5 !important;
+	/* primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-calendar .rmdp-panel-body li:hover {
-	background-color: #1a5d8a !important; /* Darker shade of primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #1a5d8a !important;
+	/* Darker shade of primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-calendar .rmdp-toolbar-button {
-	background-color: #2274a5 !important; /* primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #2274a5 !important;
+	/* primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-calendar .rmdp-toolbar-button:hover {
-	background-color: #1a5d8a !important; /* Darker shade of primary blue */
+	background-color: #1a5d8a !important;
+	/* Darker shade of primary blue */
 }
 
 .custom-calendar .rmdp-input {
-	background-color: #010b13 !important; /* primary black */
-	border-color: #2274a5 !important; /* primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #010b13 !important;
+	/* primary black */
+	border-color: #2274a5 !important;
+	/* primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-calendar .rmdp-range {
-	background-color: #1a5d8a !important; /* Darker shade of primary blue */
-	box-shadow: 0 0 3px #2274a5 !important; /* primary blue */
+	background-color: #1a5d8a !important;
+	/* Darker shade of primary blue */
+	box-shadow: 0 0 3px #2274a5 !important;
+	/* primary blue */
 }
 
 .custom-calendar .rmdp-range-hover {
-	background-color: #00b2ff !important; /* primary bittersweet */
-	color: #010b13 !important; /* primary black */
+	background-color: #00b2ff !important;
+	/* primary bittersweet */
+	color: #010b13 !important;
+	/* primary black */
 }
 
 .custom-calendar .rmdp-header {
-	border-bottom-color: #2274a5 !important; /* primary blue */
+	border-bottom-color: #2274a5 !important;
+	/* primary blue */
 }
 
 .custom-calendar .rmdp-day-picker {
-	background-color: #010b13 !important; /* primary black */
+	background-color: #010b13 !important;
+	/* primary black */
 }
 
 .custom-calendar .rmdp-month-picker,
 .custom-calendar .rmdp-year-picker {
-	background-color: #010b13 !important; /* primary black */
+	background-color: #010b13 !important;
+	/* primary black */
 }
 
 .rmdp-arrow-container .rmdp-right {
-	background-color: #2274a5 !important; /* primary blue */
-	color: #2274a5 !important; /* primary blue */
+	background-color: #2274a5 !important;
+	/* primary blue */
+	color: #2274a5 !important;
+	/* primary blue */
 }
+
 .rmdp-header-values {
-	color: #f2f3f4 !important; /* primary white */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .rmdp-day,
 .rmdp-week-day {
-	color: #f2f3f4 !important; /* primary white */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
+
 .rmdp-panel-header {
-	color: #f2f3f4 !important; /* primary white */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
+
 .rmdp-arrow {
-	border-color: #2274a5 !important; /* primary blue */
+	border-color: #2274a5 !important;
+	/* primary blue */
 }
 
 .custom-calendar .rmdp-header-values span {
-	color: #f2f3f4 !important; /* primary white */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
+
 .rmdp-day.rmdp-selected span:not(.highlight) {
-	background-color: #2274a5 !important; /* primary blue */
+	background-color: #2274a5 !important;
+	/* primary blue */
 }
 
 .rmdp-week-day {
-	color: #00b2ff !important; /* primary bittersweet */
+	color: #00b2ff !important;
+	/* primary bittersweet */
 }
 
 .rmdp-panel-body .b-date {
-	background-color: #2274a5 !important; /* primary blue */
+	background-color: #2274a5 !important;
+	/* primary blue */
 }
 
 .rmdp-panel-body li .b-deselect {
-	background-color: #2274a5 !important; /* primary blue */
+	background-color: #2274a5 !important;
+	/* primary blue */
 }
 
 .rmdp-toolbar div {
-	background-color: #2274a5 !important; /* primary blue */
+	background-color: #2274a5 !important;
+	/* primary blue */
 }
 
 .overlay {
@@ -399,72 +486,94 @@ body {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: rgba(1, 11, 19, 0.5); /* primary black with opacity */
+	background-color: rgba(1, 11, 19, 0.5);
+	/* primary black with opacity */
 	z-index: 999;
 }
 
 .custom-datepicker {
-	background-color: #010b13 !important; /* primary black */
+	background-color: #010b13 !important;
+	/* primary black */
 }
 
 .custom-datepicker .react-datepicker__header {
-	background-color: #010b13 !important; /* primary black */
-	border-bottom: 1px solid #2274a5 !important; /* primary blue */
+	background-color: #010b13 !important;
+	/* primary black */
+	border-bottom: 1px solid #2274a5 !important;
+	/* primary blue */
 }
 
 .custom-datepicker .react-datepicker__current-month {
-	color: #2274a5 !important; /* primary blue */
+	color: #2274a5 !important;
+	/* primary blue */
 }
 
 .custom-datepicker .react-datepicker__day-name {
-	color: #00b2ff !important; /* primary bittersweet */
+	color: #00b2ff !important;
+	/* primary bittersweet */
 }
 
 .custom-datepicker .react-datepicker__day {
-	color: #f2f3f4 !important; /* primary white */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-datepicker .react-datepicker__day:hover {
-	background-color: #1a5d8a !important; /* Darker shade of primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #1a5d8a !important;
+	/* Darker shade of primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-datepicker .react-datepicker__day--selected {
-	background-color: #2274a5 !important; /* primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #2274a5 !important;
+	/* primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
+
 .custom-datepicker .react-datepicker__day--keyboard-selected {
-	background-color: #1a5d8a !important; /* Darker shade of primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #1a5d8a !important;
+	/* Darker shade of primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
 
 .custom-datepicker .react-datepicker__day--today {
 	font-weight: bold;
-	color: #2274a5 !important; /* primary blue */
+	color: #2274a5 !important;
+	/* primary blue */
 }
 
 .custom-datepicker .react-datepicker__day--disabled {
-	color: #6d726d !important; /* Kept as is, assuming it's a desired grey */
+	color: #6d726d !important;
+	/* Kept as is, assuming it's a desired grey */
 }
 
 .custom-datepicker .react-datepicker__navigation-icon::before {
-	border-color: #2274a5 !important; /* primary blue */
+	border-color: #2274a5 !important;
+	/* primary blue */
 }
 
 .custom-datepicker .react-datepicker__navigation:hover *::before {
-	border-color: #1a5d8a !important; /* Darker shade of primary blue */
+	border-color: #1a5d8a !important;
+	/* Darker shade of primary blue */
 }
 
 .react-datepicker__month {
 	padding-right: 12px !important;
 }
+
 .react-datepicker__day--highlighted,
 .react-datepicker__month-text--highlighted,
 .react-datepicker__quarter-text--highlighted,
 .react-datepicker__year-text--highlighted {
-	background-color: #1a5d8a !important; /* Darker shade of primary blue */
-	color: #f2f3f4 !important; /* primary white */
+	background-color: #1a5d8a !important;
+	/* Darker shade of primary blue */
+	color: #f2f3f4 !important;
+	/* primary white */
 }
+
 /* Add this to the end of your global.css file */
 
 /* Calendar container styles */
@@ -479,6 +588,7 @@ body {
 	.calendar-container {
 		max-height: 400px;
 	}
+
 	.rbc-calendar {
 		min-width: 600px;
 	}
@@ -506,87 +616,110 @@ body {
 
 /* CalendarView styles */
 .rbc-calendar {
-	background-color: #f2f3f4; /* primary white */
-	color: #010b13; /* primary black */
+	background-color: #f2f3f4;
+	/* primary white */
+	color: #010b13;
+	/* primary black */
 }
 
 .rbc-toolbar button {
-	color: #010b13; /* primary black */
+	color: #010b13;
+	/* primary black */
 }
 
 .rbc-toolbar button:hover {
-	background-color: #e2e5e8; /* lighter shade of primary white */
+	background-color: #e2e5e8;
+	/* lighter shade of primary white */
 }
 
 .rbc-toolbar button.rbc-active {
-	background-color: #2274a5; /* primary blue */
-	color: #f2f3f4; /* primary white */
+	background-color: #2274a5;
+	/* primary blue */
+	color: #f2f3f4;
+	/* primary white */
 }
 
 .rbc-header {
-	background-color: #d1d5d9; /* darker shade of primary white */
-	color: #010b13; /* primary black */
+	background-color: #d1d5d9;
+	/* darker shade of primary white */
+	color: #010b13;
+	/* primary black */
 }
 
 .rbc-today {
-	background-color: rgba(34, 116, 165, 0.1); /* primary blue with opacity */
+	background-color: rgba(34, 116, 165, 0.1);
+	/* primary blue with opacity */
 }
 
 .rbc-event {
-	background-color: #2274a5; /* primary blue */
+	background-color: #2274a5;
+	/* primary blue */
 	border: none;
 }
 
 .rbc-event.rbc-selected {
-	background-color: #1a5d8a; /* darker shade of primary blue */
+	background-color: #1a5d8a;
+	/* darker shade of primary blue */
 }
 
 .rbc-off-range-bg {
-	background-color: #e2e5e8; /* lighter shade of primary white */
+	background-color: #e2e5e8;
+	/* lighter shade of primary white */
 }
 
-.rbc-day-bg + .rbc-day-bg {
-	border-left: 1px solid #d1d5d9; /* darker shade of primary white */
+.rbc-day-bg+.rbc-day-bg {
+	border-left: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
-.rbc-month-row + .rbc-month-row {
-	border-top: 1px solid #d1d5d9; /* darker shade of primary white */
+.rbc-month-row+.rbc-month-row {
+	border-top: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
-.rbc-time-content > * + * > * {
-	border-left: 1px solid #d1d5d9; /* darker shade of primary white */
+.rbc-time-content>*+*>* {
+	border-left: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
 .rbc-timeslot-group {
-	border-bottom: 1px solid #d1d5d9; /* darker shade of primary white */
+	border-bottom: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
 .rbc-time-header-content {
-	border-left: 1px solid #d1d5d9; /* darker shade of primary white */
+	border-left: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
-.rbc-time-header > .rbc-row > * + * {
-	border-left: 1px solid #d1d5d9; /* darker shade of primary white */
+.rbc-time-header>.rbc-row>*+* {
+	border-left: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
-.rbc-time-header > .rbc-row:first-child {
-	border-bottom: 1px solid #d1d5d9; /* darker shade of primary white */
+.rbc-time-header>.rbc-row:first-child {
+	border-bottom: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
 .rbc-time-view {
-	border: 1px solid #d1d5d9; /* darker shade of primary white */
+	border: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
 .rbc-time-view .rbc-allday-cell {
-	border-bottom: 1px solid #d1d5d9; /* darker shade of primary white */
+	border-bottom: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
 .rbc-day-slot .rbc-time-slot {
-	border-top: 1px solid #e2e5e8; /* lighter shade of primary white */
+	border-top: 1px solid #e2e5e8;
+	/* lighter shade of primary white */
 }
 
 .rbc-current-time-indicator {
-	background-color: #00b2ff; /* bittersweet */
+	background-color: #00b2ff;
+	/* bittersweet */
 }
 
 .rbc-event-label {
@@ -595,21 +728,26 @@ body {
 
 .calendar-container .rbc-header {
 	top: 0;
-	background: #f2f3f4; /* primary white */
+	background: #f2f3f4;
+	/* primary white */
 }
 
 /* Additional styles that were in the original file */
 .rbc-btn-group {
-	background-color: #f2f3f4; /* primary white */
+	background-color: #f2f3f4;
+	/* primary white */
 }
 
 .rbc-btn-group button {
-	color: #010b13; /* primary black */
+	color: #010b13;
+	/* primary black */
 }
 
 .rbc-btn-group button.rbc-active {
-	background-color: #2274a5; /* primary blue */
-	color: #f2f3f4; /* primary white */
+	background-color: #2274a5;
+	/* primary blue */
+	color: #f2f3f4;
+	/* primary white */
 }
 
 .rbc-time-view .rbc-row {
@@ -625,9 +763,11 @@ body {
 }
 
 .rbc-time-content {
-	border-top: 1px solid #d1d5d9; /* darker shade of primary white */
+	border-top: 1px solid #d1d5d9;
+	/* darker shade of primary white */
 }
 
 .rbc-time-header-gutter {
-	background-color: #f2f3f4; /* primary white */
+	background-color: #f2f3f4;
+	/* primary white */
 }

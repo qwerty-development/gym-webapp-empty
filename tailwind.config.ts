@@ -10,28 +10,32 @@ const config: Config = {
 		extend: {
 			colors: {
 				green: {
-					200: '#FFB3A7', // Lighter shade of bittersweet
-					300: '#1D6089', // Light shade of bittersweet
-					400: '#2274A5', // Primary bittersweet
-					500: '#00B2FF', // Primary blue
-					600: '#66CFFF', // Darker shade of blue
-					700: '#18506E', // Even darker shade of blue
-					800: '#134054', // Much darker shade of blue
-					900: '#0E303A' // Very dark shade of blue
+					50: '#E6F0FF',
+					100: '#CCE1FF',
+					200: '#99C3FF',
+					300: '#66A5FF',
+					400: '#3387FF',
+					500: '#004AAD', // Primary blue
+					600: '#003C8A',
+					700: '#002E68',
+					800: '#001F45',
+					900: '#001123'
 				},
 				gray: {
-					200: '#1B252F', // Darker shade of primary black
-					300: '#010B13', // Primary black
-					400: '#0E1821', // Slightly lighter shade of primary black
-					500: '#28323D', // Light shade of primary black
-					600: '#D1D5D9', // Darker shade of primary white
-					700: '#E2E5E8', // Dark shade of primary white
-					800: '#F2F3F4', // Primary white
-					900: '#F7F8F9' // Slightly lighter shade of primary white
+					50: '#F9FAFB',
+					100: '#F3F4F6',
+					200: '#E5E7EB',
+					300: '#D1D5DB',
+					400: '#9CA3AF',
+					500: '#6B7280',
+					600: '#4B5563',
+					700: '#374151',
+					800: '#1F2937',
+					900: '#111827'
 				},
 				// Adding default color overrides
-				white: '#F2F3F4', // Dark blue-gray shade
-				black: '#010B13' // Same as primary black
+				white: '#FFFFFF',
+				black: '#000000'
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -42,4 +46,5 @@ const config: Config = {
 	},
 	plugins: []
 }
+
 export default config

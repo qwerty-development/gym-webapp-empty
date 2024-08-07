@@ -59,40 +59,50 @@ export default function NavbarComponent() {
 	]
 
 	return (
-		<nav className='bg-gray-900 text-white border-b-2 border-green-500'>
+		<nav className='bg-gray-900 text-white border-b-2 border-blue-500'>
 			<div className='mx-auto max-w-7xl px-4 lg:px-8'>
 				<div className='flex items-center justify-between h-16'>
-					<div className='md:hidden flex justify-start w-1/3'>
-						<button
-							onClick={() => setIsMenuOpen(!isMenuOpen)}
-							className='inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-green-500'
-							aria-label='Toggle menu'>
-							{isMenuOpen ? (
-								<FaTimes className='text-red-500' />
-							) : (
-								<FaBars className='text-green-500' />
-							)}
-						</button>
+					<div className='flex items-center'>
+						<Link href="/">
+							<Image
+								src="/logoGym.png"
+								alt="Gym Logo"
+								width={40}
+								height={40}
+								className="mr-64"
+							/>
+						</Link>
+						<div className='md:hidden'>
+							<button
+								onClick={() => setIsMenuOpen(!isMenuOpen)}
+								className='inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500'
+								aria-label='Toggle menu'>
+								{isMenuOpen ? (
+									<FaTimes className='text-red-500' />
+								) : (
+									<FaBars className='text-blue-500' />
+								)}
+							</button>
+						</div>
 					</div>
 
-					<div className='hidden md:flex  justify-end items-center space-x-2 flex-grow'>
+					<div className='hidden md:flex justify-center items-center space-x-2 flex-grow'>
 						{navItems.map(item => (
 							<Link
 								key={item.href}
 								href={item.href}
-								className={`flex items-center justify-center w-min px-7 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-center ${
-									currentPage === item.href
-										? 'bg-green-500 text-white'
-										: 'text-gray-300 hover:bg-green-300 hover:text-white'
-								}`}>
+								className={`flex items-center justify-center w-min px-7 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-center ${currentPage === item.href
+										? 'bg-blue-500 text-white'
+										: 'text-gray-300 hover:bg-blue-300 hover:text-white'
+									}`}>
 								<item.icon className='mr-2' />
 								{item.label}
 							</Link>
 						))}
 					</div>
-					<div className='flex items-center justify-end w-1/3'>
+					<div className='flex items-center justify-end'>
 						<div
-							className='bg-gray-800 text-green-300 px-3 py-1 flex  rounded-full mr-3 text-sm border text-nowrap border-green-500 relative'
+							className='bg-gray-800 text-blue-300 px-3 py-1 flex rounded-full mr-3 text-sm border text-nowrap border-blue-500 relative'
 							onMouseEnter={() => setShowTokenInfo(true)}
 							onMouseLeave={() => setShowTokenInfo(false)}>
 							{walletBalance ? walletBalance : 0} credits
@@ -103,7 +113,7 @@ export default function NavbarComponent() {
 							afterSignOutUrl='/'
 							appearance={{
 								elements: {
-									avatarBox: 'border-2 border-green-500'
+									avatarBox: 'border-2 border-blue-500'
 								}
 							}}
 						/>
@@ -123,11 +133,10 @@ export default function NavbarComponent() {
 								<Link
 									key={item.href}
 									href={item.href}
-									className={`flex items-center justify-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-										currentPage === item.href
-											? 'bg-green-500 text-white'
-											: 'text-gray-300 hover:bg-green-300 hover:text-white'
-									}`}
+									className={`flex items-center justify-center px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${currentPage === item.href
+											? 'bg-blue-500 text-white'
+											: 'text-gray-300 hover:bg-blue-300 hover:text-white'
+										}`}
 									onClick={() => setIsMenuOpen(false)}>
 									<item.icon className='mr-2' />
 									{item.label}
