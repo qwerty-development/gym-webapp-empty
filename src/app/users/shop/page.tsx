@@ -103,7 +103,7 @@ const Shop: React.FC = () => {
 	}
 
 	return (
-		<div className='min-h-screen bg-white' id='__next'>
+		<div className='min-h-screen bg-gray-900' id='__next'>
 			<NavbarComponent />
 			<div className='max-w-7xl mx-auto lg:ml-32 2xl:mx-auto px-4 sm:px-6 lg:px-8 py-12'>
 				<h1 className='text-4xl sm:text-5xl font-extrabold text-green-500 mb-8 sm:mb-12 text-center'>
@@ -111,7 +111,7 @@ const Shop: React.FC = () => {
 				</h1>
 
 				{/* Toggle for Large Screens */}
-				<div className='hidden lg:block fixed left-0 top-0 h-full bg-gray-100 z-30 transform transition-transform duration-300 ease-in-out'>
+				<div className='hidden lg:block fixed left-0 top-0 h-full bg-gray-800 z-30 transform transition-transform duration-300 ease-in-out'>
 					<h2 className='text-2xl font-bold mb-4 mt-16 md:mt-4 ml-1 text-green-500'>
 						Menu
 					</h2>
