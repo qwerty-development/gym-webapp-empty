@@ -515,7 +515,7 @@ export default function BookForClient() {
 				</FadeInSection>
 
 				<FadeInSection>
-					<div className='section bg-white shadow-lg rounded-3xl p-8 mb-16'>
+					<div className='section bg-gray-500 shadow-lg rounded-3xl p-8 mb-16'>
 						<h2 className='text-2xl sm:text-3xl font-bold text-green-500 mb-4 sm:mb-6 text-center'>
 							Select Your {isPrivateTraining ? 'Activity' : 'Class'}
 						</h2>
@@ -556,7 +556,7 @@ export default function BookForClient() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className='section bg-white shadow-lg rounded-3xl p-8 mb-16'>
+							className='section bg-gray-500 shadow-lg rounded-3xl p-8 mb-16'>
 							<h2 className='text-2xl sm:text-3xl font-bold text-green-500 mb-4 sm:mb-6 text-center'>
 								Choose Your {isPrivateTraining ? 'Coach' : 'Instructor'}
 							</h2>
@@ -600,7 +600,7 @@ export default function BookForClient() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className='section bg-white shadow-lg rounded-3xl p-8 mb-16'>
+							className='section bg-gray-500 shadow-lg rounded-3xl p-8 mb-16'>
 							<div className='flex flex-col lg:flex-row lg:space-x-12'>
 								<div className='lg:w-1/2 mb-8 lg:mb-0'>
 									<h2 className='text-2xl sm:text-3xl font-bold text-green-500 mb-4 sm:mb-6 text-center lg:text-left'>
@@ -667,7 +667,7 @@ export default function BookForClient() {
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className='section bg-white shadow-lg rounded-3xl p-8 mb-16'>
+							className='section bg-gray-500 shadow-lg rounded-3xl p-8 mb-16'>
 							<div className='mt-12 text-center'>
 								<p className='text-xl sm:text-2xl font-semibold text-green-500 mb-4 sm:mb-6'>
 									Booking {isPrivateTraining ? 'private session' : 'class'} for{' '}

@@ -216,7 +216,7 @@ export default function AddTimeSlotComponent() {
 				Add Private Time Slots
 			</h1>
 
-			<motion.div className='bg-white rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
+			<motion.div className='bg-gray-700 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
 					<Select
 						placeholder='Select Coach'
@@ -292,7 +292,7 @@ export default function AddTimeSlotComponent() {
 				Add Group Time Slots
 			</h1>
 
-			<motion.div className='bg-gray-100 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
+			<motion.div className='bg-gray-700 rounded-xl p-6 mb-8 shadow-lg hover:shadow-green-500/30 transition duration-300'>
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
 					<Select
 						placeholder='Select Coach'

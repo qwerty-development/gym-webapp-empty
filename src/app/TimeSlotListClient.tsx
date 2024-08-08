@@ -517,7 +517,7 @@ export default function TimeSlotListClient({
 			</motion.button>
 
 			{isLoading ? (
-				<div className='flex justify-center items-center h-64'>
+				<div className='flex  justify-center items-center h-64'>
 					<RotateLoader color={'#4ADE80'} loading={true} size={15} />
 				</div>
 			) : timeSlots.length === 0 ? (

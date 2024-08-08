@@ -23,7 +23,7 @@ const TableComponent: React.FC<TableProps> = ({
 	return (
 		<div className='overflow-x-auto w-full'>
 			<table className='w-full min-w-[800px] table-auto text-sm text-left text-gray-400'>
-				<thead className='text-xs uppercase bg-blue-100 sticky top-0'>
+				<thead className='text-xs uppercase bg-gray-900 sticky top-0'>
 					<tr>
 						<th className='px-4 py-3'>Select</th>
 						<th className='px-4 py-3 text-center'>Cancel</th>
@@ -45,7 +45,7 @@ const TableComponent: React.FC<TableProps> = ({
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
 							transition={{ duration: 0.3 }}
-							className='bg-white border-b border-blue-200 hover:bg-blue-50'>
+							className='bg-gray-700 border-b border-blue-200 hover:bg-blue-50'>
 							<td className='px-4 py-3 truncate'>
 								<input
 									type='checkbox'

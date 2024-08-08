@@ -34,7 +34,7 @@ const FilterComponent: React.FC<FilterProps> = ({
 			initial={{ opacity: 0, y: -20 }}
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -20 }}
-			className='bg-white p-6 rounded-lg shadow-lg mb-6 text-green-500 border border-blue-200'>
+			className='bg-gray-700 p-6 rounded-lg shadow-lg mb-6 text-green-500 border border-blue-200'>
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
 				<input
 					type='text'
